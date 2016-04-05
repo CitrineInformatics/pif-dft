@@ -18,7 +18,6 @@ class DFTParser:
         if not self.test_if_from(directory):
             raise Exception('Files in directory inconsistant with this format')
             
-            
         self._directory = directory
       
     @classmethod
@@ -33,7 +32,11 @@ class DFTParser:
         """
         
         raise NotImplementedError
-    
+        
+    def get_name(self):
+    	"""Get the name of this program"""
+        raise NotImplementedError
+        
     def get_version_number(self):
         """Get the version number of code that
         created these output files
@@ -43,3 +46,4 @@ class DFTParser:
         """
         
         raise NotImplementedError
+        
