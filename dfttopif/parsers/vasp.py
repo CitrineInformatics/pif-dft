@@ -1,6 +1,6 @@
 from .base import DFTParser
 import os
-from ase.calculators.vasp import VASP
+from ase.calculators.vasp import Vasp
 
 class VaspParser(DFTParser):
     """

@@ -4,7 +4,7 @@ class DFTParser:
     of output files from a DFT Calculation
     """
     
-    self._directory
+    _directory = None
     """Path to directory containing calculation files"""
     
     def __init__(self, directory):
