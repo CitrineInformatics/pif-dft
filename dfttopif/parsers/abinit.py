@@ -1,11 +1,11 @@
 from .base import DFTParser
 import os
 import glob
-from ase.calculators.vasp import abinit
+from ase.calculators.abinit import Abinit
 
-class VaspParser(DFTParser):
+class AbinitParser(DFTParser):
     """
-    Parser for VASP calculations
+    Parser for ABINIT calculations
     """
     _label = None
     
@@ -13,9 +13,9 @@ class VaspParser(DFTParser):
     
     def test_if_from(self, directory):
         # Check whether any file has as name ABINIT in the file in the first two lines
-        files = [f for f in os.listdir(directory) if os.isfile(os.join(directory, f))]
+        files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
         for f in files:
-            fp = open(os.path.join(self._directory, f), 'r')
+            fp = open(os.path.join(directory, f), 'r')
             for line in [fp.readline(), fp.readline()]:
                 if "ABINIT" in line:
                     fp.close()
@@ -28,8 +28,9 @@ class VaspParser(DFTParser):
          for this calculation
         """
         if self._label is None:
-            files = [f for f in os.listdir(directory) if os.isfile(os.join(directory, f))] 
+            files = [f for f in os.listdir(self._directory) if os.path.isfile(os.path.join(self._directory, f))] 
             foundfiles = False
+            print files
             for f in files:
                 if ".files" in f: 
                     foundfiles = True
@@ -38,11 +39,14 @@ class VaspParser(DFTParser):
                     line = fp.readline().split()[0]
                     if line != self._label + ".in":
                        raise Exception('first line must be label.in') 
-                    if line != self._label + ".in":
+                    line = fp.readline().split()[0]
+                    if line != self._label + ".txt":
                        raise Exception('second line must be label.txt') 
-                    if line != self._label + ".in":
+                    line = fp.readline().split()[0]
+                    if line != self._label + "i":
                        raise Exception('third line must be label.i') 
-                    if line != self._label + ".in":
+                    line = fp.readline().split()[0]
+                    if line != self._label + "o":
                        raise Exception('fourth line must be label.o') 
             if foundfiles:
                 return self._label
