@@ -56,11 +56,11 @@ class DFTParser:
         
         raise NotImplementedError
     
-    def get_lsorbit(self):
+    def uses_SOC(self):
         """Read the lsorbit tag for the output
         
         Returns:
-            string, T or F
+            bool
         """
         
         raise NotImplementedError
