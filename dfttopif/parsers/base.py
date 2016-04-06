@@ -123,6 +123,46 @@ class DFTParser:
             self._converged = res
             return res
      
+
+    def get_pp_name(self):
+        """Read output to get the pseudopotentials names used for each elements
+        
+        Returns:
+            list - pseudopotentials names
+        """
+        
+        raise NotImplementedError
+
+
+    def get_KPPRA(self):
+        """Read output and calculate the number of k-points per reciprocal atom
+        
+        Returns:
+            integer - number of k-points per reciprocal atom
+        """
+        
+        raise NotImplementedError
+
+    def get_U_settings(self):
+        """Get the DFT+U settings, if used
+
+        Returns: dict, which could contain several keys
+            'DFT+U Type' -> String, type of DFT+U employed
+            'DFT+U Values -> dict of Element -> (L, U, J)
+        Note: Returns None if DFT+U was not used
+        """
+
+        raise NotImplementedError
+
+    def get_vdW_settings(self):
+        """Get the vdW settings, if applicable
+
+        Returns: string, Type of vdW method employed"""
+
+        raise NotImplementedError
+
+
+    # Operations for retriving results
     def _is_converged(self):
         """Read output to see whether it is converged
         
@@ -142,20 +182,34 @@ class DFTParser:
         
         raise NotImplementedError
         
-    def get_pp_name(self):
-        """Read output to get the pseudopotentials names used for each elements
-        
-        Returns:
-            list - pseudopotentials names
-        """
-        
+    def get_band_gap(self):
+        """Get the band gap energy
+
+        Returns: tuple (float, string) - Band gap energy and units"""
+
         raise NotImplementedError
-        
-     def get_KPPRA(self):
-        """Read output and calculate the number of k-points per reciprocal atom
-        
-        Returns:
-            integer - number of k-points per reciprocal atom
-        """
-        
+
+    def get_pressure(self):
+        """Get the pressure acting on the system
+
+        Returns: type (float, string) - Pressure value and units"""
+
         raise NotImplementedError
+
+    def get_dos(self):
+        """Get the total density of states
+
+        Returns: dict, with the following keys
+            energy_units -> string, units of energy
+            energy -> list, energies at which DOS was evalauted
+            dos_units -> string, units of DOS
+            dos -> list, total DOS"""
+            
+        raise NotImplementedError
+
+    def get_stresses(self):
+       """Get the stress tensor
+
+       Returns: tuple (2d matrix, string) - Stress tensor and units"""
+
+       raise NotImplementedError
