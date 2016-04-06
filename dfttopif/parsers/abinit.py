@@ -1,15 +1,73 @@
 from .base import DFTParser
 import os
-from ase.calculators.vasp import VASP
+import glob
+from ase.calculators.vasp import abinit
 
 class VaspParser(DFTParser):
     """
     Parser for VASP calculations
     """
+    _label = None
     
-    def get_name(): return "VASP"
+    def get_name(self): return "ABINIT"
     
     def test_if_from(self, directory):
-        # Check whether it has an INCAR file
-        return os.path.isfile(os.path.join(directory, 'INCAR'))
+        # Check whether any file has as name ABINIT in the file in the first two lines
+        files = [f for f in os.listdir(directory) if os.isfile(os.join(directory, f))]
+        for f in files:
+            fp = open(os.path.join(self._directory, f), 'r')
+            for line in [fp.readline(), fp.readline()]:
+                if "ABINIT" in line:
+                    fp.close()
+                    return True
+            fp.close()
+        return False
         
+    def _get_label(self):
+        """Find the label for the output files 
+         for this calculation
+        """
+        if self._label is None:
+            files = [f for f in os.listdir(directory) if os.isfile(os.join(directory, f))] 
+            foundfiles = False
+            for f in files:
+                if ".files" in f: 
+                    foundfiles = True
+                    self._label = f.split(".")[0]
+                    fp = open(os.path.join(self._directory, self._label + '.files'), 'r')
+                    line = fp.readline().split()[0]
+                    if line != self._label + ".in":
+                       raise Exception('first line must be label.in') 
+                    if line != self._label + ".in":
+                       raise Exception('second line must be label.txt') 
+                    if line != self._label + ".in":
+                       raise Exception('third line must be label.i') 
+                    if line != self._label + ".in":
+                       raise Exception('fourth line must be label.o') 
+            if foundfiles:
+                return self._label
+            else:
+                raise Exception('label.files not found')
+                                
+#ASE format
+#        (self.prefix + '.in') # input
+#        (self.prefix + '.txt')# output
+#        (self.prefix + 'i')   # input
+#        (self.prefix + 'o')   # output
+                
+        else:
+            return self._label
+		 
+    def get_cutoff_energy(self):
+        # Open up the label.txt file
+        fp = open(os.path.join(self._directory, self._label + '.out'), 'r')
+        foundecho = False 
+        # Look for ecut after the occurence of "echo values of preprocessed input variables"
+        for line in fp:
+            if "echo values of preprocessed input variables" in line:
+                foundecho = True
+            if "ecut" in line and foundecho:
+                words = line.split()
+                return (float(words[1]),words[2])
+        # Error handling: ecut not found
+        raise Exception('ecut not found')
