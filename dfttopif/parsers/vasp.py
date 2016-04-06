@@ -118,3 +118,16 @@ class VaspParser(DFTParser):
     def get_total_energy(self):
         return (self._call_ase(Vasp().read_energy)[0], 'eV')
 
+    def get_version_number(self):
+        # Open up the OUTCAR
+        fp = open(os.path.join(self._directory, 'OUTCAR'), 'r')
+        
+        #look for vasp
+        for line in fp:
+            if "vasp" in line:
+                words = line.split()
+                return (words[0].strip('vasp.'))
+                break
+        
+        # Error handling: vasp not found
+        raise Exception('vasp not found')

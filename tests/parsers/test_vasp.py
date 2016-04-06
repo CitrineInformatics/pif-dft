@@ -43,6 +43,7 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals('PAW_PBE', parser.get_xc_functional())
         self.assertEquals(['La','Mn','O'], parser.get_pp_name())        
         self.assertEquals(8640, parser.get_KPPRA())
+        self.assertEquals('5.3.2', parser.get_version_number())
         
         # Delete the data
         self.delete_example('perov_relax_U')
@@ -62,6 +63,7 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals('PAW', parser.get_xc_functional())
         self.assertEquals(['Al','Ni'], parser.get_pp_name())   
         self.assertEquals(8192, parser.get_KPPRA())
+        self.assertEquals('5.3.2', parser.get_version_number())
         
         # Delete the data
         self.delete_example('AlNi_static_LDA')
@@ -80,7 +82,8 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals(False, parser.is_relaxed())
         self.assertEquals('PAW_PBE', parser.get_xc_functional())
         self.assertEquals(['Li_sv','Pt','Sn_d','Y_sv'], parser.get_pp_name()) 
-        self.assertEquals(1440, parser.get_KPPRA())        
+        self.assertEquals(1440, parser.get_KPPRA())
+        self.assertEquals('5.2.11', parser.get_version_number())
         
         # Delete the data
         self.delete_example('heusler_static_SOC')
@@ -99,7 +102,8 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals(True, parser.is_relaxed())
         self.assertEquals('PAW_PBE', parser.get_xc_functional())
         self.assertEquals(['C','H','Br','Fe','N','S'], parser.get_pp_name())
-        self.assertEquals(142, parser.get_KPPRA())        
+        self.assertEquals(142, parser.get_KPPRA())    
+        self.assertEquals('5.3.5', parser.get_version_number())
         
         # Delete the data
         self.delete_example('vdW')
