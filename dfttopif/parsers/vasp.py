@@ -83,19 +83,34 @@ class VaspParser(DFTParser):
     def get_KPPRA(self):
         # Open up the OUTCAR
         fp = open(os.path.join(self._directory, 'OUTCAR'), 'r')
-        
-        # Look for NKPTS and NIONS
+        #store the number of atoms and number of irreducible K-points
         for line in fp:
-            if "NKPTS" in line:
-                words = line.split()
-                NK = int(words[3])
-            elif "NIONS" in line:
+            if "NIONS" in line:
                 words = line.split()
                 NI = int(words[11])
-        return (NK*NI)
+            elif "NKPTS" in line:
+                words = line.split()
+                NIRK = float(words[3])
+        #check if the number of k-points was reduced by VASP if so, sum all the k-points weight
+        if "irreducible" in open(os.path.join(self._directory, 'OUTCAR')).read():
+            fp.seek(0)
+            for line in fp:
+                #sum all the k-points weight
+                if "Coordinates               Weight" in line:
+                    NK=0; counter = 0
+                    for line in fp:
+                        if counter == NIRK:
+                            break
+                        NK += float(line.split()[3])
+                        counter += 1
+            return (NI*NK)
+        #if k-points were not reduced KPPRA equals the number of atoms * number of irreducible k-points
+        else:
+            return(NI*NIRK)
+
                 
         # Error handling: NKPTS or NIONS not found
-        raise Exception('NKPTS or NIONS not found')
+        raise Exception('NIONS, irredicuble or Coordinates not found')
 
     def _is_converged(self):
         return self._call_ase(Vasp().read_convergence)

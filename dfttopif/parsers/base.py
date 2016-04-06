@@ -138,7 +138,7 @@ class DFTParser:
         """Read output and calculate the number of k-points per reciprocal atom
         
         Returns:
-            integer - number of k-points per reciprocal atom
+            float - number of k-points per reciprocal atom
         """
         
         raise NotImplementedError
