@@ -1,0 +1,2 @@
+gzip: PROCAR: No such file or directory
+gzip: ELFCAR: No such file or directory

@@ -1,0 +1,54 @@
+  SYSTEM   = Cl_Substituted
+  
+  CONTROL PARAMETER FOR THIS RUN:
+  ISTART   = 1             #Start from scratch
+  ICHARG   = 1             #= 2 if ISTART=0--ICHARG=12, =11 for band structure. 
+  PREC     = Normal        #Good enough
+  LWAVE    = .TRUE.
+  LCHARG   = .TRUE.
+  LELF     = .FALSE.       #Write ELF
+  NWRITE   = 2             #Default is 2, 1 is good for MD
+  ALGO     = FAST          #5*Davidson rest RMM-DIIS 
+  ISYM     = 2             #0=nosymm 2=symm 3=CD use symm
+  MAXMIX   = 40            #3*Iter(first step) 
+
+  ELECTRONIC RELAXATION:
+  ISMEAR   = 0
+  SIGMA    = 0.250      !  #Broadening in eV
+  ENCUT    = 520
+  EDIFF    = 1E-5
+  LREAL    = AUTO          #Projection Done In F=reciprocal, for large system Auto oterwise .FALSE.
+
+# SPIN & MAGNETIZATION:
+# ISPIN    = 2             #2 spin polarized calculations (collinear) are performed.
+# LORBIT   = 11            #10 PROCAR, 11 lm decomposed, 12 lm decomposed+phase factor
+# MAGMOM   = 6*5 12*-5 408*0.0
+
+  STRUCTURAL RELAXATION:
+  IBRION   = 2             #1=DIIS--2=CG--3=damped MD.
+  POTIM    = 0.187         #0.5 Default. DIIS and DAMP-MD sensitive--, In MD means time step
+  ISIF     = 3             #3=FULL 2=ION 4=CVOPT ....
+  NSW      = 200
+  NELM     = 280           #Maximum number of scf steps
+# NELMDL   = 30
+  NELMIN   = 5             #Min numer of Electronic Step
+  EDIFFG   =-1E-2          #Force convergence
+  PSTRESS  = -4
+
+  VDW-DF SETTING:
+  GGA      = MK            #optB88-vdW
+  PARAM1   = 0.1234
+  PARAM2   = 1.0000
+  LUSE_VDW = .TRUE.
+  AGGAC    = 0.0000
+
+# DENSITY OF STATE:
+# EMIN     = XXXX          #Lowest KS-eigenvalue-Δ
+# EMAX     = XXXX          #Highest KS-eigenvalue+Δ
+# NEDOS    = 301  	   #Number of gridpoints on which the DOS is evaluated
+# LORBIT   = 11            #10 PROCAR, 11 lm decomposed, 12 lm decomposed+phase factor
+
+  PARALELIZATION SETTING:
+  NPAR     = 1              #In Hg1 NPAR=nodes give the best performance.
+  KPAR     = 1
+  NSIM     = 8              #For small 2 for many nodes more and too many SQRT(nodes)
