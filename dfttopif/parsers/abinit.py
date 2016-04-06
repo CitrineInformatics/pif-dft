@@ -44,10 +44,10 @@ class AbinitParser(DFTParser):
                        raise Exception('second line must be label.txt') 
                     line = fp.readline().split()[0]
                     if line != self._label + "i":
-                       raise Exception('third line must be label.i') 
+                       raise Exception('third line must be labeli') 
                     line = fp.readline().split()[0]
                     if line != self._label + "o":
-                       raise Exception('fourth line must be label.o') 
+                       raise Exception('fourth line must be labelo') 
             if foundfiles:
                 return self._label
             else:
