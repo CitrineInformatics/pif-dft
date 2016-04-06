@@ -71,5 +71,5 @@ class VaspParser(DFTParser):
         return self._call_ase(Vasp().read_convergence)
         
     def get_total_energy(self):
-        return self._call_ase(Vasp().read_energy)[0]
+        return (self._call_ase(Vasp().read_energy)[0], 'eV')
 
