@@ -38,16 +38,21 @@ class AbinitParser(DFTParser):
                     fp = open(os.path.join(self._directory, self._label + '.files'), 'r')
                     line = fp.readline().split()[0]
                     if line != self._label + ".in":
+                       fp.close()
                        raise Exception('first line must be label.in') 
                     line = fp.readline().split()[0]
                     if line != self._label + ".txt":
+                       fp.close()
                        raise Exception('second line must be label.txt') 
                     line = fp.readline().split()[0]
                     if line != self._label + "i":
+                       fp.close()
                        raise Exception('third line must be labeli') 
                     line = fp.readline().split()[0]
                     if line != self._label + "o":
+                       fp.close()
                        raise Exception('fourth line must be labelo') 
+                    fp.close()
             if foundfiles:
                 return self._label
             else:
