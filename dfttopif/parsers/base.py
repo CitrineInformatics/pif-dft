@@ -47,3 +47,12 @@ class DFTParser:
         
         raise NotImplementedError
         
+    def get_cutoff_energy(self):
+        """Read the cutoff energy from the output
+        
+        Returns:
+            tuple (float, string) - Cutoff energy and units
+        """
+        
+        raise NotImplementedError
+        
