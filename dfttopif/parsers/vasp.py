@@ -40,7 +40,6 @@ class VaspParser(DFTParser):
         # Error handling: LSORBIT not found
         raise Exception('LSORBIT not found')
         
-<<<<<<< HEAD
     def is_relaxed(self):
         # Open up the OUTCAR
         fp = open(os.path.join(self._directory, 'OUTCAR'), 'r')
@@ -67,10 +66,10 @@ class VaspParser(DFTParser):
                 
         # Error handling: TITEL not found
         raise Exception('TITEL not found')
-=======
+
     def _is_converged(self):
         return self._call_ase(Vasp().read_convergence)
         
     def get_total_energy(self):
         return self._call_ase(Vasp().read_energy)[0]
->>>>>>> origin/master
+

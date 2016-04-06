@@ -92,7 +92,6 @@ class DFTParser:
         
         raise NotImplementedError
         
-<<<<<<< HEAD
     def is_relaxed(self):
         """Parse the output file to tell if the structure was relaxed
         
@@ -110,7 +109,7 @@ class DFTParser:
         """
         
         raise NotImplementedError
-=======
+
     def is_converged(self):
         """Whether the calculation has converged
         
@@ -142,5 +141,3 @@ class DFTParser:
         """
         
         raise NotImplementedError
-        
->>>>>>> origin/master
