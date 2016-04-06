@@ -55,4 +55,13 @@ class DFTParser:
         """
         
         raise NotImplementedError
+    
+    def get_lsorbit(self):
+        """Read the lsorbit tag for the output
+        
+        Returns:
+            string, T or F
+        """
+        
+        raise NotImplementedError
         

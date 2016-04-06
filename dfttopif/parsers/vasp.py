@@ -26,3 +26,16 @@ class VaspParser(DFTParser):
                 
         # Error handling: ENCUT not found
         raise Exception('ENCUT not found')
+
+    def get_lsorbit(self):
+        # Open up the OUTCAR
+        fp = open(os.path.join(self._directory, 'OUTCAR'), 'r')
+        
+        #look for LSORBIT
+        for line in fp:
+            if "LSORBIT" in line:
+                words = line.split()
+                return (words[2])
+        
+        # Error handling: LSORBIT not found
+        raise Exception('LSORBIT not found')
