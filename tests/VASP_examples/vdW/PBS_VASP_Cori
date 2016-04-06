@@ -1,0 +1,61 @@
+#!/bin/bash -l
+
+#SBATCH -p regular
+#SBATCH -N 1
+#SBATCH -t 24:00:00
+#SBATCH -A m1673
+#SBATCH -J kBar_-4-Br
+
+cd $SLURM_SUBMIT_DIR   # optional, since this is the default behavior
+
+#export  MPICH_NO_BUFFER_ALIAS_CHECK=1
+#export  UGNI_CDM_MDD_DEDICATED=2 
+
+ext=$(date | awk '{print $1,$2,$3,$4,$6}' | sed 's/ /_/g' | sed 's/:/./g')
+
+BK="BackUp"
+
+if [ -f SLM-OUT.TXT ]
+ then
+   rm SLM-OUT.TXT
+fi
+
+if [ -f OUTCAR ]
+ then
+   mkdir -p $BK
+   cp OUTCAR $BK/OUTCAR_$ext
+fi
+
+
+if [ -f CONTCAR ]
+ then
+   mkdir -p $BK
+   cp CONTCAR $BK/CONTCAR_$ext
+fi
+
+if [ -f POSCAR ]
+ then
+   mkdir -p $BK
+   cp POSCAR $BK/POSCAR_$ext
+fi
+
+NPRO=$(grep "SBATCH -N" $0  | head -n 1 | awk '{print $3*32}')
+SLEEPTIME=$(grep 'SBATCH -t' $0 | head -n 1 | awk '{print $3}' | awk -F: '{print -300+3600*$1+$2*60+$3}')
+	(sleep $SLEEPTIME ; touch STOPCAR ; echo "LSTOP = .TRUE." >> STOPCAR) &
+
+##LABORT = .TRUE.
+
+echo "SLURM_JOBID="$SLURM_JOBID > SLM-OUT.TXT
+echo "SLEEPTIME="$SLEEPTIME >> SLM-OUT.TXT
+echo "SLURM_JOB_NODELIST"=$SLURM_JOB_NODELIST >> SLM-OUT.TXT
+echo "SLURM_NNODES"=$SLURM_NNODES >> SLM-OUT.TXT
+echo "NPROCS"=$NPRO >> SLM-OUT.TXT
+
+export VASP=/global/homes/s/ssn492/Softwares/VASP_5.3.5_Cori/vasp.5.3/vasp_normal
+########################VSSP DIIFFERENT#############################
+srun -n $NPRO  $VASP > STD.OUT 2> stderr
+cp CONTCAR POSCAR_opt1; cp CONTCAR POSCAR; chmod +x POSCAR
+srun -n $NPRO  $VASP > STD.OUT 2> stderr
+cp CONTCAR POSCAR_opt2; cp CONTCAR POSCAR; chmod +x POSCAR
+srun -n $NPRO  $VASP > STD.OUT 2> stderr
+########################VSSP DIIFFERENT#############################

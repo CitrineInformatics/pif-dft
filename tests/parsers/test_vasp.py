@@ -1,4 +1,5 @@
 import unittest
+from dfttopif.parsers import VaspParser
 
 class TestVASPParser(unittest.TestCase):
 
