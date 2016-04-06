@@ -38,6 +38,10 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals(True, parser.is_converged())
         self.assertAlmostEqual(-39.85550532, parser.get_total_energy()[0])
         self.assertEquals('eV', parser.get_total_energy()[1])
+        self.assertEquals(False, parser.uses_SOC())        
+        self.assertEquals(True, parser.is_relaxed())    
+        self.assertEquals('PAW_PBE', parser.get_xc_functional())
+        self.assertEquals(['La','Mn','O'], parser.get_pp_name())        
         
         # Delete the data
         self.delete_example('perov_relax_U')
@@ -52,6 +56,10 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals(True, parser.is_converged())
         self.assertAlmostEqual(-12.19669689, parser.get_total_energy()[0])
         self.assertEquals('eV', parser.get_total_energy()[1])
+        self.assertEquals(False, parser.uses_SOC())
+        self.assertEquals(False, parser.is_relaxed())
+        self.assertEquals('PAW', parser.get_xc_functional())
+        self.assertEquals(['Al','Ni'], parser.get_pp_name())   
         
         # Delete the data
         self.delete_example('AlNi_static_LDA')
@@ -66,6 +74,10 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals(True, parser.is_converged())
         self.assertAlmostEqual(-22.273992, parser.get_total_energy()[0])
         self.assertEquals('eV', parser.get_total_energy()[1])
+        self.assertEquals(True, parser.uses_SOC())
+        self.assertEquals(False, parser.is_relaxed())
+        self.assertEquals('PAW_PBE', parser.get_xc_functional())
+        self.assertEquals(['Li_sv','Pt','Sn_d','Y_sv'], parser.get_pp_name()) 
         
         # Delete the data
         self.delete_example('heusler_static_SOC')
@@ -80,6 +92,11 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals(True, parser.is_converged())
         self.assertAlmostEqual(-707.48169596, parser.get_total_energy()[0])
         self.assertEquals('eV', parser.get_total_energy()[1])
+        self.assertEquals(False, parser.uses_SOC())
+        self.assertEquals(True, parser.is_relaxed())
+        self.assertEquals('PAW_PBE', parser.get_xc_functional())
+        self.assertEquals(['C','H','Br','Fe','N','S'], parser.get_pp_name()) 
+        
         
         # Delete the data
         self.delete_example('vdW')
