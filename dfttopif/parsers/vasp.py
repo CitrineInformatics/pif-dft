@@ -63,6 +63,19 @@ class VaspParser(DFTParser):
                 words = line.split()
                 return (words[2])
                 break
+            
+    def pp_name(self):
+        # Open up the OUTCAR
+        fp = open(os.path.join(self._directory, 'OUTCAR'), 'r')
+        
+        # Look for TITEL
+        for line in fp:
+            #initialize empty list to store pseudopotentials
+            pp = []
+            if "TITEL" in line:
+                words = line.split()
+                pp.append(words[3])
+        return (pp)
                 
         # Error handling: TITEL not found
         raise Exception('TITEL not found')

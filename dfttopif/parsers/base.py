@@ -141,3 +141,12 @@ class DFTParser:
         """
         
         raise NotImplementedError
+        
+    def pp_name(self):
+        """Read output to get the pseudopotentials names used for each elements
+        
+        Returns:
+            list - pseudopotentials names
+        """
+        
+        raise NotImplementedError
