@@ -26,3 +26,22 @@ class VaspParser(DFTParser):
                 
         # Error handling: ENCUT not found
         raise Exception('ENCUT not found')
+
+    def uses_SOC(self):
+        # Open up the OUTCAR
+        fp = open(os.path.join(self._directory, 'OUTCAR'), 'r')
+        
+        #look for LSORBIT
+        for line in fp:
+            if "LSORBIT" in line:
+                words = line.split()
+                return (words[2] == 'T')
+        
+        # Error handling: LSORBIT not found
+        raise Exception('LSORBIT not found')
+        
+    def _is_converged(self):
+        return self._call_ase(Vasp().read_convergence)
+        
+    def get_total_energy(self):
+        return self._call_ase(Vasp().read_energy)[0]
