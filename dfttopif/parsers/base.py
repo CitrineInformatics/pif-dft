@@ -1,3 +1,5 @@
+import os
+
 class DFTParser:
     """
     Base class for all tools to parse a directory
@@ -6,6 +8,9 @@ class DFTParser:
     
     _directory = None
     """Path to directory containing calculation files"""
+    
+    _converged = None
+    """ Whether this calculation has converged """
     
     def __init__(self, directory):
         """Intialize a parser. 
@@ -32,6 +37,28 @@ class DFTParser:
         """
         
         raise NotImplementedError
+        
+    def _call_ase(self, func):
+        """Make a call to an ASE function.
+        
+        Handles changing directories
+        
+        Returns: Result of ASE function
+        """
+        # Change directories
+        old_path = os.getcwd()
+        os.chdir(self._directory)
+        
+        # Call function
+        try:
+            res = func()
+        except:
+            os.chdir(old_path)
+            raise
+        
+        # Change back
+        os.chdir(old_path)
+        return res
         
     def get_name(self):
     	"""Get the name of this program"""
@@ -61,6 +88,38 @@ class DFTParser:
         
         Returns:
             bool
+        """
+        
+        raise NotImplementedError
+        
+    def is_converged(self):
+        """Whether the calculation has converged
+        
+        Returns: boolean
+        """
+        
+        if not self._converged is None:
+            return self._converged
+        else:
+            res = self._is_converged()
+            self._converged = res
+            return res
+     
+    def _is_converged(self):
+        """Read output to see whether it is converged
+        
+        Hidden operation: self.is_converged() is the public
+        interface, which may draw from a converged result
+        
+        Returns: boolean"""
+        
+        raise NotImplementedError
+        
+    def get_total_energy(self):
+        """Get the total energy of the last ionic step
+        
+        Returns:
+            tuple (float, string) - Total energy and units
         """
         
         raise NotImplementedError

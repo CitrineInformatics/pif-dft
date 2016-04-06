@@ -35,6 +35,8 @@ class TestVASPParser(unittest.TestCase):
         # Test the settings
         self.assertEquals('VASP', parser.get_name())
         self.assertEquals((400,'eV'), parser.get_cutoff_energy())
+        self.assertEquals(True, parser.is_converged())
+        self.assertAlmostEqual(-39.85550532, parser.get_total_energy())
         
         # Delete the data
         self.delete_example('perov_relax_U')
@@ -46,6 +48,8 @@ class TestVASPParser(unittest.TestCase):
         # Test the settings
         self.assertEquals('VASP', parser.get_name())
         self.assertEquals((650,'eV'), parser.get_cutoff_energy())
+        self.assertEquals(True, parser.is_converged())
+        self.assertAlmostEqual(-12.19669689, parser.get_total_energy())
         
         # Delete the data
         self.delete_example('AlNi_static_LDA')
@@ -57,17 +61,21 @@ class TestVASPParser(unittest.TestCase):
         # Test the settings
         self.assertEquals('VASP', parser.get_name())
         self.assertEquals((499,'eV'), parser.get_cutoff_energy())
+        self.assertEquals(True, parser.is_converged())
+        self.assertAlmostEqual(-22.273992, parser.get_total_energy())
         
         # Delete the data
         self.delete_example('heusler_static_SOC')
         
-    def test_SOC(self):
+    def test_vdW(self):
         # Parse the results
         parser = self.get_parser('vdW')
         
         # Test the settings
         self.assertEquals('VASP', parser.get_name())
         self.assertEquals((520,'eV'), parser.get_cutoff_energy())
+        self.assertEquals(True, parser.is_converged())
+        self.assertAlmostEqual(-707.48169596, parser.get_total_energy())
         
         # Delete the data
         self.delete_example('vdW')

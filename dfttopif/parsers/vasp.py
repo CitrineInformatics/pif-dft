@@ -39,3 +39,9 @@ class VaspParser(DFTParser):
         
         # Error handling: LSORBIT not found
         raise Exception('LSORBIT not found')
+        
+    def _is_converged(self):
+        return self._call_ase(Vasp().read_convergence)
+        
+    def get_total_energy(self):
+        return self._call_ase(Vasp().read_energy)[0]
