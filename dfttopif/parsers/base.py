@@ -57,7 +57,7 @@ class DFTParser:
         raise NotImplementedError
     
     def uses_SOC(self):
-        """Tells if spin-orbit coupling was used
+        """Parse the output file to tell if spin-orbit coupling was used
         
         Returns:
             bool
@@ -66,11 +66,19 @@ class DFTParser:
         raise NotImplementedError
         
     def is_relaxed(self):
-        """Tells if the structure was relaxed
+        """Parse the output file to tell if the structure was relaxed
         
         Returns:
             bool
         """
         
         raise NotImplementedError
+    
+    def get_xc_functional(self):
+        """Parse the output file to tell which exchange-correlation functional was used
         
+        Returns:
+            string
+        """
+        
+        raise NotImplementedError

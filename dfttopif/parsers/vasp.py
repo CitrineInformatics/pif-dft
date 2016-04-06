@@ -50,5 +50,19 @@ class VaspParser(DFTParser):
                 words = line.split()
                 return (int(words[2]) != 0)
                 
-        # Error handling: ENCUT not found
+        # Error handling: NSW not found
         raise Exception('NSW not found')
+        
+    def get_xc_functional(self):
+        # Open up the OUTCAR
+        fp = open(os.path.join(self._directory, 'OUTCAR'), 'r')
+        
+        # Look for TITEL
+        for line in fp:
+            if "TITEL" in line:
+                words = line.split()
+                return (words[2])
+                break
+                
+        # Error handling: TITEL not found
+        raise Exception('TITEL not found')
