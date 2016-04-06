@@ -39,3 +39,16 @@ class VaspParser(DFTParser):
         
         # Error handling: LSORBIT not found
         raise Exception('LSORBIT not found')
+        
+    def is_relaxed(self):
+        # Open up the OUTCAR
+        fp = open(os.path.join(self._directory, 'OUTCAR'), 'r')
+        
+        # Look for NSW
+        for line in fp:
+            if "NSW" in line:
+                words = line.split()
+                return (int(words[2]) != 0)
+                
+        # Error handling: ENCUT not found
+        raise Exception('NSW not found')

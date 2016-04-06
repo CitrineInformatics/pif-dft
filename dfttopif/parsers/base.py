@@ -57,7 +57,16 @@ class DFTParser:
         raise NotImplementedError
     
     def uses_SOC(self):
-        """Read the lsorbit tag for the output
+        """Tells if spin-orbit coupling was used
+        
+        Returns:
+            bool
+        """
+        
+        raise NotImplementedError
+        
+    def is_relaxed(self):
+        """Tells if the structure was relaxed
         
         Returns:
             bool
