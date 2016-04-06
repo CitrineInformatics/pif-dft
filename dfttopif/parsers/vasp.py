@@ -79,6 +79,23 @@ class VaspParser(DFTParser):
                 
         # Error handling: TITEL not found
         raise Exception('TITEL not found')
+        
+    def get_KPPRA(self):
+        # Open up the OUTCAR
+        fp = open(os.path.join(self._directory, 'OUTCAR'), 'r')
+        
+        # Look for NKPTS and NIONS
+        for line in fp:
+            if "NKPTS" in line:
+                words = line.split()
+                NK = int(words[3])
+            elif "NIONS" in line:
+                words = line.split()
+                NI = int(words[11])
+        return (NK*NI)
+                
+        # Error handling: NKPTS or NIONS not found
+        raise Exception('NKPTS or NIONS not found')
 
     def _is_converged(self):
         return self._call_ase(Vasp().read_convergence)

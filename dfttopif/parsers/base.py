@@ -150,3 +150,12 @@ class DFTParser:
         """
         
         raise NotImplementedError
+        
+     def get_KPPRA(self):
+        """Read output and calculate the number of k-points per reciprocal atom
+        
+        Returns:
+            integer - number of k-points per reciprocal atom
+        """
+        
+        raise NotImplementedError
