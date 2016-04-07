@@ -131,3 +131,33 @@ class VaspParser(DFTParser):
         
         # Error handling: vasp not found
         raise Exception('vasp not found')
+        
+    def get_U_settings(self):
+        fp = open(os.path.join(self._directory, 'OUTCAR'), 'r')
+        if "LDAU" in open(os.path.join(self._directory, 'OUTCAR')).read():
+            U_param = {}
+            atoms = []
+            for line in fp:
+                if "TITEL" in line:
+                    atoms.append(line.split()[3])
+                if "LDAUTYPE" in line:
+                        U_param['U-type'] = int(line.split()[-1])
+            atoms.reverse()
+            fp.seek(0)
+            for line in fp:
+                for atom, i in zip(atoms, range(len(atoms))):
+                    if "LDAUL" in line:
+                            U_param[atom] = {'L': int(line.split()[-1-i])}
+            fp.seek(0)
+            for line in fp:
+                for atom, i in zip(atoms, range(len(atoms))):
+                    if "LDAUU" in line:
+                            U_param[atom]['U'] = float(line.split()[-1-i])
+            fp.seek(0)
+            for line in fp:
+                for atom, i in zip(atoms, range(len(atoms))):
+                    if "LDAUJ" in line:
+                            U_param[atom]['J'] = float(line.split()[-1-i])
+            return (U_param)
+        else:
+            return (None)
