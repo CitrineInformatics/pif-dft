@@ -133,31 +133,58 @@ class VaspParser(DFTParser):
         raise Exception('vasp not found')
         
     def get_U_settings(self):
+        #Open up the OUTCAR
         fp = open(os.path.join(self._directory, 'OUTCAR'), 'r')
+        #Check if U is used
         if "LDAU" in open(os.path.join(self._directory, 'OUTCAR')).read():
             U_param = {}
             atoms = []
+            #get the list of pseupotential used
             for line in fp:
                 if "TITEL" in line:
                     atoms.append(line.split()[3])
+                #Get the U type used
                 if "LDAUTYPE" in line:
                         U_param['U-type'] = int(line.split()[-1])
             atoms.reverse()
             fp.seek(0)
+            #Get the L value            
             for line in fp:
                 for atom, i in zip(atoms, range(len(atoms))):
                     if "LDAUL" in line:
                             U_param[atom] = {'L': int(line.split()[-1-i])}
             fp.seek(0)
+            #Get the U value            
             for line in fp:
                 for atom, i in zip(atoms, range(len(atoms))):
                     if "LDAUU" in line:
                             U_param[atom]['U'] = float(line.split()[-1-i])
             fp.seek(0)
+            #Get the J value
             for line in fp:
                 for atom, i in zip(atoms, range(len(atoms))):
                     if "LDAUJ" in line:
                             U_param[atom]['J'] = float(line.split()[-1-i])
             return (U_param)
+        #if U is not used, return None
         else:
             return (None)
+            
+    def get_vdW_settings(self):
+        #define the name of the vdW methods in function of their keyword
+        vdW_dict = {'BO':'optPBE-vdW', 'MK':'optB88-vdW', 'ML':'optB86b-vdW','RE':'vdW-DF','OR':'Klimes-Bowler-Michaelides'}
+        #Open up the OUTCAR
+        fp = open(os.path.join(self._directory, 'OUTCAR'), 'r')
+        #Check if vdW is used
+        if "LUSE_VDW" in open(os.path.join(self._directory, 'OUTCAR')).read():
+            #if vdW is used, get its keyword             
+            for line in fp:
+                if "GGA     =" in line:
+                    words = line.split()
+                    return (vdW_dict[words[2]])
+        #if vdW is not used, return None
+        else:
+            return (None)
+                    
+        
+        

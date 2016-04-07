@@ -45,6 +45,7 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals(8640, parser.get_KPPRA())
         self.assertEquals('5.3.2', parser.get_version_number())
         self.assertEquals({'U-type': 2, 'La':{'L':-1,'U':0.0,'J':0.0},'Mn':{'L':2,'U':3.8,'J':0.0},'O':{'L':-1,'U':0.0,'J':0.0}}, parser.get_U_settings()) 
+        self.assertEquals(None, parser.get_vdW_settings())
         
         # Delete the data
         self.delete_example('perov_relax_U')
@@ -66,6 +67,7 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals(8192, parser.get_KPPRA())
         self.assertEquals('5.3.2', parser.get_version_number())
         self.assertEquals(None, parser.get_U_settings())
+        self.assertEquals(None, parser.get_vdW_settings())
         
         # Delete the data
         self.delete_example('AlNi_static_LDA')
@@ -87,6 +89,7 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals(1440, parser.get_KPPRA())
         self.assertEquals('5.2.11', parser.get_version_number())
         self.assertEquals(None, parser.get_U_settings())
+        self.assertEquals(None, parser.get_vdW_settings())
         
         # Delete the data
         self.delete_example('heusler_static_SOC')
@@ -108,6 +111,7 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals(142, parser.get_KPPRA())    
         self.assertEquals('5.3.5', parser.get_version_number())
         self.assertEquals(None, parser.get_U_settings())
+        self.assertEquals('optB88-vdW', parser.get_vdW_settings())
         
         # Delete the data
         self.delete_example('vdW')
