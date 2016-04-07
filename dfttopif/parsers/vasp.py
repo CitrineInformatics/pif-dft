@@ -185,6 +185,27 @@ class VaspParser(DFTParser):
         #if vdW is not used, return None
         else:
             return (None)
+            
+    def get_pressure(self):
+        #define pressure dictionnary because since when is kB = kbar? Come on VASP people
+        pressure_dict = {'kB':'kbar'}
+        #Check if ISIF = 0 is used
+        if "ISIF   =      0" in open(os.path.join(self._directory, 'OUTCAR')).read():
+            #if ISIF = 0 is used, print this crap
+            return ("Pressure not calculated (ISIF = 0)")
+        #if ISIF is not 0 then extract pressure and units
+        else:
+            #scan file in reverse to have the final pressure
+            for line in reversed(open(os.path.join(self._directory, 'OUTCAR')).readlines()):
+                if "external pressure" in line:
+                    words = line.split()
+                    return (float(words[3]), pressure_dict[words[4]])
+                    break
+                    
+                    
+                
+        
+        
                     
         
         
