@@ -201,11 +201,21 @@ class VaspParser(DFTParser):
                     words = line.split()
                     return (float(words[3]), pressure_dict[words[4]])
                     break
-                    
-                    
-                
-        
-        
-                    
-        
-        
+    
+    def get_stresses(self):
+        #Check if ISIF = 0 is used
+        if "ISIF   =      0" in open(os.path.join(self._directory, 'OUTCAR')).read():
+            return ("Stress tensor not calculated (ISIF = 0)")
+        #Check if ISIF = 1 is used
+        elif "ISIF   =      1" in open(os.path.join(self._directory, 'OUTCAR')).read():
+            return ("Stress tensor not calculated (ISIF = 1)")
+        else:
+            #scan file in reverse to have the final pressure
+            for line in open(os.path.join(self._directory, 'OUTCAR')).readlines():
+                if "in kB" in line:
+                    words = line.split()
+                    XX = float(words[2]); YY = float(words[3]); ZZ = float(words[4]); XY= float(words[5]); YZ = float(words[6]); ZX = float(words[7])
+            return ([[XX,XY,ZX],[XY,YY,YZ],[ZX,YZ,ZZ]], 'kbar')
+            
+         # Error handling: "in kB" not found
+        raise Exception('in kB not found')
