@@ -48,6 +48,7 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals(None, parser.get_vdW_settings())
         self.assertEquals((0.09,'kbar'), parser.get_pressure())
         self.assertEquals(([[0.08970,0,0],[0,0.08970,0],[0,0,0.08970]],'kbar'), parser.get_stresses())     
+        self.assertEquals((0,'eV'), parser.get_band_gap())
         
         # Delete the data
         self.delete_example('perov_relax_U')
@@ -72,6 +73,7 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals(None, parser.get_vdW_settings())
         self.assertEquals((12.96,'kbar'), parser.get_pressure())
         self.assertEquals(([[12.96023,0,0],[0,12.96023,0],[0,0,12.96023]],'kbar'), parser.get_stresses())
+        self.assertEquals((0,'eV'), parser.get_band_gap())        
         
         # Delete the data
         self.delete_example('AlNi_static_LDA')
@@ -96,6 +98,7 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals(None, parser.get_vdW_settings())
         self.assertEquals("Pressure not calculated (ISIF = 0)", parser.get_pressure())
         self.assertEquals("Stress tensor not calculated (ISIF = 0)", parser.get_stresses())
+        self.assertEquals((0.757,'eV'), parser.get_band_gap())
         
         # Delete the data
         self.delete_example('heusler_static_SOC')
@@ -120,6 +123,7 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals('optB88-vdW', parser.get_vdW_settings())
         self.assertEquals((-0.07,'kbar'), parser.get_pressure())
         self.assertEquals(([[-4.09956,0,0],[0,-4.09956,0],[0,0,-4.00192]],'kbar'), parser.get_stresses())
+        self.assertEquals((0,'eV'), parser.get_band_gap())
         # Delete the data
         self.delete_example('vdW')
         

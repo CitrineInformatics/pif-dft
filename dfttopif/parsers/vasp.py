@@ -218,3 +218,32 @@ class VaspParser(DFTParser):
             
          # Error handling: "in kB" not found
         raise Exception('in kB not found')
+        
+    def get_band_gap(self):
+        #open DOSCAR
+        with open(os.path.join(self._directory, 'DOSCAR')) as fp:
+            for i in range(6):
+                l=fp.readline()
+            efermi = float(l.split()[3])
+            step1 = fp.readline().split()[0]
+            step2 = fp.readline().split()[0]
+            step_size = float(step2)-float(step1)
+            not_found = True
+            while not_found:
+                l = fp.readline().split()
+                e = float(l.pop(0))
+                dens = 0
+                for i in range(len(l)/2):
+                    dens += float(l[i])
+                if e < efermi and dens > 1e-3:
+                    bot = e
+                elif e > efermi and dens > 1e-3:
+                    top = e
+                    not_found = False
+            if top - bot < step_size*2:
+                return(0, 'eV')
+            else:
+                bandgap = float(top - bot)
+                return(round(bandgap,3), 'eV')
+        
+        
