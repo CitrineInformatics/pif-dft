@@ -223,7 +223,7 @@ class VaspParser(DFTParser):
         #open DOSCAR
         with open(os.path.join(self._directory, 'DOSCAR')) as fp:
             for i in range(6):
-                l=fp.readline()
+                l = fp.readline()
             efermi = float(l.split()[3])
             step1 = fp.readline().split()[0]
             step2 = fp.readline().split()[0]
@@ -245,5 +245,22 @@ class VaspParser(DFTParser):
             else:
                 bandgap = float(top - bot)
                 return(round(bandgap,3), 'eV')
-        
-        
+                
+    def get_dos(self):
+        #open DOSCAR
+        with open(os.path.join(self._directory, 'DOSCAR')) as fp:
+            for i in range(6):
+                l = fp.readline()
+            n_step = int(l.split()[2])
+            energy = []; dos = []            
+            for i in range(n_step):
+                l = fp.readline().split()
+                e = float(l.pop(0))
+                energy.append(e)
+                dens = 0
+                for j in range(len(l)/2):
+                    dens += float(l[j])
+                dos.append(dens)
+            en_dos = {}; en_dos['energy_units'] = 'eV'; en_dos['dos_units'] = 'number of states per unit cell'
+            en_dos['energy'] = energy; en_dos['dos'] = dos
+            return(en_dos)        
