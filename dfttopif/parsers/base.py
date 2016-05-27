@@ -61,7 +61,7 @@ class DFTParser:
         return res
         
     def get_name(self):
-    	"""Get the name of this program"""
+        """Get the name of this program"""
         raise NotImplementedError
         
     def get_version_number(self):
