@@ -34,6 +34,10 @@ class TestVASPParser(unittest.TestCase):
         
         # Test the settings
         self.assertEquals('VASP', parser.get_name())
+        strc = parser.get_output_structure()
+        self.assertEquals(3.9088966983609255, strc.cell[1][1])
+        self.assertEquals(['La','Mn','O','O','O'], strc.get_chemical_symbols())
+        self.assertEquals('LaMnO3', parser.get_composition())
         self.assertEquals((400,'eV'), parser.get_cutoff_energy())
         self.assertEquals(True, parser.is_converged())
         self.assertAlmostEqual(-39.85550532, parser.get_total_energy()[0])
@@ -63,6 +67,10 @@ class TestVASPParser(unittest.TestCase):
         
         # Test the settings
         self.assertEquals('VASP', parser.get_name())
+        strc = parser.get_output_structure()
+        self.assertEquals(2.8333249999999999, strc.cell[0][0])
+        self.assertEquals(['Al','Ni'], strc.get_chemical_symbols())
+        self.assertEquals('AlNi', parser.get_composition())
         self.assertEquals((650,'eV'), parser.get_cutoff_energy())
         self.assertEquals(True, parser.is_converged())
         self.assertAlmostEqual(-12.19669689, parser.get_total_energy()[0])
@@ -93,6 +101,10 @@ class TestVASPParser(unittest.TestCase):
         # Test the settings
         self.assertEquals('VASP', parser.get_name())
         self.assertEquals((499,'eV'), parser.get_cutoff_energy())
+        strc = parser.get_output_structure()
+        self.assertEquals(3.3681598291240786, strc.cell[1][0])
+        self.assertEquals(['Li','Pt','Sn','Y'], strc.get_chemical_symbols())
+        self.assertEquals('LiPtSnY', parser.get_composition())
         self.assertEquals(True, parser.is_converged())
         self.assertAlmostEqual(-22.273992, parser.get_total_energy()[0])
         self.assertEquals('eV', parser.get_total_energy()[1])
@@ -121,6 +133,10 @@ class TestVASPParser(unittest.TestCase):
         
         # Test the settings
         self.assertEquals('VASP', parser.get_name())
+        strc = parser.get_output_structure()
+        self.assertEquals(-12.6699720530641162, strc.cell[1][0])
+        self.assertEquals(['C']*48, strc.get_chemical_symbols()[:48])
+        self.assertEquals('Br16C48Fe6H48N12S12', parser.get_composition())
         self.assertEquals((520,'eV'), parser.get_cutoff_energy())
         self.assertEquals(True, parser.is_converged())
         self.assertAlmostEqual(-707.48169596, parser.get_total_energy()[0])

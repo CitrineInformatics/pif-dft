@@ -1,6 +1,7 @@
 from .base import DFTParser
 import os
 from ase.calculators.vasp import Vasp
+from ase.io.vasp import read_vasp
 
 class VaspParser(DFTParser):
     '''
@@ -13,6 +14,11 @@ class VaspParser(DFTParser):
         # Check whether it has an INCAR file
         return os.path.isfile(os.path.join(directory, 'INCAR'))
         
+    def get_output_structure(self):
+        file_path = os.path.join(self._directory, 'CONTCAR')
+        if os.path.isfile(file_path):
+            return read_vasp(file_path)
+        else: return None
         
     def get_cutoff_energy(self):
         # Open up the OUTCAR
