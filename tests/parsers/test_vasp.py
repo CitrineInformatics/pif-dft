@@ -7,12 +7,12 @@ import shutil
 class TestVASPParser(unittest.TestCase):
 
     def unpack_example(self,path):
-        """Unpack a VASP test case to a temporary directory
+        '''Unpack a VASP test case to a temporary directory
         
         Input:
             path - String, path to tar.gz file containing
                 a certain test case
-        """
+        '''
         
         # Open the tar file
         tp = tarfile.open(path)
@@ -21,7 +21,7 @@ class TestVASPParser(unittest.TestCase):
         tp.extractall()
         
     def get_parser(self,name):
-        """Get a VaspParser for a certain test"""
+        '''Get a VaspParser for a certain test'''
         self.unpack_example(os.path.join('examples','vasp',name+'.tar.gz'))
         return VaspParser(name)
     

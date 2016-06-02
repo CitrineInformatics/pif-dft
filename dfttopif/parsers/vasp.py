@@ -3,9 +3,9 @@ import os
 from ase.calculators.vasp import Vasp
 
 class VaspParser(DFTParser):
-    """
+    '''
     Parser for VASP calculations
-    """
+    '''
     
     def get_name(self): return "VASP"
     

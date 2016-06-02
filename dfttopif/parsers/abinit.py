@@ -4,9 +4,9 @@ import glob
 from ase.calculators.abinit import Abinit
 
 class AbinitParser(DFTParser):
-    """
+    '''
     Parser for ABINIT calculations
-    """
+    '''
     _label = None
     
     def get_name(self): return "ABINIT"
@@ -24,9 +24,9 @@ class AbinitParser(DFTParser):
         return False
         
     def _get_label(self):
-        """Find the label for the output files 
+        '''Find the label for the output files 
          for this calculation
-        """
+        '''
         if self._label is None:
             files = [f for f in os.listdir(self._directory) if os.path.isfile(os.path.join(self._directory, f))] 
             foundfiles = False
