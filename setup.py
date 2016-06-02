@@ -17,6 +17,5 @@ setup(
         'ase',
         'pypif',
     ],
-    dependency_links=['https://github.com/CitrineInformatics/pypif/zipball/master']
     packages=find_packages(exclude=('tests', 'docs'))
 )
