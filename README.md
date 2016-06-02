@@ -2,14 +2,12 @@ dfttopif
 ========
 [![Build Status](https://travis-ci.com/WardLT/pif-dft.svg?token=vC5kuseMWnCyTUzLrqNu&branch=master)](https://travis-ci.com/WardLT/pif-dft)
 
-A Python library for extracting the input settings and results
-from Density Functional Theory calculation results.
+A Python library for extracting the input settings and results from Density Functional Theory calculations, and then storing that data in pif format.
 
 Requirements
 ------------
 
-Python 2.7, with dependencies listed in [https://github.com/WardLT/pif-dft/blob/master/requirements.txt](requirements.txt)
-
+Python 2.7, with dependencies listed in [requirements.txt](https://github.com/WardLT/pif-dft/blob/master/requirements.txt)
 
 Installation
 ------------
