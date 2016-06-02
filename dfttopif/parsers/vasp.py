@@ -108,10 +108,10 @@ class VaspParser(DFTParser):
                                 break
                             NK += float(line.split()[3])
                             counter += 1
-                return (NI*NK)
+                return ((NI*NK), None)
             #if k-points were not reduced KPPRA equals the number of atoms * number of irreducible k-points
             else:
-                return(NI*NIRK)
+                return ((NI*NIRK),None)
 
                 
         # Error handling: NKPTS or NIONS not found
@@ -197,7 +197,7 @@ class VaspParser(DFTParser):
         #Check if ISIF = 0 is used
         if "ISIF   =      0" in open(os.path.join(self._directory, 'OUTCAR')).read():
             #if ISIF = 0 is used, print this crap
-            return ("Pressure not calculated (ISIF = 0)")
+            return None
         #if ISIF is not 0 then extract pressure and units
         else:
             #scan file in reverse to have the final pressure

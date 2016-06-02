@@ -1,10 +1,29 @@
 import os
 from collections import Counter
 
+
 class DFTParser:
     '''
     Base class for all tools to parse a directory
     of output files from a DFT Calculation
+    
+    To use this class, provide the path to a directory
+    to containing the output files from a DFT calculation.
+    Once instantiated, call the methods provided by this
+    class in order to retrieve the settings and results
+    of the calculation.
+    
+    To get a list of names of the settings available for this
+    a particular instance, call get_setting_functions()
+    
+    To get a list of the names of results available via
+    a particular instance, call  get_result_functions()
+
+    Developer Notes
+    ---------------
+    
+    Settings and properties should return None if not 
+    not available, or not implemented
     '''
     
     _directory = None
@@ -38,6 +57,48 @@ class DFTParser:
         '''
         
         raise NotImplementedError
+        
+    def get_setting_functions(self):
+        '''Get a dictionary containing the names of methods
+        that return settings of the calculation
+        
+        Returns:
+            dict, where the key is the name of the setting,
+                and the value is a tuple containing
+                (
+                    [Function name for this parser],
+                    [Data Type (None,Scalar,Vector,Matrix,Tag)]
+                )
+        '''
+        return {
+            'XC Functional':('get_xc_functional','tag'),
+            'Relaxed':('is_relaxed',None),
+            'Cutoff Energy':('get_cutoff_energy','scalar'),
+            'k-Points per Reciprocal Atom':('get_KPPRA','scalar'),
+            'Spin-Orbit Coupling':('uses_SOC', None),
+            'DFT+U':('get_U_settings', 'tag'),
+            'vdW Interactions':('get_vdW_settings','tag'),
+            'Psuedopotentials':('get_pp_name','tag'),
+        }
+        
+    def get_result_functions(self):
+        '''Get a dictionary describing the names of methods 
+        that return results of the calculation
+        
+        Returns:
+            dict, where the key is the name of a problem,
+                and the value is a tuple containing
+                (
+                    [Function name for this parser],
+                    [Data Type (None,Scalar,Vector,Matrix,Tag)]
+                )
+        '''
+        return {
+            'Converged':('is_converged', 'none'),
+            'Total Energy':('get_total_energy', 'scalar'),
+            'Band Gap Energy':('get_band_gap', 'scalar'),
+            'Pressure':('get_pressure', 'scalar'),
+        }
         
     def _call_ase(self, func):
         '''Make a call to an ASE function.
@@ -158,7 +219,7 @@ class DFTParser:
         '''Read output and calculate the number of k-points per reciprocal atom
         
         Returns:
-            float - number of k-points per reciprocal atom
+            tuple - (float - number of k-points per reciprocal atom, None)
         '''
         
         raise NotImplementedError

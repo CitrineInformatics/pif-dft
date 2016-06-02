@@ -1,32 +1,15 @@
 import unittest
 from dfttopif.parsers import VaspParser
-import tarfile
+from ..test_pif import unpack_example, delete_example
 import os
 import shutil
 
 class TestVASPParser(unittest.TestCase):
-
-    def unpack_example(self,path):
-        '''Unpack a VASP test case to a temporary directory
-        
-        Input:
-            path - String, path to tar.gz file containing
-                a certain test case
-        '''
-        
-        # Open the tar file
-        tp = tarfile.open(path)
-        
-        # Extract to cwd
-        tp.extractall()
         
     def get_parser(self,name):
         '''Get a VaspParser for a certain test'''
-        self.unpack_example(os.path.join('examples','vasp',name+'.tar.gz'))
+        unpack_example(os.path.join('examples','vasp',name+'.tar.gz'))
         return VaspParser(name)
-    
-    def delete_example(self, name):
-        shutil.rmtree(name)
 
     def test_perov(self):
         # Parse the results
@@ -46,7 +29,7 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals(True, parser.is_relaxed())    
         self.assertEquals('PAW_PBE', parser.get_xc_functional())
         self.assertEquals(['La','Mn','O'], parser.get_pp_name())        
-        self.assertEquals(8640, parser.get_KPPRA())
+        self.assertEquals((8640,None), parser.get_KPPRA())
         self.assertEquals('5.3.2', parser.get_version_number())
         self.assertEquals({'U-type': 2, 'La':{'L':-1,'U':0.0,'J':0.0},'Mn':{'L':2,'U':3.8,'J':0.0},'O':{'L':-1,'U':0.0,'J':0.0}}, parser.get_U_settings()) 
         self.assertEquals(None, parser.get_vdW_settings())
@@ -59,7 +42,7 @@ class TestVASPParser(unittest.TestCase):
         parser.get_dos())        
    
         # Delete the data
-        self.delete_example('perov_relax_U')
+        delete_example('perov_relax_U')
         
     def test_AlNi(self):
         # Parse the results
@@ -79,7 +62,7 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals(False, parser.is_relaxed())
         self.assertEquals('PAW', parser.get_xc_functional())
         self.assertEquals(['Al','Ni'], parser.get_pp_name())   
-        self.assertEquals(8192, parser.get_KPPRA())
+        self.assertEquals((8192,None), parser.get_KPPRA())
         self.assertEquals('5.3.2', parser.get_version_number())
         self.assertEquals(None, parser.get_U_settings())
         self.assertEquals(None, parser.get_vdW_settings())
@@ -92,7 +75,7 @@ class TestVASPParser(unittest.TestCase):
         parser.get_dos())
         
         # Delete the data
-        self.delete_example('AlNi_static_LDA')
+        delete_example('AlNi_static_LDA')
         
     def test_SOC(self):
         # Parse the results
@@ -112,11 +95,11 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals(False, parser.is_relaxed())
         self.assertEquals('PAW_PBE', parser.get_xc_functional())
         self.assertEquals(['Li_sv','Pt','Sn_d','Y_sv'], parser.get_pp_name()) 
-        self.assertEquals(1440, parser.get_KPPRA())
+        self.assertEquals((1440,None), parser.get_KPPRA())
         self.assertEquals('5.2.11', parser.get_version_number())
         self.assertEquals(None, parser.get_U_settings())
         self.assertEquals(None, parser.get_vdW_settings())
-        self.assertEquals("Pressure not calculated (ISIF = 0)", parser.get_pressure())
+        self.assertEquals(None, parser.get_pressure())
         self.assertEquals("Stress tensor not calculated (ISIF = 0)", parser.get_stresses())
         self.assertEquals((0.757,'eV'), parser.get_band_gap())
         self.assertEquals({'energy_units': 'eV', 'dos_units':'number of states per unit cell',
@@ -125,7 +108,7 @@ class TestVASPParser(unittest.TestCase):
         parser.get_dos())        
         
         # Delete the data
-        self.delete_example('heusler_static_SOC')
+        delete_example('heusler_static_SOC')
         
     def test_vdW(self):
         # Parse the results
@@ -145,7 +128,7 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals(True, parser.is_relaxed())
         self.assertEquals('PAW_PBE', parser.get_xc_functional())
         self.assertEquals(['C','H','Br','Fe','N','S'], parser.get_pp_name())
-        self.assertEquals(142, parser.get_KPPRA())    
+        self.assertEquals((142,None), parser.get_KPPRA())    
         self.assertEquals('5.3.5', parser.get_version_number())
         self.assertEquals(None, parser.get_U_settings())
         self.assertEquals('optB88-vdW', parser.get_vdW_settings())
@@ -157,7 +140,7 @@ class TestVASPParser(unittest.TestCase):
         'dos':[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.6319999999999999e-17, 3.143e-15, 2.6169999999999999e-13, 1.5350000000000001e-11, 6.3450000000000003e-10, 1.85e-08, 3.8080000000000002e-07, 5.5450000000000003e-06, 5.7269999999999999e-05, 0.0004215, 0.0022279999999999999, 0.0085550000000000001, 0.024320000000000001, 0.052359999999999997, 0.087309999999999999, 0.1142, 0.1181, 0.1023, 0.091939999999999994, 0.107, 0.13159999999999999, 0.13059999999999999, 0.094570000000000001, 0.048860000000000001, 0.017909999999999999, 0.004653, 0.00085590000000000004, 0.0001114, 1.025e-05, 6.6710000000000004e-07, 3.0659999999999998e-08, 9.944e-10, 2.2749999999999999e-11, 3.6710000000000002e-13, 4.211e-15, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.6849999999999997e-17, 4.5060000000000002e-15, 3.6630000000000001e-13, 2.1149999999999999e-11, 8.6729999999999999e-10, 2.531e-08, 5.2679999999999998e-07, 7.8390000000000007e-06, 8.3570000000000001e-05, 0.00063960000000000004, 0.0035209999999999998, 0.01397, 0.040129999999999999, 0.084239999999999995, 0.13339999999999999, 0.17269999999999999, 0.20960000000000001, 0.25469999999999998, 0.28050000000000003, 0.24560000000000001, 0.15970000000000001, 0.075359999999999996, 0.026380000000000001, 0.011169999999999999, 0.020629999999999999, 0.056489999999999999, 0.1211, 0.19800000000000001, 0.2586, 0.29349999999999998, 0.31209999999999999, 0.3054, 0.25030000000000002, 0.1585, 0.075039999999999996, 0.02937, 0.020729999999999998, 0.03882, 0.073150000000000007, 0.1066, 0.1186, 0.1008, 0.065310000000000007, 0.031879999999999999, 0.011610000000000001, 0.0034150000000000001, 0.002552, 0.0084089999999999998, 0.025819999999999999, 0.058729999999999997, 0.098680000000000004, 0.1231, 0.11409999999999999, 0.078479999999999994, 0.040129999999999999, 0.016910000000000001, 0.01357, 0.031550000000000002, 0.070419999999999996, 0.1143, 0.13220000000000001, 0.1089, 0.063869999999999996, 0.026679999999999999, 0.0079389999999999999, 0.0016819999999999999, 0.00025619999999999999, 5.9740000000000001e-05, 0.00028899999999999998, 0.0018500000000000001, 0.0087819999999999999, 0.03082, 0.080199999999999994, 0.1552, 0.22389999999999999, 0.24160000000000001, 0.1958, 0.1208, 0.061920000000000003, 0.043180000000000003, 0.065579999999999999, 0.11210000000000001, 0.15129999999999999, 0.15820000000000001, 0.13919999999999999, 0.1203, 0.11260000000000001, 0.1028, 0.078009999999999996, 0.044979999999999999, 0.019029999999999998, 0.0059649999999999998, 0.0023180000000000002, 0.0052659999999999998, 0.018010000000000002, 0.047750000000000001, 0.097589999999999996, 0.1588, 0.20999999999999999, 0.22620000000000001, 0.19950000000000001, 0.15759999999999999, 0.14380000000000001, 0.17199999999999999, 0.21440000000000001, 0.23350000000000001, 0.21890000000000001, 0.19220000000000001, 0.18229999999999999, 0.1951, 0.2117, 0.21820000000000001, 0.219, 0.2167, 0.21029999999999999, 0.2117, 0.23849999999999999, 0.29120000000000001, 0.34539999999999998, 0.36799999999999999, 0.35039999999999999, 0.31669999999999998, 0.29139999999999999, 0.2722, 0.24679999999999999, 0.22059999999999999, 0.2094, 0.21229999999999999, 0.21179999999999999, 0.20000000000000001, 0.18690000000000001, 0.18140000000000001, 0.18840000000000001, 0.21740000000000001, 0.26579999999999998, 0.31019999999999998, 0.33589999999999998, 0.35599999999999998, 0.38740000000000002, 0.42420000000000002, 0.44290000000000002, 0.42880000000000001, 0.3901, 0.34289999999999998, 0.29120000000000001, 0.23169999999999999, 0.1731, 0.13800000000000001, 0.14460000000000001, 0.18640000000000001, 0.2293, 0.2344, 0.19320000000000001, 0.13400000000000001, 0.095130000000000006, 0.091319999999999998, 0.1056, 0.1113, 0.097659999999999997, 0.070879999999999999, 0.042029999999999998, 0.020400000000000001, 0.01214, 0.024029999999999999, 0.068360000000000004, 0.15179999999999999, 0.24809999999999999, 0.29959999999999998, 0.27460000000000001, 0.21390000000000001, 0.18720000000000001, 0.2112, 0.23899999999999999, 0.22289999999999999, 0.16350000000000001, 0.094339999999999993, 0.042779999999999999, 0.01506, 0.004032, 0.00080500000000000005, 0.00013300000000000001, 0.00013970000000000001, 0.00073349999999999999, 0.003088, 0.0099260000000000008, 0.025839999999999998, 0.057540000000000001, 0.11, 0.1724, 0.2135, 0.21379999999999999, 0.1966, 0.19850000000000001, 0.22040000000000001, 0.22919999999999999, 0.1983, 0.1343, 0.070239999999999997, 0.03288, 0.027310000000000001, 0.047260000000000003, 0.086449999999999999, 0.13769999999999999, 0.18809999999999999, 0.2185, 0.2104, 0.1613, 0.095079999999999998, 0.042020000000000002, 0.014149999999999999, 0.005764, 0.0096120000000000008, 0.023990000000000001, 0.048349999999999997, 0.080140000000000003, 0.1201, 0.1731, 0.2354, 0.28839999999999999, 0.31030000000000002, 0.29310000000000003, 0.25169999999999998, 0.21129999999999999, 0.17999999999999999, 0.1449, 0.099610000000000004, 0.054780000000000002, 0.02332, 0.0075259999999999997, 0.0018090000000000001, 0.0003191, 4.0849999999999997e-05, 3.7639999999999999e-06, 2.481e-07, 1.165e-08, 3.8859999999999998e-10, 9.1830000000000008e-12, 1.535e-13, 1.811e-15, 2.106e-17, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
         parser.get_dos())
         # Delete the data
-        self.delete_example('vdW')
+        delete_example('vdW')
         
 if __name__ == '__main__':
     unittest.main()
