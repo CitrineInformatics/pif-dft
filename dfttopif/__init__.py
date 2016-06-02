@@ -37,11 +37,11 @@ def directory_to_pif(directory, verbose=0):
         Energy=parser.get_total_energy,
     ) # LW 27May16: Consider making this dictionary automatically update with new
     properties = []
-    for name,func for properties.iteritems():
+    for name,func in properties.iteritems():
         try:
-            prop = Property(name=name, 
-    
-    # 
+            prop = Property(name=name)
+        except:
+            pass
 
     
 
