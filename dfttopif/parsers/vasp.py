@@ -1,7 +1,10 @@
-from .base import DFTParser
+from pypif.obj.common.property import Property
+
+from .base import DFTParser, Value_if_true
 import os
 from ase.calculators.vasp import Vasp
 from ase.io.vasp import read_vasp
+from pypif.obj.common.value import Value
 
 class VaspParser(DFTParser):
     '''
@@ -27,11 +30,12 @@ class VaspParser(DFTParser):
             for line in fp:
                 if "ENCUT" in line:
                     words = line.split()
-                    return (float(words[2]),words[3])
+                    return Value(scalars=float(words[2]),units=words[3])
                 
         # Error handling: ENCUT not found
         raise Exception('ENCUT not found')
 
+    @Value_if_true
     def uses_SOC(self):
         # Open up the OUTCAR
         with open(os.path.join(self._directory, 'OUTCAR')) as fp:
@@ -40,11 +44,12 @@ class VaspParser(DFTParser):
             for line in fp:
                 if "LSORBIT" in line:
                     words = line.split()
-                    return (words[2] == 'T')
+                    return words[2] == 'T'
         
         # Error handling: LSORBIT not found
         raise Exception('LSORBIT not found')
         
+    @Value_if_true
     def is_relaxed(self):
         # Open up the OUTCAR
         with open(os.path.join(self._directory, 'OUTCAR')) as fp:
@@ -53,7 +58,7 @@ class VaspParser(DFTParser):
             for line in fp:
                 if "NSW" in line:
                     words = line.split()
-                    return (int(words[2]) != 0)
+                    return int(words[2]) != 0
                 
         # Error handling: NSW not found
         raise Exception('NSW not found')
@@ -66,7 +71,7 @@ class VaspParser(DFTParser):
             for line in fp:
                 if "TITEL" in line:
                     words = line.split()
-                    return (words[2])
+                    return Value(choice=words[2])
                     break
             
     def get_pp_name(self):
@@ -80,7 +85,7 @@ class VaspParser(DFTParser):
                 if "TITEL" in line:
                     words = line.split()
                     pp.append(words[3])
-            return (pp)
+            return Value(names=pp)
                 
         # Error handling: TITEL not found
         raise Exception('TITEL not found')
@@ -108,10 +113,10 @@ class VaspParser(DFTParser):
                                 break
                             NK += float(line.split()[3])
                             counter += 1
-                return ((NI*NK), None)
+                return Value(scalars=(NI*NK))
             #if k-points were not reduced KPPRA equals the number of atoms * number of irreducible k-points
             else:
-                return ((NI*NIRK),None)
+                return Value(scalars=(NI*NIRK))
 
                 
         # Error handling: NKPTS or NIONS not found
@@ -119,9 +124,9 @@ class VaspParser(DFTParser):
 
     def _is_converged(self):
         return self._call_ase(Vasp().read_convergence)
-        
+
     def get_total_energy(self):
-        return (self._call_ase(Vasp().read_energy)[0], 'eV')
+        return Property(scalars=self._call_ase(Vasp().read_energy)[0], units='eV')
 
     def get_version_number(self):
         # Open up the OUTCAR
@@ -150,30 +155,31 @@ class VaspParser(DFTParser):
                         atoms.append(line.split()[3])
                     #Get the U type used
                     if "LDAUTYPE" in line:
-                            U_param['U-type'] = int(line.split()[-1])
+                            U_param['Type'] = int(line.split()[-1])
                 atoms.reverse()
                 fp.seek(0)
-                #Get the L value            
+                #Get the L value
+                U_param['Values'] = {}
                 for line in fp:
                     for atom, i in zip(atoms, range(len(atoms))):
                         if "LDAUL" in line:
-                                U_param[atom] = {'L': int(line.split()[-1-i])}
+                                U_param['Values'][atom] = {'L': int(line.split()[-1-i])}
                 fp.seek(0)
                 #Get the U value            
                 for line in fp:
                     for atom, i in zip(atoms, range(len(atoms))):
                         if "LDAUU" in line:
-                                U_param[atom]['U'] = float(line.split()[-1-i])
+                                U_param['Values'][atom]['U'] = float(line.split()[-1-i])
                 fp.seek(0)
                 #Get the J value
                 for line in fp:
                     for atom, i in zip(atoms, range(len(atoms))):
                         if "LDAUJ" in line:
-                                U_param[atom]['J'] = float(line.split()[-1-i])
-                return (U_param)
+                                U_param['Values'][atom]['J'] = float(line.split()[-1-i])
+                return Value(**U_param)
             #if U is not used, return None
             else:
-                return (None)
+                return None
             
     def get_vdW_settings(self):
         #define the name of the vdW methods in function of their keyword
@@ -186,10 +192,10 @@ class VaspParser(DFTParser):
                 for line in fp:
                     if "GGA     =" in line:
                         words = line.split()
-                        return (vdW_dict[words[2]])
+                        return Value(choice=vdW_dict[words[2]])
             #if vdW is not used, return None
             else:
-                return (None)
+                return None
             
     def get_pressure(self):
         #define pressure dictionnary because since when is kB = kbar? Come on VASP people
@@ -204,23 +210,23 @@ class VaspParser(DFTParser):
             for line in reversed(open(os.path.join(self._directory, 'OUTCAR')).readlines()):
                 if "external pressure" in line:
                     words = line.split()
-                    return (float(words[3]), pressure_dict[words[4]])
+                    return Property(scalars=float(words[3]), units=pressure_dict[words[4]])
                     break
     
     def get_stresses(self):
         #Check if ISIF = 0 is used
         if "ISIF   =      0" in open(os.path.join(self._directory, 'OUTCAR')).read():
-            return ("Stress tensor not calculated (ISIF = 0)")
+            return None
         #Check if ISIF = 1 is used
         elif "ISIF   =      1" in open(os.path.join(self._directory, 'OUTCAR')).read():
-            return ("Stress tensor not calculated (ISIF = 1)")
+            return None
         else:
             #scan file in reverse to have the final pressure
             for line in open(os.path.join(self._directory, 'OUTCAR')).readlines():
                 if "in kB" in line:
                     words = line.split()
                     XX = float(words[2]); YY = float(words[3]); ZZ = float(words[4]); XY= float(words[5]); YZ = float(words[6]); ZX = float(words[7])
-            return ([[XX,XY,ZX],[XY,YY,YZ],[ZX,YZ,ZZ]], 'kbar')
+            return Property(matrices=[[XX,XY,ZX],[XY,YY,YZ],[ZX,YZ,ZZ]], units='kbar')
             
          # Error handling: "in kB" not found
         raise Exception('in kB not found')
@@ -247,10 +253,10 @@ class VaspParser(DFTParser):
                     top = e
                     not_found = False
             if top - bot < step_size*2:
-                return(0, 'eV')
+                return Property(scalars=0, units='eV')
             else:
                 bandgap = float(top - bot)
-                return(round(bandgap,3), 'eV')
+                return Property(scalars=round(bandgap,3), units='eV')
                 
     def get_dos(self):
         #open DOSCAR
@@ -267,6 +273,7 @@ class VaspParser(DFTParser):
                 for j in range(len(l)/2):
                     dens += float(l[j])
                 dos.append(dens)
-            en_dos = {}; en_dos['energy_units'] = 'eV'; en_dos['dos_units'] = 'number of states per unit cell'
-            en_dos['energy'] = energy; en_dos['dos'] = dos
-            return(en_dos)        
+
+            # Convert to property
+            return Property(vectors=dos, units='number of states per unit cell',
+                            conditions=Value(name='energy', vectors=energy, units='eV'))

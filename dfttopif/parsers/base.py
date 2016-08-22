@@ -1,29 +1,39 @@
 import os
 from collections import Counter
+from pypif.obj.common import Value, Property
 
 
-class DFTParser:
-    '''
-    Base class for all tools to parse a directory
-    of output files from a DFT Calculation
+def Value_if_true(func):
+    '''Returns:
+        Value if x is True, else None'''
+    return lambda x: Value() if func(x) == True else None
+
+
+class DFTParser(object):
+    '''Base class for all tools to parse a directory of output files from a DFT Calculation
     
-    To use this class, provide the path to a directory
-    to containing the output files from a DFT calculation.
-    Once instantiated, call the methods provided by this
-    class in order to retrieve the settings and results
-    of the calculation.
+    To use this class, provide the path to a directory to containing the output files from a DFT calculation. Once
+     instantiated, call the methods provided by this class in order to retrieve the settings and results of the
+     calculation.
     
-    To get a list of names of the settings available for this
-    a particular instance, call get_setting_functions()
+    To get a list of names of the settings available for this a particular instance, call get_setting_functions(). These
+     methods return a pypif Value object.
     
-    To get a list of the names of results available via
-    a particular instance, call  get_result_functions()
+    To get a list of the names of results available via a particular instance, call get_result_functions(). These
+     methods return a pypif Property object.
 
     Developer Notes
     ---------------
     
-    Settings and properties should return None if not 
-    not available, or not implemented
+    Settings and properties should...
+        return None if property or setting is not applicable, or if the test is a boolean and the value is false
+        Raise exception if there is an error that would benefit from user intervention
+
+    To add a new setting or value to the output, add a new entry to the dictionary returned by get_setting_functions()
+     or get_result_functions(). The key for each entry is a 'human-friendly' name of the result and the value is the
+     name of the function. This design was chosen because there is a single function for defining the human names of the
+     results, which are what serve as the tags in the pif file. In this way, the same property will be ensured to
+     have the same name in the pif.
     '''
     
     _directory = None
@@ -33,7 +43,7 @@ class DFTParser:
     ''' Whether this calculation has converged '''
     
     def __init__(self, directory):
-        '''Intialize a parser. 
+        '''Initialize a parser.
         
         Input:
             directory - String, path to a directory of output files
@@ -64,21 +74,17 @@ class DFTParser:
         
         Returns:
             dict, where the key is the name of the setting,
-                and the value is a tuple containing
-                (
-                    [Function name for this parser],
-                    [Data Type (None,Scalar,Vector,Matrix,Tag)]
-                )
+                and the value is function name of this parser
         '''
         return {
-            'XC Functional':('get_xc_functional','tag'),
-            'Relaxed':('is_relaxed',None),
-            'Cutoff Energy':('get_cutoff_energy','scalar'),
-            'k-Points per Reciprocal Atom':('get_KPPRA','scalar'),
-            'Spin-Orbit Coupling':('uses_SOC', None),
-            'DFT+U':('get_U_settings', 'tag'),
-            'vdW Interactions':('get_vdW_settings','tag'),
-            'Psuedopotentials':('get_pp_name','tag'),
+            'XC Functional':'get_xc_functional',
+            'Relaxed':'is_relaxed',
+            'Cutoff Energy':'get_cutoff_energy',
+            'k-Points per Reciprocal Atom':'get_KPPRA',
+            'Spin-Orbit Coupling':'uses_SOC',
+            'DFT+U':'get_U_settings',
+            'vdW Interactions':'get_vdW_settings',
+            'Psuedopotentials':'get_pp_name',
         }
         
     def get_result_functions(self):
@@ -86,18 +92,15 @@ class DFTParser:
         that return results of the calculation
         
         Returns:
-            dict, where the key is the name of a problem,
-                and the value is a tuple containing
-                (
-                    [Function name for this parser],
-                    [Data Type (None,Scalar,Vector,Matrix,Tag)]
-                )
+            dict, where the key is the name of a property,
+                and the value is the name of the function
         '''
         return {
-            'Converged':('is_converged', 'none'),
-            'Total Energy':('get_total_energy', 'scalar'),
-            'Band Gap Energy':('get_band_gap', 'scalar'),
-            'Pressure':('get_pressure', 'scalar'),
+            'Converged':'is_converged',
+            'Total Energy':'get_total_energy',
+            'Band Gap Energy':'get_band_gap',
+            'Pressure':'get_pressure',
+            'Density of States':'get_dos',
         }
         
     def _call_ase(self, func):
@@ -123,7 +126,7 @@ class DFTParser:
         return res
         
     def get_name(self):
-    	'''Get the name of this program'''
+        '''Get the name of this program'''
         raise NotImplementedError
         
     def get_version_number(self):
@@ -159,7 +162,7 @@ class DFTParser:
         '''Read the cutoff energy from the output
         
         Returns:
-            tuple (float, string) - Cutoff energy and units
+            Value, cutoff energy (scalar) and units
         '''
         
         raise NotImplementedError
@@ -168,7 +171,7 @@ class DFTParser:
         '''Parse the output file to tell if spin-orbit coupling was used
         
         Returns:
-            bool
+            Blank Value if true, `None` otherwise
         '''
         
         raise NotImplementedError
@@ -177,7 +180,7 @@ class DFTParser:
         '''Parse the output file to tell if the structure was relaxed
         
         Returns:
-            bool
+            Blank Value if true, `None` otherwise
         '''
         
         raise NotImplementedError
@@ -186,7 +189,7 @@ class DFTParser:
         '''Parse the output file to tell which exchange-correlation functional was used
         
         Returns:
-            string
+            Value - where "choice" is the
         '''
         
         raise NotImplementedError
@@ -196,30 +199,26 @@ class DFTParser:
         
         Returns: boolean
         '''
-        
-        if not self._converged is None:
-            return self._converged
-        else:
-            res = self._is_converged()
-            self._converged = res
-            return res
-     
+
+        # Check for cached result
+        if self._converged is None:
+            self._converged = self._is_converged()
+        return Property() if self._converged else None
 
     def get_pp_name(self):
         '''Read output to get the pseudopotentials names used for each elements
         
         Returns:
-            list - pseudopotentials names
+            Value where the key "names" is the list of psuedopotentials
         '''
         
         raise NotImplementedError
-
 
     def get_KPPRA(self):
         '''Read output and calculate the number of k-points per reciprocal atom
         
         Returns:
-            tuple - (float - number of k-points per reciprocal atom, None)
+            Value, number of k-points per reciprocal atom
         '''
         
         raise NotImplementedError
@@ -227,9 +226,9 @@ class DFTParser:
     def get_U_settings(self):
         '''Get the DFT+U settings, if used
 
-        Returns: dict, which could contain several keys
-            'DFT+U Type' -> String, type of DFT+U employed
-            'DFT+U Values -> dict of Element -> (L, U, J)
+        Returns: Value, which could contain several keys
+            'Type' -> String, type of DFT+U employed
+            'Values' -> dict of Element -> (L, U, J)
         Note: Returns None if DFT+U was not used
         '''
 
@@ -238,10 +237,9 @@ class DFTParser:
     def get_vdW_settings(self):
         '''Get the vdW settings, if applicable
 
-        Returns: string, Type of vdW method employed'''
+        Returns: Value where `choice` is the name of the vdW method. None if vdW was not used'''
 
         raise NotImplementedError
-
 
     # Operations for retriving results
     def _is_converged(self):
@@ -257,8 +255,7 @@ class DFTParser:
     def get_total_energy(self):
         '''Get the total energy of the last ionic step
         
-        Returns:
-            tuple (float, string) - Total energy and units
+        Returns: Property
         '''
         
         raise NotImplementedError
@@ -266,31 +263,27 @@ class DFTParser:
     def get_band_gap(self):
         '''Get the band gap energy
 
-        Returns: tuple (float, string) - Band gap energy and units'''
+        Returns: Property'''
 
         raise NotImplementedError
 
     def get_pressure(self):
         '''Get the pressure acting on the system
 
-        Returns: type (float, string) - Pressure value and units'''
+        Returns: Property, where pressure is a scalar'''
 
         raise NotImplementedError
 
     def get_dos(self):
         '''Get the total density of states
 
-        Returns: dict, with the following keys
-            energy_units -> string, units of energy
-            energy -> list, energies at which DOS was evalauted
-            dos_units -> string, units of DOS
-            dos -> list, total DOS'''
+        Returns: Property where DOS is a vector, and the energy at which the DOS was evaluated is a condition'''
             
         raise NotImplementedError
 
     def get_stresses(self):
        '''Get the stress tensor
 
-       Returns: tuple (2d matrix, string) - Stress tensor and units'''
+       Returns: Property where stresses is a 2d matrix'''
 
        raise NotImplementedError

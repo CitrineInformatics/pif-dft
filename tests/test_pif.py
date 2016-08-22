@@ -48,7 +48,7 @@ class TestPifGenerator(unittest.TestCase):
             # Make the pif file
             print "\tpif for example:", name
             result = directory_to_pif(name)
-            # print pif.dumps(result, indent=4)
+            print pif.dumps(result, indent=4)
             
             # Delete files
             delete_example(name)

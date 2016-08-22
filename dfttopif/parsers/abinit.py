@@ -2,6 +2,7 @@ from .base import DFTParser
 import os
 import glob
 from ase.calculators.abinit import Abinit
+from pypif.obj.common import Value, Property
 
 class AbinitParser(DFTParser):
     '''
@@ -66,7 +67,7 @@ class AbinitParser(DFTParser):
                 
         else:
             return self._label
-		 
+
     def get_cutoff_energy(self):
         # Open up the label.txt file
         fp = open(os.path.join(self._directory, self._label + '.out'), 'r')
@@ -77,6 +78,6 @@ class AbinitParser(DFTParser):
                 foundecho = True
             if "ecut" in line and foundecho:
                 words = line.split()
-                return (float(words[1]),words[2])
+                return Value(scalars=float(words[1]), units=words[2])
         # Error handling: ecut not found
         raise Exception('ecut not found')
