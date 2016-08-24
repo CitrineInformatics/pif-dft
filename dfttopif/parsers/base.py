@@ -189,7 +189,7 @@ class DFTParser(object):
         '''Parse the output file to tell which exchange-correlation functional was used
         
         Returns:
-            Value - where "choice" is the
+            Value - where "scalars" is the name of the functional
         '''
         
         raise NotImplementedError
@@ -197,19 +197,19 @@ class DFTParser(object):
     def is_converged(self):
         '''Whether the calculation has converged
         
-        Returns: boolean
+        Returns: Property where "scalar" is a boolean indicating
         '''
 
         # Check for cached result
         if self._converged is None:
             self._converged = self._is_converged()
-        return Property() if self._converged else None
+        return Property(scalars=self._converged)
 
     def get_pp_name(self):
         '''Read output to get the pseudopotentials names used for each elements
         
         Returns:
-            Value where the key "names" is the list of psuedopotentials
+            Value where the key "scalars" is the list of pseudopotentials names
         '''
         
         raise NotImplementedError
@@ -237,11 +237,11 @@ class DFTParser(object):
     def get_vdW_settings(self):
         '''Get the vdW settings, if applicable
 
-        Returns: Value where `choice` is the name of the vdW method. None if vdW was not used'''
+        Returns: Value where `scalars` is the name of the vdW method. None if vdW was not used'''
 
         raise NotImplementedError
 
-    # Operations for retriving results
+    # Operations for retrieving results
     def _is_converged(self):
         '''Read output to see whether it is converged
         

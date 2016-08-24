@@ -71,7 +71,7 @@ class VaspParser(DFTParser):
             for line in fp:
                 if "TITEL" in line:
                     words = line.split()
-                    return Value(choice=words[2])
+                    return Value(scalars=words[2])
                     break
             
     def get_pp_name(self):
@@ -85,7 +85,7 @@ class VaspParser(DFTParser):
                 if "TITEL" in line:
                     words = line.split()
                     pp.append(words[3])
-            return Value(names=pp)
+            return Value(scalars=pp)
                 
         # Error handling: TITEL not found
         raise Exception('TITEL not found')
@@ -192,7 +192,7 @@ class VaspParser(DFTParser):
                 for line in fp:
                     if "GGA     =" in line:
                         words = line.split()
-                        return Value(choice=vdW_dict[words[2]])
+                        return Value(scalars=vdW_dict[words[2]])
             #if vdW is not used, return None
             else:
                 return None
