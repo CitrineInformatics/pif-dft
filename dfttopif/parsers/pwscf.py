@@ -22,16 +22,11 @@ class PwscfParser(DFTParser):
             for l in range(maxlines):
                 line = fp.readline()
                 if "Program PWSCF" in line:
-                    fp.close()
                     self.outputf = f
-                    break
                 elif "&control" in line.lower():
-                    fp.close()
                     self.inputf = f
-                    break
             fp.close()
-            if self.outputf: return True
-            # if self.inputf and self.outputf: return True
+            if self.inputf and self.outputf: return True
         return False
 
     def get_version_number(self):
@@ -45,7 +40,7 @@ class PwscfParser(DFTParser):
                 fp.close()
                 return Value(scalars=version)
         fp.close()
-        raise Exception('Program PWSCF line not found')
+        raise Exception('Program PWSCF line not found in output')
 
     def get_xc_functional(self):
         '''Determine the xc functional from the Exchange-correlation line'''
@@ -68,7 +63,7 @@ class PwscfParser(DFTParser):
                             xcstring=xcstring[:word]
                             break
                     return Value(scalars=" ".join(xcstring))
-            raise Exception('Exchange-correlation line not found')
+            raise Exception('Exchange-correlation line not found in output')
 
     def get_cutoff_energy(self):
         '''Determine the cutoff energy from the kinetic-energy cutoff line'''
@@ -77,7 +72,7 @@ class PwscfParser(DFTParser):
                 if "kinetic-energy cutoff" in line:
                     cutoff = line.split()[3:]
                     return Value(scalars=float(cutoff[0]), units=cutoff[1])
-            raise Exception('kinetic-energy cutoff line not found')
+            raise Exception('kinetic-energy cutoff line not found in output')
 
     def get_total_energy(self):
         '''Determine the total energy from the ! total energy line'''
@@ -87,7 +82,7 @@ class PwscfParser(DFTParser):
                 if "!" in line and "total energy" in line:
                     energy = line.split()[4:]
                     return Value(scalars=float(energy[0]), units=energy[1])
-            raise Exception('! total energy line not found')
+            raise Exception('! total energy line not found in output')
 
     @Value_if_true
     def is_relaxed(self):
@@ -114,3 +109,49 @@ class PwscfParser(DFTParser):
                     if "convergence has been achieved" in line:
                         return True
                 return False
+
+    def get_KPPRA(self):
+        '''Determine the no. of k-points in the BZ times the no. of atoms'''
+        # Find the no. of k-points
+        fp = open(os.path.join(self._directory, self.inputf)).readlines()
+        for l,ll in enumerate(fp):
+            if "K_POINTS" in ll:
+                # determine the type of input
+                if len(ll.split()) > 1:
+                    if "gamma" in ll.split()[1].lower():
+                        ktype = 'gamma'
+                    elif "automatic" in ll.split()[1].lower():
+                        ktype = 'automatic'
+                    else:
+                        ktype = ''
+                else: ktype = ''
+                if ktype == 'gamma':
+                    # gamma point:
+                    # K_POINTS {gamma}
+                    nk = 1
+                elif ktype == 'automatic':
+                    # automatic:
+                    # K_POINTS automatic
+                    #  12 12 1 0 0 0
+                    line = [int(i) for i in fp[l+1].split()[0:3]]
+                    nk = line[0]*line[1]*line[2]
+                else:
+                    # manual:
+                    # K_POINTS
+                    #  3
+                    #  0.125  0.125  0.0  1.0
+                    #  0.125  0.375  0.0  2.0
+                    #  0.375  0.375  0.0  1.0
+                    nk = 0
+                    for k in range(int(fp[l+1].split()[0])):
+                        nk += int(float(fp[l+2+k].split()[3]))
+                # Find the no. of atoms
+                with open(os.path.join(self._directory, self.outputf)) as fp2:
+                    for line in fp2:
+                        if "number of atoms/cell" in line:
+                            # number of atoms/cell      =           12
+                            natoms = int(line.split()[4])
+                            return Value(scalars=nk*natoms)
+                    raise Exception('number of atoms/cell line not found in output')
+        fp.close()
+        raise Exception('K_POINTS line not found in input')
