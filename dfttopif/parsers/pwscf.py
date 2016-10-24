@@ -155,3 +155,31 @@ class PwscfParser(DFTParser):
                     raise Exception('number of atoms/cell line not found in output')
         fp.close()
         raise Exception('K_POINTS line not found in input')
+
+    @Value_if_true
+    def uses_SOC(self):
+        '''Looks for line with "with spin-orbit" in output'''
+        with open(os.path.join(self._directory, self.outputf)) as fp:
+            for line in fp:
+                if "with spin-orbit" in line:
+                    return True
+
+    def get_pp_name(self):
+        '''Determine the pseudopotential names from the output'''
+        ppnames=[]
+        # Find the number of atom types
+        natomtypes=0
+        with open(os.path.join(self._directory, self.outputf)) as fp:
+            for line in fp:
+                if "number of atomic types" in line:
+                    natomtypes=int(line.split()[5])
+            if natomtypes == '':
+                raise Exception('Number of atomic types not found in output')
+        # Find the pseudopotential names
+        with open(os.path.join(self._directory, self.outputf)) as fp:
+            for line in fp:
+                if "PseudoPot. #" in line:
+                    ppnames.append(fp.next().split('/')[-1].rstrip())
+                    if len(ppnames) == natomtypes:
+                        return Value(scalars=ppnames)
+            raise Exception('Could not find %i pseudopotential names'%i)
