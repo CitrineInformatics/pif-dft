@@ -76,7 +76,7 @@ class PwscfParser(DFTParser):
             for line in fp:
                 if "kinetic-energy cutoff" in line:
                     cutoff = line.split()[3:]
-                    return Value(scalars=float(cutoff[0]),units=cutoff[1])
+                    return Value(scalars=float(cutoff[0]), units=cutoff[1])
             raise Exception('kinetic-energy cutoff line not found')
 
     def get_total_energy(self):
@@ -86,13 +86,31 @@ class PwscfParser(DFTParser):
             for line in reversed(fp.readlines()):
                 if "!" in line and "total energy" in line:
                     energy = line.split()[4:]
-                    return Value(scalars=float(energy[0]),units=energy[1])
+                    return Value(scalars=float(energy[0]), units=energy[1])
             raise Exception('! total energy line not found')
 
     @Value_if_true
     def is_relaxed(self):
         '''Determine if relaxation run from presence of Geometry Optimization line'''
         with open(os.path.join(self._directory, self.outputf)) as fp:
-            for line in fp.readlines():
+            for line in fp:
                 if "Geometry Optimization" in line:
                     return True
+
+    def _is_converged(self):
+        '''Determine if calculation converged; for a relaxation (static) run
+        we look for ionic (electronic) convergence'''
+        if self.is_relaxed():
+            # relaxation run case
+            with open(os.path.join(self._directory, self.outputf)) as fp:
+                for line in fp:
+                    if "End of" in line and "Geometry Optimization" in line:
+                        return True
+                return False
+        else:
+            # static run case
+            with open(os.path.join(self._directory, self.outputf)) as fp:
+                for line in fp:
+                    if "convergence has been achieved" in line:
+                        return True
+                return False
