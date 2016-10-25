@@ -3,6 +3,7 @@ from pypif.obj.common.property import Property
 from .base import DFTParser, Value_if_true
 import os
 from pypif.obj.common.value import Value
+from ase import Atoms
 
 class PwscfParser(DFTParser):
     '''
@@ -253,3 +254,96 @@ class PwscfParser(DFTParser):
                 # return the final stress tensor
                 return Property(matrices=stress_data[-1], units='kbar')
             else: return None
+
+    def get_output_structure(self):
+        '''Determine the structure'''
+        bohr_to_angstrom = float(0.529177249)
+
+        # determine the number of atoms and initial lattice parameter
+        with open(os.path.join(self._directory, self.outputf)) as fp:
+            for line in fp:
+                if "number of atoms/cell" in line:
+                    natoms=int(float(line.split('=')[-1]))
+                if "lattice parameter (alat)" in line:
+                    alat=float(line.split('=')[-1].split()[0])
+            if not natoms:
+                raise Exception('Cannot find the number of atoms')
+            elif not alat:
+                raise Exception('Cannot find the lattice parameter')
+
+        # find the initial unit cell
+        with open(os.path.join(self._directory, self.outputf)) as fp:
+            for line in fp:
+                if "crystal axes:" in line:
+                    unit_cell = []
+                    for i in range(3):
+                        unit_cell.append([float(j)*alat*bohr_to_angstrom for j in fp.next().split('(')[-1].split(')')[0].split()])
+                    break
+            if not unit_cell: raise Exception('Cannot find the initial unit cell')
+
+        # find the initial atomic coordinates
+        with open(os.path.join(self._directory, self.outputf)) as fp:
+            for line in fp:
+                if "site n." in line and "atom" in line and "positions" in line and "alat units" in line:
+                    coords = [] ; atom_symbols = []
+                    for i in range(natoms):
+                        coordline = fp.next()
+                        atom_symbols.append(''.join([i for i in coordline.split()[1] if not i.isdigit()]))
+                        coord_conv_factor = alat*bohr_to_angstrom
+                        coords.append([float(j)*coord_conv_factor for j in coordline.rstrip().split('=')[-1].split('(')[-1].split(')')[0].split()])
+                    break
+            if not coords: raise Exception('Cannot find the initial atomic coordinates')
+
+        if type(self.is_relaxed()) == type(None):
+            # static run: create, populate, and return the initial structure
+            structure = Atoms(symbols=atom_symbols, cell=unit_cell, pbc=True)
+            structure.set_positions(coords)
+            return structure
+        else:
+            # relaxation run: update with the final structure
+            with open(os.path.join(self._directory, self.outputf)) as fp:
+                for line in fp:
+                    if "Begin final coordinates" in line:
+                        if 'new unit-cell volume' in fp.next():
+                            # unit cell allowed to change
+                            for i in range(1): fp.next() # blank line
+
+                            # get the final unit cell
+                            unit_cell = []
+                            cellheader = fp.next()
+                            if 'bohr' in cellheader.lower():
+                                cell_conv_factor = bohr_to_angstrom
+                            elif 'angstrom' in cellheader.lower():
+                                cell_conv_factor = 1.0
+                            else:
+                                alat = float(cellheader.split('alat=')[-1].replace(')', ''))
+                                cell_conv_factor = alat*bohr_to_angstrom
+                            for i in range(3):
+                                unit_cell.append([float(j)*cell_conv_factor for j in fp.next().split()])
+
+                            fp.next() # blank line
+
+                        # get the final atomic coordinates
+                        coordtype = fp.next().split()[-1].replace('(', '').replace(')', '')
+                        if coordtype == 'bohr':
+                            coord_conv_factor = bohr_to_angstrom
+                        elif coordtype == 'angstrom' or coordtype == 'crystal':
+                            coord_conv_factor = 1.0
+                        else:
+                            coord_conv_factor = alat*bohr_to_angstrom
+                        coords = [] # reinitialize the coords
+                        for i in range(natoms):
+                            coordline = fp.next().split()
+                            coords.append([float(j)*coord_conv_factor for j in coordline[1:4]])
+
+                        # create, populate, and return the final structure
+                        structure = Atoms(symbols=atom_symbols, cell=unit_cell, pbc=True)
+                        if coordtype == 'crystal':
+                            # direct coordinates
+                            structure.set_scaled_positions(coords)
+                        else:
+                            # cartesian coordinates
+                            structure.set_positions(coords)
+                        return structure
+
+                raise Exception('Cannot find the final coordinates')
