@@ -206,3 +206,24 @@ class PwscfParser(DFTParser):
                             break # end of data block
                     return Value(**U_param)
             return None
+
+    def get_vdW_settings(self):
+        '''Determine the vdW type if using vdW xc functional or correction
+        scheme from input otherwise'''
+        xc=self.get_xc_functional().scalars
+        if 'vdw' in xc.lower():
+            # vdW xc functional
+            return Value(scalars=xc)
+        else:
+            # look for vdw_corr in input
+            vdW_dict = {'xdm':'Becke-Johnson XDM', 'ts':
+                        'Tkatchenko-Scheffler', 'ts-vdw':
+                        'Tkatchenko-Scheffler',
+                        'tkatchenko-scheffler':
+                        'Tkatchenko-Scheffler', 'grimme-d2': 'Grimme D2', 'dft-d': 'Grimme D2'}
+            fp = open(os.path.join(self._directory, self.inputf)).readlines()
+            for line in fp:
+                if "vdw_corr" in line.lower():
+                    vdwkey=str(line.split('=')[-1].replace("'", "").replace(',', '').lower().rstrip())
+                    return Value(scalars=vdW_dict[vdwkey])
+            return None
