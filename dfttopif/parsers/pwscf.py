@@ -182,4 +182,27 @@ class PwscfParser(DFTParser):
                     ppnames.append(fp.next().split('/')[-1].rstrip())
                     if len(ppnames) == natomtypes:
                         return Value(scalars=ppnames)
-            raise Exception('Could not find %i pseudopotential names'%i)
+            raise Exception('Could not find %i pseudopotential names'%natomtypes)
+
+    def get_U_settings(self):
+        '''Determine the DFT+U type and parameters from the output'''
+        with open(os.path.join(self._directory, self.outputf)) as fp:
+            for line in fp:
+                if "LDA+U calculation" in line:
+                    U_param = {}
+                    U_param['Type'] = line.split()[0]
+                    U_param['Values'] = {}
+                    # look through next several lines
+                    for nl in range(15):
+                        line2=next(fp).split()
+                        if len(line2) > 1 and line2[0] == "atomic":
+                            pass # column titles
+                        elif len(line2) == 6:
+                            U_param['Values'][line2[0]] = {}
+                            U_param['Values'][line2[0]]['L'] = float(line2[1])
+                            U_param['Values'][line2[0]]['U'] = float(line2[2])
+                            U_param['Values'][line2[0]]['J'] = float(line2[4])
+                        else:
+                            break # end of data block
+                    return Value(**U_param)
+            return None
