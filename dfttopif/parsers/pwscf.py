@@ -30,7 +30,7 @@ class PwscfParser(DFTParser):
         return False
 
     def get_version_number(self):
-        '''Determine the version number in the Program PWSCF line'''
+        '''Determine the version number from the output'''
         maxlines = 15
         fp = open(os.path.join(self._directory, self.outputf))
         for l in range(maxlines):
@@ -43,7 +43,7 @@ class PwscfParser(DFTParser):
         raise Exception('Program PWSCF line not found in output')
 
     def get_xc_functional(self):
-        '''Determine the xc functional from the Exchange-correlation line'''
+        '''Determine the xc functional from the output'''
         # the xc functional is described by 1 or 4 strings
         # SLA  PZ   NOGX NOGC ( 1 1 0 0 0)
         # SLA  PW   PBE  PBE ( 1  4  3  4 0 0)
@@ -66,7 +66,7 @@ class PwscfParser(DFTParser):
             raise Exception('Exchange-correlation line not found in output')
 
     def get_cutoff_energy(self):
-        '''Determine the cutoff energy from the kinetic-energy cutoff line'''
+        '''Determine the cutoff energy from the output'''
         with open(os.path.join(self._directory, self.outputf)) as fp:
             for line in fp:
                 if "kinetic-energy cutoff" in line:
@@ -75,7 +75,7 @@ class PwscfParser(DFTParser):
             raise Exception('kinetic-energy cutoff line not found in output')
 
     def get_total_energy(self):
-        '''Determine the total energy from the ! total energy line'''
+        '''Determine the total energy from the output'''
         with open(os.path.join(self._directory, self.outputf)) as fp:
             # reading file backwards in case relaxation run
             for line in reversed(fp.readlines()):
@@ -86,7 +86,7 @@ class PwscfParser(DFTParser):
 
     @Value_if_true
     def is_relaxed(self):
-        '''Determine if relaxation run from presence of Geometry Optimization line'''
+        '''Determine if relaxation run from the output'''
         with open(os.path.join(self._directory, self.outputf)) as fp:
             for line in fp:
                 if "Geometry Optimization" in line:
@@ -94,7 +94,7 @@ class PwscfParser(DFTParser):
 
     def _is_converged(self):
         '''Determine if calculation converged; for a relaxation (static) run
-        we look for ionic (electronic) convergence'''
+        we look for ionic (electronic) convergence in the output'''
         if self.is_relaxed():
             # relaxation run case
             with open(os.path.join(self._directory, self.outputf)) as fp:
@@ -111,7 +111,8 @@ class PwscfParser(DFTParser):
                 return False
 
     def get_KPPRA(self):
-        '''Determine the no. of k-points in the BZ times the no. of atoms'''
+        '''Determine the no. of k-points in the BZ (from the input) times the
+        no. of atoms (from the output)'''
         # Find the no. of k-points
         fp = open(os.path.join(self._directory, self.inputf)).readlines()
         for l,ll in enumerate(fp):
@@ -158,7 +159,7 @@ class PwscfParser(DFTParser):
 
     @Value_if_true
     def uses_SOC(self):
-        '''Looks for line with "with spin-orbit" in output'''
+        '''Looks for line with "with spin-orbit" in the output'''
         with open(os.path.join(self._directory, self.outputf)) as fp:
             for line in fp:
                 if "with spin-orbit" in line:
@@ -202,14 +203,13 @@ class PwscfParser(DFTParser):
                             U_param['Values'][line2[0]]['L'] = float(line2[1])
                             U_param['Values'][line2[0]]['U'] = float(line2[2])
                             U_param['Values'][line2[0]]['J'] = float(line2[4])
-                        else:
-                            break # end of data block
+                        else: break # end of data block
                     return Value(**U_param)
             return None
 
     def get_vdW_settings(self):
         '''Determine the vdW type if using vdW xc functional or correction
-        scheme from input otherwise'''
+        scheme from the input otherwise'''
         xc=self.get_xc_functional().scalars
         if 'vdw' in xc.lower():
             # vdW xc functional
@@ -227,3 +227,29 @@ class PwscfParser(DFTParser):
                     vdwkey=str(line.split('=')[-1].replace("'", "").replace(',', '').lower().rstrip())
                     return Value(scalars=vdW_dict[vdwkey])
             return None
+
+    def get_pressure(self):
+        '''Determine the pressure from the output'''
+        with open(os.path.join(self._directory, self.outputf)) as fp:
+            for line in reversed(fp.readlines()):
+                if "total   stress" in line:
+                    # total   stress  (Ry/bohr**3)                   (kbar)     P=   -2.34
+                    # P= runs into the value if very large pressure
+                    pvalue = float(line.split()[-1].replace('P=', ''))
+                    return Value(scalars=pvalue, units='kbar')
+            return None
+
+    def get_stresses(self):
+        '''Determine the stress tensor from the output'''
+        stress_data = [] # stress tensor at each iteration
+        with open(os.path.join(self._directory, self.outputf)) as fp:
+            for line in fp:
+                if "total" in line and "stress" in line:
+                    stress = []
+                    for i in range(3):
+                        stress.append([float(j) for j in next(fp).split()[3:6]])
+                    stress_data.append(stress)
+            if len(stress_data) > 0:
+                # return the final stress tensor
+                return Property(matrices=stress_data[-1], units='kbar')
+            else: return None
