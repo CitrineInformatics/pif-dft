@@ -11,69 +11,68 @@ class PwscfParser(DFTParser):
     '''
     
     def get_name(self): return "PWSCF"
+
+    def _get_line(self, search_string, search_file, basedir=None, return_string=True, case_sens=True):
+        '''Return the first line containing a set of strings in a file.
+
+        If return_string is False, we just return whether such a line
+        was found. If case_sens is False, the search is case
+        insensitive.'''
+        if basedir == None: basedir = self._directory # default
+        if os.path.isfile(os.path.join(basedir, search_file)):
+            # if single search string
+            if type(search_string) == type(''): search_string = [search_string]
+            # if case insensitive, convert everything to lowercase
+            if not case_sens: search_string = [i.lower() for i in search_string]
+            with open(os.path.join(basedir, search_file)) as fp:
+                # search for the strings line by line
+                for line in fp:
+                    query_line = line if case_sens else line.lower()
+                    if all([i in query_line for i in search_string]):
+                        return line if return_string else True
+                if return_string:
+                    raise Exception('%s not found in %s'%(search_string,os.path.join(basedir, search_file)))
+                else: return False
+        else: raise Exception('%s file does not exist'%os.path.join(basedir, search_file))
     
-    def test_if_from(self,directory):
+    def test_if_from(self, directory):
         '''Look for PWSCF input and output files based on &control and Program
         PWSCF, respectively'''
-        self.inputf=self.outputf=''
-        maxlines = 15
+        self.inputf = self.outputf = ''
         files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
         for f in files:
-            fp = open(os.path.join(directory, f), 'r')
-            for l in range(maxlines):
-                line = fp.readline()
-                if "Program PWSCF" in line:
-                    self.outputf = f
-                elif "&control" in line.lower():
-                    self.inputf = f
-            fp.close()
+            if self._get_line('Program PWSCF', f, basedir=directory, return_string=False):
+                self.outputf = f
+            elif self._get_line('&control', f, basedir=directory, return_string=False, case_sens=False):
+                self.inputf = f
             if self.inputf and self.outputf: return True
         return False
 
     def get_version_number(self):
         '''Determine the version number from the output'''
-        maxlines = 15
-        fp = open(os.path.join(self._directory, self.outputf))
-        for l in range(maxlines):
-            line = fp.readline()
-            if "Program PWSCF" in line:
-                version = " ".join(line.split('start')[0].split()[2:]).lstrip('v.')
-                fp.close()
-                return Value(scalars=version)
-        fp.close()
-        raise Exception('Program PWSCF line not found in output')
+        line = self._get_line('Program PWSCF', self.outputf)
+        version = " ".join(line.split('start')[0].split()[2:]).lstrip('v.')
+        return Value(scalars=version)
 
     def get_xc_functional(self):
         '''Determine the xc functional from the output'''
         # the xc functional is described by 1 or 4 strings
         # SLA  PZ   NOGX NOGC ( 1 1 0 0 0)
-        # SLA  PW   PBE  PBE ( 1  4  3  4 0 0)
         # SLA  PW   PBX  PBC (1434)
-        # SLA  PW   TPSS TPSS (1476)
         # PBE ( 1  4  3  4 0 0)
         # PBE0 (6484)
-        # VDW-DF (1449)
         # HSE (14*4)
-        # LDA ( 1  1  0  0 0 0)
-        with open(os.path.join(self._directory, self.outputf)) as fp:
-            for line in fp:
-                if "Exchange-correlation" in line:
-                    xcstring = line.split()[2:6]
-                    for word in range(4):
-                        if xcstring[word][0] == '(':
-                            xcstring=xcstring[:word]
-                            break
-                    return Value(scalars=" ".join(xcstring))
-            raise Exception('Exchange-correlation line not found in output')
+        xcstring = self._get_line('Exchange-correlation', self.outputf).split()[2:6]
+        for word in range(4):
+            if xcstring[word][0] == '(':
+                xcstring = xcstring[:word]
+                break
+        return Value(scalars=" ".join(xcstring))
 
     def get_cutoff_energy(self):
         '''Determine the cutoff energy from the output'''
-        with open(os.path.join(self._directory, self.outputf)) as fp:
-            for line in fp:
-                if "kinetic-energy cutoff" in line:
-                    cutoff = line.split()[3:]
-                    return Value(scalars=float(cutoff[0]), units=cutoff[1])
-            raise Exception('kinetic-energy cutoff line not found in output')
+        cutoff = self._get_line('kinetic-energy cutoff', self.outputf).split()[3:]
+        return Value(scalars=float(cutoff[0]), units=cutoff[1])
 
     def get_total_energy(self):
         '''Determine the total energy from the output'''
@@ -88,28 +87,17 @@ class PwscfParser(DFTParser):
     @Value_if_true
     def is_relaxed(self):
         '''Determine if relaxation run from the output'''
-        with open(os.path.join(self._directory, self.outputf)) as fp:
-            for line in fp:
-                if "Geometry Optimization" in line:
-                    return True
+        return self._get_line('Geometry Optimization', self.outputf, return_string=False)
 
     def _is_converged(self):
         '''Determine if calculation converged; for a relaxation (static) run
         we look for ionic (electronic) convergence in the output'''
         if self.is_relaxed():
             # relaxation run case
-            with open(os.path.join(self._directory, self.outputf)) as fp:
-                for line in fp:
-                    if "End of" in line and "Geometry Optimization" in line:
-                        return True
-                return False
+            return self._get_line(['End of', 'Geometry Optimization'], self.outputf, return_string=False)
         else:
             # static run case
-            with open(os.path.join(self._directory, self.outputf)) as fp:
-                for line in fp:
-                    if "convergence has been achieved" in line:
-                        return True
-                return False
+            return self._get_line('convergence has been achieved', self.outputf, return_string=False)
 
     def get_KPPRA(self):
         '''Determine the no. of k-points in the BZ (from the input) times the
@@ -148,35 +136,22 @@ class PwscfParser(DFTParser):
                     for k in range(int(fp[l+1].split()[0])):
                         nk += int(float(fp[l+2+k].split()[3]))
                 # Find the no. of atoms
-                with open(os.path.join(self._directory, self.outputf)) as fp2:
-                    for line in fp2:
-                        if "number of atoms/cell" in line:
-                            # number of atoms/cell      =           12
-                            natoms = int(line.split()[4])
-                            return Value(scalars=nk*natoms)
-                    raise Exception('number of atoms/cell line not found in output')
+                natoms = int(self._get_line('number of atoms/cell', self.outputf).split()[4])
+                return Value(scalars=nk*natoms)
         fp.close()
         raise Exception('K_POINTS line not found in input')
 
     @Value_if_true
     def uses_SOC(self):
         '''Looks for line with "with spin-orbit" in the output'''
-        with open(os.path.join(self._directory, self.outputf)) as fp:
-            for line in fp:
-                if "with spin-orbit" in line:
-                    return True
+        return self._get_line('with spin-orbit', self.outputf, return_string=False)
 
     def get_pp_name(self):
         '''Determine the pseudopotential names from the output'''
         ppnames=[]
         # Find the number of atom types
-        natomtypes=0
-        with open(os.path.join(self._directory, self.outputf)) as fp:
-            for line in fp:
-                if "number of atomic types" in line:
-                    natomtypes=int(line.split()[5])
-            if natomtypes == '':
-                raise Exception('Number of atomic types not found in output')
+        natomtypes = int(self._get_line('number of atomic types', self.outputf).split()[5])
+        if natomtypes == '': raise Exception('Number of atomic types not found in output')
         # Find the pseudopotential names
         with open(os.path.join(self._directory, self.outputf)) as fp:
             for line in fp:
@@ -211,9 +186,8 @@ class PwscfParser(DFTParser):
     def get_vdW_settings(self):
         '''Determine the vdW type if using vdW xc functional or correction
         scheme from the input otherwise'''
-        xc=self.get_xc_functional().scalars
-        if 'vdw' in xc.lower():
-            # vdW xc functional
+        xc = self.get_xc_functional().scalars
+        if 'vdw' in xc.lower(): # vdW xc functional
             return Value(scalars=xc)
         else:
             # look for vdw_corr in input
@@ -222,23 +196,22 @@ class PwscfParser(DFTParser):
                         'Tkatchenko-Scheffler',
                         'tkatchenko-scheffler':
                         'Tkatchenko-Scheffler', 'grimme-d2': 'Grimme D2', 'dft-d': 'Grimme D2'}
-            fp = open(os.path.join(self._directory, self.inputf)).readlines()
-            for line in fp:
-                if "vdw_corr" in line.lower():
-                    vdwkey=str(line.split('=')[-1].replace("'", "").replace(',', '').lower().rstrip())
-                    return Value(scalars=vdW_dict[vdwkey])
+            if self._get_line('vdw_corr', self.outputf, return_string=False, case_sens=False):
+                line = self._get_line('vdw_corr', self.outputf, return_string=True, case_sens=False)
+                vdwkey = str(line.split('=')[-1].replace("'", "").replace(',', '').lower().rstrip())
+                return Value(scalars=vdW_dict[vdwkey])
             return None
 
     def get_pressure(self):
         '''Determine the pressure from the output'''
-        with open(os.path.join(self._directory, self.outputf)) as fp:
-            for line in reversed(fp.readlines()):
-                if "total   stress" in line:
-                    # total   stress  (Ry/bohr**3)                   (kbar)     P=   -2.34
-                    # P= runs into the value if very large pressure
-                    pvalue = float(line.split()[-1].replace('P=', ''))
-                    return Value(scalars=pvalue, units='kbar')
+        if self._get_line('total   stress', self.outputf, return_string=False) == False:
             return None
+        else:
+            line = self._get_line('total   stress', self.outputf)
+            # total   stress  (Ry/bohr**3)                   (kbar)     P=   -2.34
+            # P= runs into the value if very large pressure
+            pvalue = float(line.split()[-1].replace('P=', ''))
+            return Value(scalars=pvalue, units='kbar')
 
     def get_stresses(self):
         '''Determine the stress tensor from the output'''
@@ -256,20 +229,16 @@ class PwscfParser(DFTParser):
             else: return None
 
     def get_output_structure(self):
-        '''Determine the structure'''
+        '''Determine the structure from the output'''
         bohr_to_angstrom = float(0.529177249)
 
-        # determine the number of atoms and initial lattice parameter
-        with open(os.path.join(self._directory, self.outputf)) as fp:
-            for line in fp:
-                if "number of atoms/cell" in line:
-                    natoms=int(float(line.split('=')[-1]))
-                if "lattice parameter (alat)" in line:
-                    alat=float(line.split('=')[-1].split()[0])
-            if not natoms:
-                raise Exception('Cannot find the number of atoms')
-            elif not alat:
-                raise Exception('Cannot find the lattice parameter')
+        # determine the number of atoms
+        line = self._get_line('number of atoms/cell', self.outputf)
+        natoms = int(float(line.split('=')[-1]))
+
+        # determine the initial lattice parameter
+        line = self._get_line('lattice parameter (alat)', self.outputf)
+        alat = float(line.split('=')[-1].split()[0])
 
         # find the initial unit cell
         with open(os.path.join(self._directory, self.outputf)) as fp:
@@ -347,3 +316,66 @@ class PwscfParser(DFTParser):
                         return structure
 
                 raise Exception('Cannot find the final coordinates')
+
+    def get_dos(self):
+        '''Find the total DOS shifted by the Fermi energy'''
+        # find the dos file
+        fildos = ''
+        files = [f for f in os.listdir(self._directory) if os.path.isfile(os.path.join(self._directory, f))]
+        for f in files:
+            fp = open(os.path.join(self._directory, f), 'r')
+            first_line = fp.readline()
+            if "E (eV)" in first_line and "Int dos(E)" in first_line:
+                fildos = f
+                # check how many DOS columns to sum over
+                # e.g. 1 for NSP ; 2 for spin polarized
+                ndoscol = len(fp.readline().split())-2
+                fp.close()
+                break
+            fp.close()
+
+        # return None if cannot find the DOS
+        if not fildos: return None
+
+        # get the Fermi energy
+        line = self._get_line('the Fermi energy is', self.outputf)
+        efermi = float(line.split('is')[-1].split()[0])
+
+        # grab the DOS
+        energy = [] ; dos = []
+        fp = open(os.path.join(self._directory, fildos), 'r')
+        fp.next() # skip comment line
+        for line in fp:
+            ls = line.split()
+            energy.append(float(ls[0])-efermi)
+            dos.append(sum([float(i) for i in ls[1:1+ndoscol]]))
+        return Property(vectors=dos, units='number of states per unit cell', conditions=Value(name='energy', vectors=energy, units='eV'))
+
+    def get_band_gap(self):
+        '''Compute the band gap from the DOS'''
+        dosdata = self.get_dos()
+        if type(dosdata) == type(None):
+            return None # cannot find DOS
+        else:
+            energy = dosdata.conditions.vectors
+            dos = dosdata.vectors
+            step_size = energy[1] - energy[0]
+            not_found = True ; l = 0 ; bot = 10**3 ; top = -10**3
+            while not_found and l < len(dos):
+                # iterate through the data
+                e = float(energy[l])
+                dens = float(dos[l])
+                # note: dos already shifted by efermi
+                if e < 0 and dens > 1e-3:
+                    bot = e
+                elif e > 0 and dens > 1e-3:
+                    top = e
+                    not_found = False
+                l += 1
+            if top < bot:
+                raise Exception('Algorithm failed to find the band gap')
+            elif top - bot < step_size*2:
+                return Property(scalars=0, units='eV')
+            else:
+                bandgap = float(top-bot)
+                return Property(scalars=round(bandgap,3), units='eV')
