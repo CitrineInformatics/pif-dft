@@ -17,7 +17,9 @@ class PwscfParser(DFTParser):
 
         If return_string is False, we just return whether such a line
         was found. If case_sens is False, the search is case
-        insensitive.'''
+        insensitive.
+
+        '''
         if basedir == None: basedir = self._directory # default
         if os.path.isfile(os.path.join(basedir, search_file)):
             # if single search string
@@ -31,13 +33,12 @@ class PwscfParser(DFTParser):
                     if all([i in query_line for i in search_string]):
                         return line if return_string else True
                 if return_string:
-                    raise Exception('%s not found in %s'%(search_string,os.path.join(basedir, search_file)))
+                    raise Exception('%s not found in %s'%(' & '.join(search_string),os.path.join(basedir, search_file)))
                 else: return False
         else: raise Exception('%s file does not exist'%os.path.join(basedir, search_file))
     
     def test_if_from(self, directory):
-        '''Look for PWSCF input and output files based on &control and Program
-        PWSCF, respectively'''
+        '''Look for PWSCF input and output files'''
         self.inputf = self.outputf = ''
         files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
         for f in files:
@@ -81,8 +82,8 @@ class PwscfParser(DFTParser):
             for line in reversed(fp.readlines()):
                 if "!" in line and "total energy" in line:
                     energy = line.split()[4:]
-                    return Value(scalars=float(energy[0]), units=energy[1])
-            raise Exception('! total energy line not found in output')
+                    return Property(scalars=float(energy[0]), units=energy[1])
+            raise Exception('%s not found in %s'%('! & total energy',os.path.join(self._directory, self.outputf)))
 
     @Value_if_true
     def is_relaxed(self):
@@ -139,7 +140,7 @@ class PwscfParser(DFTParser):
                 natoms = int(self._get_line('number of atoms/cell', self.outputf).split()[4])
                 return Value(scalars=nk*natoms)
         fp.close()
-        raise Exception('K_POINTS line not found in input')
+        raise Exception('%s not found in %s'%('KPOINTS',os.path.join(self._directory, self.inputf)))
 
     @Value_if_true
     def uses_SOC(self):
@@ -148,10 +149,9 @@ class PwscfParser(DFTParser):
 
     def get_pp_name(self):
         '''Determine the pseudopotential names from the output'''
-        ppnames=[]
+        ppnames = []
         # Find the number of atom types
         natomtypes = int(self._get_line('number of atomic types', self.outputf).split()[5])
-        if natomtypes == '': raise Exception('Number of atomic types not found in output')
         # Find the pseudopotential names
         with open(os.path.join(self._directory, self.outputf)) as fp:
             for line in fp:
@@ -171,7 +171,7 @@ class PwscfParser(DFTParser):
                     U_param['Values'] = {}
                     # look through next several lines
                     for nl in range(15):
-                        line2=next(fp).split()
+                        line2 = next(fp).split()
                         if len(line2) > 1 and line2[0] == "atomic":
                             pass # column titles
                         elif len(line2) == 6:
@@ -211,7 +211,7 @@ class PwscfParser(DFTParser):
             # total   stress  (Ry/bohr**3)                   (kbar)     P=   -2.34
             # P= runs into the value if very large pressure
             pvalue = float(line.split()[-1].replace('P=', ''))
-            return Value(scalars=pvalue, units='kbar')
+            return Property(scalars=pvalue, units='kbar')
 
     def get_stresses(self):
         '''Determine the stress tensor from the output'''
@@ -230,38 +230,36 @@ class PwscfParser(DFTParser):
 
     def get_output_structure(self):
         '''Determine the structure from the output'''
-        bohr_to_angstrom = float(0.529177249)
+        bohr_to_angstrom = 0.529177249
 
         # determine the number of atoms
-        line = self._get_line('number of atoms/cell', self.outputf)
-        natoms = int(float(line.split('=')[-1]))
+        natoms = int(float(self._get_line('number of atoms/cell', self.outputf).split('=')[-1]))
 
         # determine the initial lattice parameter
-        line = self._get_line('lattice parameter (alat)', self.outputf)
-        alat = float(line.split('=')[-1].split()[0])
+        alat = float(self._get_line('lattice parameter (alat)', self.outputf).split('=')[-1].split()[0])
 
         # find the initial unit cell
+        unit_cell = []
         with open(os.path.join(self._directory, self.outputf)) as fp:
             for line in fp:
                 if "crystal axes:" in line:
-                    unit_cell = []
                     for i in range(3):
                         unit_cell.append([float(j)*alat*bohr_to_angstrom for j in fp.next().split('(')[-1].split(')')[0].split()])
                     break
-            if not unit_cell: raise Exception('Cannot find the initial unit cell')
+            if len(unit_cell) == 0: raise Exception('Cannot find the initial unit cell')
 
         # find the initial atomic coordinates
+        coords = [] ; atom_symbols = []
         with open(os.path.join(self._directory, self.outputf)) as fp:
             for line in fp:
                 if "site n." in line and "atom" in line and "positions" in line and "alat units" in line:
-                    coords = [] ; atom_symbols = []
                     for i in range(natoms):
                         coordline = fp.next()
                         atom_symbols.append(''.join([i for i in coordline.split()[1] if not i.isdigit()]))
                         coord_conv_factor = alat*bohr_to_angstrom
                         coords.append([float(j)*coord_conv_factor for j in coordline.rstrip().split('=')[-1].split('(')[-1].split(')')[0].split()])
                     break
-            if not coords: raise Exception('Cannot find the initial atomic coordinates')
+            if len(coords) == 0: raise Exception('Cannot find the initial atomic coordinates')
 
         if type(self.is_relaxed()) == type(None):
             # static run: create, populate, and return the initial structure
@@ -275,8 +273,7 @@ class PwscfParser(DFTParser):
                     if "Begin final coordinates" in line:
                         if 'new unit-cell volume' in fp.next():
                             # unit cell allowed to change
-                            for i in range(1): fp.next() # blank line
-
+                            fp.next() # blank line
                             # get the final unit cell
                             unit_cell = []
                             cellheader = fp.next()
@@ -289,7 +286,6 @@ class PwscfParser(DFTParser):
                                 cell_conv_factor = alat*bohr_to_angstrom
                             for i in range(3):
                                 unit_cell.append([float(j)*cell_conv_factor for j in fp.next().split()])
-
                             fp.next() # blank line
 
                         # get the final atomic coordinates
@@ -308,13 +304,10 @@ class PwscfParser(DFTParser):
                         # create, populate, and return the final structure
                         structure = Atoms(symbols=atom_symbols, cell=unit_cell, pbc=True)
                         if coordtype == 'crystal':
-                            # direct coordinates
-                            structure.set_scaled_positions(coords)
+                            structure.set_scaled_positions(coords) # direct coord
                         else:
-                            # cartesian coordinates
-                            structure.set_positions(coords)
+                            structure.set_positions(coords) # cartesian coord
                         return structure
-
                 raise Exception('Cannot find the final coordinates')
 
     def get_dos(self):
@@ -327,15 +320,11 @@ class PwscfParser(DFTParser):
             first_line = fp.readline()
             if "E (eV)" in first_line and "Int dos(E)" in first_line:
                 fildos = f
-                # check how many DOS columns to sum over
-                # e.g. 1 for NSP ; 2 for spin polarized
-                ndoscol = len(fp.readline().split())-2
+                ndoscol = len(fp.readline().split())-2 # number of spin channels
                 fp.close()
                 break
             fp.close()
-
-        # return None if cannot find the DOS
-        if not fildos: return None
+        if not fildos: return None # cannot find DOS
 
         # get the Fermi energy
         line = self._get_line('the Fermi energy is', self.outputf)
@@ -344,7 +333,7 @@ class PwscfParser(DFTParser):
         # grab the DOS
         energy = [] ; dos = []
         fp = open(os.path.join(self._directory, fildos), 'r')
-        fp.next() # skip comment line
+        fp.next() # comment line
         for line in fp:
             ls = line.split()
             energy.append(float(ls[0])-efermi)
