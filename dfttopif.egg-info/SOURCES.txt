@@ -1,0 +1,14 @@
+setup.py
+dfttopif/__init__.py
+dfttopif.egg-info/PKG-INFO
+dfttopif.egg-info/SOURCES.txt
+dfttopif.egg-info/dependency_links.txt
+dfttopif.egg-info/requires.txt
+dfttopif.egg-info/top_level.txt
+dfttopif/parsers/__init__.py
+dfttopif/parsers/abinit.py
+dfttopif/parsers/base.py
+dfttopif/parsers/pwscf.py
+dfttopif/parsers/vasp.py
+tests/parsers/__init__.py
+tests/parsers/test_vasp.py
