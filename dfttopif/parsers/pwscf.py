@@ -196,8 +196,8 @@ class PwscfParser(DFTParser):
                         'Tkatchenko-Scheffler',
                         'tkatchenko-scheffler':
                         'Tkatchenko-Scheffler', 'grimme-d2': 'Grimme D2', 'dft-d': 'Grimme D2'}
-            if self._get_line('vdw_corr', self.outputf, return_string=False, case_sens=False):
-                line = self._get_line('vdw_corr', self.outputf, return_string=True, case_sens=False)
+            if self._get_line('vdw_corr', self.inputf, return_string=False, case_sens=False):
+                line = self._get_line('vdw_corr', self.inputf, return_string=True, case_sens=False)
                 vdwkey = str(line.split('=')[-1].replace("'", "").replace(',', '').lower().rstrip())
                 return Value(scalars=vdW_dict[vdwkey])
             return None
