@@ -51,7 +51,7 @@ class DFTParser(object):
         
         # Sanity check: Make sure the format is correct
         if not self.test_if_from(directory):
-            raise Exception('Files in directory inconsistant with this format')
+            raise Exception('Files in directory inconsistent with this format')
             
         self._directory = directory
       

@@ -1,4 +1,5 @@
 from .parsers import VaspParser
+from .parsers import PwscfParser
 from pypif.obj import *
 
 
@@ -17,10 +18,17 @@ def directory_to_pif(directory, verbose=0):
             the DFT calculation in pif format
     '''
 
-    # For now, just create a VASP parser
-    parser = VaspParser(directory)
-    if not parser.test_if_from(directory):
-        raise Exception('Directory is not in correct format')
+    # Look for the first parser compatible with the directory
+    foundParser = False
+    for possible_parser in [VaspParser, PwscfParser]:
+        try:
+            parser = possible_parser(directory)
+            if parser.test_if_from(directory):
+                foundParser = True
+                break
+        except: pass
+    if not foundParser:
+        raise Exception('Directory is not in correct format for an existing parser')
     if verbose > 0:
         print("Found a %s directory", parser.get_name())
         

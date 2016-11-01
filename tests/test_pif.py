@@ -16,7 +16,7 @@ def delete_example(name):
     shutil.rmtree(name)
 
 def unpack_example(path):
-    '''Unpack a VASP test case to a temporary directory
+    '''Unpack a test case to a temporary directory
     
     Input:
         path - String, path to tar.gz file containing
@@ -41,6 +41,24 @@ class TestPifGenerator(unittest.TestCase):
         '''
         
         for file in glob.glob(os.path.join('examples','vasp','*.tar.gz')):
+            # Get the example files
+            unpack_example(file)
+            name = ".".join(os.path.basename(file).split(".")[:-2])
+            
+            # Make the pif file
+            print "\tpif for example:", name
+            result = directory_to_pif(name)
+            print pif.dumps(result, indent=4)
+            
+            # Delete files
+            delete_example(name)
+
+    def test_PWSCF(self):
+        '''
+        Test ability to parse PWSCF directories
+        '''
+        
+        for file in glob.glob(os.path.join('examples','pwscf','*.tar.gz')):
             # Get the example files
             unpack_example(file)
             name = ".".join(os.path.basename(file).split(".")[:-2])

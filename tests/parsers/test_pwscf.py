@@ -9,7 +9,7 @@ class TestPWSCFParser(unittest.TestCase):
         
     def get_parser(self,name):
         '''Get a PwscfParser for a certain test'''
-        unpack_example(os.path.join('examples','pwscf',name+'.tar.gz'))
+        unpack_example(os.path.join('examples', 'pwscf', name+'.tar.gz'))
         return PwscfParser(name)
 
     def test_NaF(self):
@@ -18,33 +18,33 @@ class TestPWSCFParser(unittest.TestCase):
         
         # Test the settings
         self.assertEquals('PWSCF', parser.get_name())
+
         strc = parser.get_output_structure()
         self.assertEquals(2.2713025676424632, strc.cell[0][2])
-        self.assertEquals(['F','Na'], strc.get_chemical_symbols())
+        self.assertEquals(['F', 'Na'], strc.get_chemical_symbols())
         self.assertEquals('FNa', parser.get_composition())
         
-        res = parser.get_cutoff_energy()
-        self.assertEquals(50.0, res.scalars)
-        self.assertEquals('Ry', res.units)
+        cutoff = parser.get_cutoff_energy()
+        self.assertEquals(50.0, cutoff.scalars)
+        self.assertEquals('Ry', cutoff.units)
         
         self.assertTrue(parser.is_converged().scalars)
-        
-        self.assertAlmostEqual(-143.96084355, parser.get_total_energy().scalars)
-        self.assertEquals('Ry', res.units)
-        
+
+        energy = parser.get_total_energy()
+        self.assertEquals(-143.96084355, energy.scalars)
+        self.assertEquals('Ry', energy.units)
+
         self.assertEquals(None, parser.uses_SOC())
-        
         self.assertEquals(None, parser.is_relaxed())
         self.assertEquals('SLA PW PBE PBE', parser.get_xc_functional().scalars)
         self.assertEquals(['f_pbe_v1.4.uspp.F.UPF','Na_pbe_v1.uspp.F.UPF'], parser.get_pp_name().scalars)
         self.assertEquals(3456, parser.get_KPPRA().scalars)
-        self.assertEquals('5.4.0', parser.get_version_number().scalars)
+        self.assertEquals('5.4.0', parser.get_version_number())
         self.assertEquals(None, parser.get_U_settings())
         self.assertEquals(None, parser.get_vdW_settings())
         self.assertEquals(None, parser.get_pressure())
         self.assertEquals(None, parser.get_stresses())
         self.assertEquals(None, parser.get_band_gap())
-
         self.assertEquals(None, parser.get_dos())
    
         # Delete the data
@@ -56,32 +56,39 @@ class TestPWSCFParser(unittest.TestCase):
         
         # Test the settings
         self.assertEquals('PWSCF', parser.get_name())
+
         strc = parser.get_output_structure()
         self.assertEquals(3.7373367889445048, strc.cell[0][0])
         self.assertEquals(['Ti', 'Ti', 'Ti', 'Ti', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O'], strc.get_chemical_symbols())
         self.assertEquals('O8Ti4', parser.get_composition())
         
-        res = parser.get_cutoff_energy()
-        self.assertEquals(50.0, res.scalars)
-        self.assertEquals('Ry', res.units)
+        cutoff = parser.get_cutoff_energy()
+        self.assertEquals(50.0, cutoff.scalars)
+        self.assertEquals('Ry', cutoff.units)
 
         self.assertTrue(parser.is_converged().scalars)
 
-        res = parser.get_total_energy()
-        self.assertAlmostEqual(-724.67999404, res.scalars)
-        self.assertEquals('Ry', res.units)
+        energy = parser.get_total_energy()
+        self.assertAlmostEqual(-724.67999404, energy.scalars)
+        self.assertEquals('Ry', energy.units)
+
         self.assertEquals(None, parser.uses_SOC())
         self.assertTrue(isinstance(parser.is_relaxed(), Value))
         self.assertEquals('SLA PZ NOGX NOGC', parser.get_xc_functional().scalars)
         self.assertEquals(['Ti.pz-sp-van_ak.UPF', 'O.pz-van_ak.UPF'], parser.get_pp_name().scalars)
         self.assertEquals(4800, parser.get_KPPRA().scalars)
-        self.assertEquals('4.3.2', parser.get_version_number().scalars)
+        self.assertEquals('4.3.2', parser.get_version_number())
         self.assertEquals(None, parser.get_U_settings())
         self.assertEquals(None, parser.get_vdW_settings())
-        self.assertEquals(-77.72, parser.get_pressure().scalars)
-        self.assertEquals('kbar', parser.get_pressure().units)
-        self.assertEquals([[-2.32, 0.0, 0.0], [0.0, -2.32, 0.0], [0.0, 0.0, -2.36]], parser.get_stresses().matrices)
-        self.assertEquals('kbar', parser.get_stresses().units)
+
+        pressure = parser.get_pressure()
+        self.assertEquals(-77.72, pressure.scalars)
+        self.assertEquals('kbar', pressure.units)
+
+        stresses = parser.get_stresses()
+        self.assertEquals([[-2.32, 0.0, 0.0], [0.0, -2.32, 0.0], [0.0, 0.0, -2.36]], stresses.matrices)
+        self.assertEquals('kbar', stresses.units)
+
         self.assertEquals(None, parser.get_band_gap())
 
         # Delete the data
@@ -93,12 +100,7 @@ class TestPWSCFParser(unittest.TestCase):
         
         # Test the settings
         self.assertEquals('PWSCF', parser.get_name())
-        
-        res = parser.get_cutoff_energy()
-        self.assertEquals(56.0, res.scalars)
-        self.assertEquals('Ry', res.units)
 
-        # Make sure it gets the last ionic step
         strc = parser.get_output_structure()
         self.assertEquals(1.5862881841690908, strc.cell[0][0])
         self.assertEquals(2.7475322138658069, strc.cell[1][1])
@@ -106,16 +108,22 @@ class TestPWSCFParser(unittest.TestCase):
         self.assertEquals(['V', 'S', 'S'], strc.get_chemical_symbols())
         self.assertEquals('S2V', parser.get_composition())
         
+        cutoff = parser.get_cutoff_energy()
+        self.assertEquals(56.0, cutoff.scalars)
+        self.assertEquals('Ry', cutoff.units)
+        
         self.assertTrue(parser.is_converged().scalars)
         
-        self.assertAlmostEqual(-68.80612326, parser.get_total_energy().scalars)
-        self.assertAlmostEqual('Ry', parser.get_total_energy().units)
+        energy = parser.get_total_energy()
+        self.assertEquals(-68.80612326, energy.scalars)
+        self.assertEquals('Ry', energy.units)
+
         self.assertEquals(None, parser.uses_SOC())
         self.assertEquals(None, parser.is_relaxed())
         self.assertEquals('SLA PW PBE PBE', parser.get_xc_functional().scalars)
         self.assertEquals(['V.pbe-n-van.UPF', 'S.pbe-van_bm.UPF'], parser.get_pp_name().scalars)
         self.assertEquals(768, parser.get_KPPRA().scalars)
-        self.assertEquals('4.3.2', parser.get_version_number().scalars)
+        self.assertEquals('4.3.2', parser.get_version_number())
         self.assertEquals(None, parser.get_U_settings())
         self.assertEquals(None, parser.get_vdW_settings())
         self.assertEquals(None, parser.get_pressure())
@@ -135,6 +143,7 @@ class TestPWSCFParser(unittest.TestCase):
         
         # Test the settings
         self.assertEquals('PWSCF', parser.get_name())
+
         strc = parser.get_output_structure()
         self.assertEquals(2.46596598034, strc.cell[0][0])
         self.assertEquals(2.1355881881239482, strc.cell[1][1])
@@ -142,25 +151,33 @@ class TestPWSCFParser(unittest.TestCase):
         self.assertEquals(['C', 'C', 'C', 'C'], strc.get_chemical_symbols())
         self.assertEquals('C4', parser.get_composition())
         
-        res = parser.get_cutoff_energy()
-        self.assertEquals(45.0, res.scalars)
-        self.assertEquals('Ry', res.units)
-        
+        cutoff = parser.get_cutoff_energy()
+        self.assertEquals(45.0, cutoff.scalars)
+        self.assertEquals('Ry', cutoff.units)
+       
         self.assertTrue(parser.is_converged().scalars)
-        self.assertAlmostEqual(-44.61813252, parser.get_total_energy().scalars)
-        self.assertEquals('Ry', parser.get_total_energy().units)
+
+        energy = parser.get_total_energy()
+        self.assertEquals(-44.61813252, energy.scalars)
+        self.assertEquals('Ry', energy.units)
+
         self.assertEquals(None, parser.uses_SOC())
         self.assertEquals(None, parser.is_relaxed())
         self.assertEquals('SLA PW PBX PBC', parser.get_xc_functional().scalars)
         self.assertEquals(['C.pbe-mt_gipaw.UPF'], parser.get_pp_name().scalars)
         self.assertEquals(4, parser.get_KPPRA().scalars)
-        self.assertEquals('6.0', parser.get_version_number().scalars)
+        self.assertEquals('6.0', parser.get_version_number())
         self.assertEquals(None, parser.get_U_settings())
         self.assertEquals('Tkatchenko-Scheffler', parser.get_vdW_settings().scalars)
-        self.assertEquals(188.77, parser.get_pressure().scalars)
-        self.assertEquals('kbar', parser.get_pressure().units)
-        self.assertEquals([[185.91, -1.88, 0.0], [-1.88, 183.74, 0.0], [0.0, 0.0, 196.65]], parser.get_stresses().matrices)
-        self.assertEquals('kbar', parser.get_stresses().units)
+
+        pressure = parser.get_pressure()
+        self.assertEquals(188.77, pressure.scalars)
+        self.assertEquals('kbar', pressure.units)
+
+        stresses = parser.get_stresses()
+        self.assertEquals([[185.91, -1.88, 0.0], [-1.88, 183.74, 0.0], [0.0, 0.0, 196.65]], stresses.matrices)
+        self.assertEquals('kbar', stresses.units)
+
         self.assertEquals(None, parser.get_band_gap())
 
         # Delete the data
@@ -178,20 +195,27 @@ class TestPWSCFParser(unittest.TestCase):
         self.assertEquals(['O', 'O', 'Fe', 'Fe'], strc.get_chemical_symbols())
         self.assertEquals('Fe2O2', parser.get_composition())
         
-        res = parser.get_cutoff_energy()
-        self.assertEquals(30.0, res.scalars)
-        self.assertEquals('Ry', res.units)
+        cutoff = parser.get_cutoff_energy()
+        self.assertEquals(30.0, cutoff.scalars)
+        self.assertEquals('Ry', cutoff.units)
         
         self.assertTrue(parser.is_converged().scalars)
-        self.assertAlmostEqual(-174.47156021, parser.get_total_energy().scalars)
-        self.assertEquals('Ry', parser.get_total_energy().units)
+
+        energy = parser.get_total_energy()
+        self.assertEquals(-174.47156021, energy.scalars)
+        self.assertEquals('Ry', energy.units)
+
         self.assertEquals(None, parser.uses_SOC())
         self.assertEquals(None, parser.is_relaxed())
         self.assertEquals('SLA PZ NOGX NOGC', parser.get_xc_functional().scalars)
         self.assertEquals(['O.pz-rrkjus.UPF', 'Fe.pz-nd-rrkjus.UPF', 'Fe.pz-nd-rrkjus.UPF'], parser.get_pp_name().scalars)
         self.assertEquals(32, parser.get_KPPRA().scalars)
-        self.assertEquals('6.0', parser.get_version_number().scalars)
-        # self.assertEquals(?, parser.get_U_settings().as_pif_dictionary()) # still need to get this working
+        self.assertEquals('6.0', parser.get_version_number())
+
+        U_settings = parser.get_U_settings()
+        self.assertEquals('Simplified', U_settings.Type)
+        self.assertEquals({'Fe2': {'J': 0.0, 'U': 4.3, 'L': 2.0}, 'Fe1': {'J': 0.0, 'U': 4.3, 'L': 2.0}}, U_settings.Values)
+
         self.assertEquals(None, parser.get_vdW_settings())
         self.assertEquals(None, parser.get_pressure())
         self.assertEquals(None, parser.get_stresses())

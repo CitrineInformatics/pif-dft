@@ -53,7 +53,8 @@ class PwscfParser(DFTParser):
         '''Determine the version number from the output'''
         line = self._get_line('Program PWSCF', self.outputf)
         version = " ".join(line.split('start')[0].split()[2:]).lstrip('v.')
-        return Value(scalars=version)
+        # return Value(scalars=version)
+        return version
 
     def get_xc_functional(self):
         '''Determine the xc functional from the output'''
