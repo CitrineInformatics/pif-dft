@@ -38,9 +38,9 @@ class TestVASPParser(unittest.TestCase):
         self.assertEquals(['La','Mn','O'], parser.get_pp_name().scalars)
         self.assertEquals(8640, parser.get_KPPRA().scalars)
         self.assertEquals('5.3.2', parser.get_version_number())
-#        self.assertEquals({'Type': 2,
-#                           'Values':{'La':{'L':-1,'U':0.0,'J':0.0},'Mn':{'L':2,'U':3.8,'J':0.0},'O':{'L':-1,'U':0.0,'J':0.0}}},
-#                          parser.get_U_settings().as_pif_dictionary())
+        self.assertEquals({'Type': 2,
+                           'Values':{'La':{'L':-1,'U':0.0,'J':0.0},'Mn':{'L':2,'U':3.8,'J':0.0},'O':{'L':-1,'U':0.0,'J':0.0}}},
+                          parser.get_U_settings().as_dictionary())
         self.assertEquals(None, parser.get_vdW_settings())
         self.assertEquals(0.09, parser.get_pressure().scalars)
         self.assertEquals([[0.08970,0,0],[0,0.08970,0],[0,0,0.08970]], parser.get_stresses().matrices)
