@@ -1,6 +1,53 @@
-from .parsers import VaspParser
-from .parsers import PwscfParser
+import os
+import uuid
+import tarfile
+import shutil
+from dfttopif.parsers import VaspParser
+from dfttopif.parsers import PwscfParser
 from pypif.obj import *
+
+
+def tarfile_to_pif(filename, verbose=0):
+    """
+    Process a tar file that contains DFT data.
+
+    Input:
+        filename - String, Path to the file to process.
+        verbose - int, How much status messages to print
+
+    Output:
+        pif - ChemicalSystem, Results and settings of
+            the DFT calculation in pif format
+    """
+    temp_dir = str(uuid.uuid4())
+    try:
+        tar = tarfile.open(filename, 'r')
+        tar.extractall(path=temp_dir)
+        tar.close()
+        for i in os.listdir(temp_dir):
+            cur_dir = temp_dir + '/' + i
+            if os.path.isdir(cur_dir):
+                return directory_to_pif(cur_dir, verbose)
+        return directory_to_pif(temp_dir, verbose)
+    finally:
+        shutil.rmtree(temp_dir)
+
+
+def archive_to_pif(filename, verbose=0):
+    """
+    Given a archive file that contains output from a DFT calculation, parse the data and return a PIF object.
+
+    Input:
+        filename - String, Path to the file to process.
+        verbose - int, How much status messages to print
+
+    Output:
+        pif - ChemicalSystem, Results and settings of
+            the DFT calculation in pif format
+    """
+    if tarfile.is_tarfile(filename):
+        return tarfile_to_pif(filename, verbose)
+    raise Exception('Cannot process file type')
 
 
 def directory_to_pif(directory, verbose=0):
@@ -75,13 +122,13 @@ def directory_to_pif(directory, verbose=0):
         prop.method = method
         prop.data_type='COMPUTATIONAL'
         if isinstance(prop, Value):
-            print name
+            print(name)
         if prop.conditions is None:
             prop.conditions = conditions
         else:
             if not isinstance(prop.conditions, list):
                 prop.conditions = [prop.conditions]
-            prop.conditions.append(conditions)
+            prop.conditions.extend(conditions)
 
         # Add it to the output
         chem.properties.append(prop)
