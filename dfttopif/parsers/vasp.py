@@ -275,5 +275,5 @@ class VaspParser(DFTParser):
                 dos.append(dens)
 
             # Convert to property
-            return Property(vectors=dos, units='number of states per unit cell',
-                            conditions=Value(name='energy', vectors=energy, units='eV'))
+            return Property(scalars=dos, units='number of states per unit cell',
+                            conditions=Value(name='energy', scalars=energy, units='eV'))
