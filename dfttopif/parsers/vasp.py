@@ -25,12 +25,12 @@ class VaspParser(DFTParser):
         
     def get_cutoff_energy(self):
         # Open up the OUTCAR
-        with open(os.path.join(self._directory, 'OUTCAR')) as fp:
+        with open(os.path.join(self._directory, 'OUTCAR'), 'r') as fp:
          # Look for ENCUT
             for line in fp:
                 if "ENCUT" in line:
                     words = line.split()
-                    return Value(scalars=float(words[2]),units=words[3])
+                    return Value(scalars=float(words[2]), units=words[3])
                 
         # Error handling: ENCUT not found
         raise Exception('ENCUT not found')
@@ -232,6 +232,9 @@ class VaspParser(DFTParser):
         raise Exception('in kB not found')
         
     def get_band_gap(self):
+        file_path = os.path.join(self._directory, 'DOSCAR')
+        if not os.path.isfile(file_path):
+            return None
         #open DOSCAR
         with open(os.path.join(self._directory, 'DOSCAR')) as fp:
             for i in range(6):
@@ -259,6 +262,9 @@ class VaspParser(DFTParser):
                 return Property(scalars=round(bandgap,3), units='eV')
                 
     def get_dos(self):
+        file_path = os.path.join(self._directory, 'DOSCAR')
+        if not os.path.isfile(file_path):
+            return None
         #open DOSCAR
         with open(os.path.join(self._directory, 'DOSCAR')) as fp:
             for i in range(6):
