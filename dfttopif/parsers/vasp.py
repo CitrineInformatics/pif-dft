@@ -244,8 +244,8 @@ class VaspParser(DFTParser):
             while not_found:
                 l = fp.readline().split()
                 e = float(l.pop(0))
-                dens = 0
-                for i in range(len(l)/2):
+                dens = 0.0
+                for i in range(int(len(l)/2)):
                     dens += float(l[i])
                 if e < efermi and dens > 1e-3:
                     bot = e
@@ -270,7 +270,7 @@ class VaspParser(DFTParser):
                 e = float(l.pop(0))
                 energy.append(e)
                 dens = 0
-                for j in range(len(l)/2):
+                for j in range(int(len(l)/2)):
                     dens += float(l[j])
                 dos.append(dens)
 

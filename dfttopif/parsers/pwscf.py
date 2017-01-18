@@ -157,7 +157,7 @@ class PwscfParser(DFTParser):
         with open(os.path.join(self._directory, self.outputf)) as fp:
             for line in fp:
                 if "PseudoPot. #" in line:
-                    ppnames.append(fp.next().split('/')[-1].rstrip())
+                    ppnames.append(next(fp).split('/')[-1].rstrip())
                     if len(ppnames) == natomtypes:
                         return Value(scalars=ppnames)
             raise Exception('Could not find %i pseudopotential names'%natomtypes)
@@ -241,21 +241,21 @@ class PwscfParser(DFTParser):
 
         # find the initial unit cell
         unit_cell = []
-        with open(os.path.join(self._directory, self.outputf)) as fp:
+        with open(os.path.join(self._directory, self.outputf), 'r') as fp:
             for line in fp:
                 if "crystal axes:" in line:
                     for i in range(3):
-                        unit_cell.append([float(j)*alat*bohr_to_angstrom for j in fp.next().split('(')[-1].split(')')[0].split()])
+                        unit_cell.append([float(j)*alat*bohr_to_angstrom for j in next(fp).split('(')[-1].split(')')[0].split()])
                     break
             if len(unit_cell) == 0: raise Exception('Cannot find the initial unit cell')
 
         # find the initial atomic coordinates
         coords = [] ; atom_symbols = []
-        with open(os.path.join(self._directory, self.outputf)) as fp:
+        with open(os.path.join(self._directory, self.outputf), 'r') as fp:
             for line in fp:
                 if "site n." in line and "atom" in line and "positions" in line and "alat units" in line:
                     for i in range(natoms):
-                        coordline = fp.next()
+                        coordline = next(fp)
                         atom_symbols.append(''.join([i for i in coordline.split()[1] if not i.isdigit()]))
                         coord_conv_factor = alat*bohr_to_angstrom
                         coords.append([float(j)*coord_conv_factor for j in coordline.rstrip().split('=')[-1].split('(')[-1].split(')')[0].split()])
@@ -272,12 +272,12 @@ class PwscfParser(DFTParser):
             with open(os.path.join(self._directory, self.outputf)) as fp:
                 for line in fp:
                     if "Begin final coordinates" in line:
-                        if 'new unit-cell volume' in fp.next():
+                        if 'new unit-cell volume' in next(fp):
                             # unit cell allowed to change
-                            fp.next() # blank line
+                            next(fp) # blank line
                             # get the final unit cell
                             unit_cell = []
-                            cellheader = fp.next()
+                            cellheader = next(fp)
                             if 'bohr' in cellheader.lower():
                                 cell_conv_factor = bohr_to_angstrom
                             elif 'angstrom' in cellheader.lower():
@@ -286,11 +286,11 @@ class PwscfParser(DFTParser):
                                 alat = float(cellheader.split('alat=')[-1].replace(')', ''))
                                 cell_conv_factor = alat*bohr_to_angstrom
                             for i in range(3):
-                                unit_cell.append([float(j)*cell_conv_factor for j in fp.next().split()])
-                            fp.next() # blank line
+                                unit_cell.append([float(j)*cell_conv_factor for j in next(fp).split()])
+                            next(fp) # blank line
 
                         # get the final atomic coordinates
-                        coordtype = fp.next().split()[-1].replace('(', '').replace(')', '')
+                        coordtype = next(fp).split()[-1].replace('(', '').replace(')', '')
                         if coordtype == 'bohr':
                             coord_conv_factor = bohr_to_angstrom
                         elif coordtype == 'angstrom' or coordtype == 'crystal':
@@ -299,7 +299,7 @@ class PwscfParser(DFTParser):
                             coord_conv_factor = alat*bohr_to_angstrom
                         coords = [] # reinitialize the coords
                         for i in range(natoms):
-                            coordline = fp.next().split()
+                            coordline = next(fp).split()
                             coords.append([float(j)*coord_conv_factor for j in coordline[1:4]])
 
                         # create, populate, and return the final structure
@@ -318,10 +318,10 @@ class PwscfParser(DFTParser):
         files = [f for f in os.listdir(self._directory) if os.path.isfile(os.path.join(self._directory, f))]
         for f in files:
             fp = open(os.path.join(self._directory, f), 'r')
-            first_line = fp.readline()
+            first_line = next(fp)
             if "E (eV)" in first_line and "Int dos(E)" in first_line:
                 fildos = f
-                ndoscol = len(fp.readline().split())-2 # number of spin channels
+                ndoscol = len(next(fp).split())-2 # number of spin channels
                 fp.close()
                 break
             fp.close()
@@ -334,7 +334,7 @@ class PwscfParser(DFTParser):
         # grab the DOS
         energy = [] ; dos = []
         fp = open(os.path.join(self._directory, fildos), 'r')
-        fp.next() # comment line
+        next(fp) # comment line
         for line in fp:
             ls = line.split()
             energy.append(float(ls[0])-efermi)

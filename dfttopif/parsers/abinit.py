@@ -31,7 +31,7 @@ class AbinitParser(DFTParser):
         if self._label is None:
             files = [f for f in os.listdir(self._directory) if os.path.isfile(os.path.join(self._directory, f))] 
             foundfiles = False
-            print files
+            print(files)
             for f in files:
                 if ".files" in f: 
                     foundfiles = True
