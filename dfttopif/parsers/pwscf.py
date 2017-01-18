@@ -187,7 +187,7 @@ class PwscfParser(DFTParser):
     def get_vdW_settings(self):
         '''Determine the vdW type if using vdW xc functional or correction
         scheme from the input otherwise'''
-        xc = self.get_xc_functional().scalars
+        xc = self.get_xc_functional().scalars[0].value
         if 'vdw' in xc.lower(): # vdW xc functional
             return Value(scalars=xc)
         else:
@@ -349,12 +349,12 @@ class PwscfParser(DFTParser):
         else:
             energy = dosdata.conditions.scalars
             dos = dosdata.scalars
-            step_size = energy[1] - energy[0]
+            step_size = energy[1].value - energy[0].value
             not_found = True ; l = 0 ; bot = 10**3 ; top = -10**3
             while not_found and l < len(dos):
                 # iterate through the data
-                e = float(energy[l])
-                dens = float(dos[l])
+                e = float(energy[l].value)
+                dens = float(dos[l].value)
                 # note: dos already shifted by efermi
                 if e < 0 and dens > 1e-3:
                     bot = e
