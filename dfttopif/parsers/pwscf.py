@@ -339,7 +339,7 @@ class PwscfParser(DFTParser):
             ls = line.split()
             energy.append(float(ls[0])-efermi)
             dos.append(sum([float(i) for i in ls[1:1+ndoscol]]))
-        return Property(vectors=dos, units='number of states per unit cell', conditions=Value(name='energy', vectors=energy, units='eV'))
+        return Property(scalars=dos, units='number of states per unit cell', conditions=Value(name='energy', scalars=energy, units='eV'))
 
     def get_band_gap(self):
         '''Compute the band gap from the DOS'''
@@ -347,8 +347,8 @@ class PwscfParser(DFTParser):
         if type(dosdata) == type(None):
             return None # cannot find DOS
         else:
-            energy = dosdata.conditions.vectors
-            dos = dosdata.vectors
+            energy = dosdata.conditions.scalars
+            dos = dosdata.scalars
             step_size = energy[1] - energy[0]
             not_found = True ; l = 0 ; bot = 10**3 ; top = -10**3
             while not_found and l < len(dos):
