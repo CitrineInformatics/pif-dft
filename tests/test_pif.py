@@ -46,9 +46,9 @@ class TestPifGenerator(unittest.TestCase):
             name = ".".join(os.path.basename(file).split(".")[:-2])
             
             # Make the pif file
-            print "\tpif for example:", name
+            print("\tpif for example:", name)
             result = directory_to_pif(name)
-            print pif.dumps(result, indent=4)
+            print(pif.dumps(result, indent=4))
             
             # Delete files
             delete_example(name)
@@ -64,9 +64,9 @@ class TestPifGenerator(unittest.TestCase):
             name = ".".join(os.path.basename(file).split(".")[:-2])
             
             # Make the pif file
-            print "\tpif for example:", name
+            print("\tpif for example:", name)
             result = directory_to_pif(name)
-            print pif.dumps(result, indent=4)
+            print(pif.dumps(result, indent=4))
             
             # Delete files
             delete_example(name)

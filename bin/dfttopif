@@ -1,11 +1,11 @@
-#! /usr/bin/python
+#!/usr/bin/python
 from dfttopif import directory_to_pif
 from pypif import pif
 import sys
 import os
 
 if len(sys.argv) != 2:
-    print "Usage: diftopif <path to directory or tarfile>"
+    print("Usage: diftopif <path to directory or tarfile>")
     sys.exit(1)
 
-print pif.dumps(directory_to_pif(sys.argv[1]), indent=4)
+print(pif.dumps(directory_to_pif(sys.argv[1]), indent=4))
