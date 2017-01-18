@@ -46,7 +46,7 @@ def directory_to_pif(directory, verbose=0):
         
     # Get the settings (aka. "conditions") of the DFT calculations
     conditions = []
-    for name, func in parser.get_setting_functions().iteritems():
+    for name, func in parser.get_setting_functions().items():
         # Get the condition
         cond = getattr(parser, func)()
 
@@ -62,7 +62,7 @@ def directory_to_pif(directory, verbose=0):
     
     # Get the properties of the system
     chem.properties = []
-    for name, func in parser.get_result_functions().iteritems():
+    for name, func in parser.get_result_functions().items():
         # Get the property
         prop = getattr(parser, func)()
         
@@ -74,14 +74,14 @@ def directory_to_pif(directory, verbose=0):
         prop.name = name
         prop.method = method
         prop.data_type='COMPUTATIONAL'
-        if isinstance(prop, Value):
-            print name
+        if verbose > 0 and isinstance(prop, Value):
+            print(name)
         if prop.conditions is None:
             prop.conditions = conditions
         else:
             if not isinstance(prop.conditions, list):
                 prop.conditions = [prop.conditions]
-            prop.conditions.append(conditions)
+            prop.conditions += conditions
 
         # Add it to the output
         chem.properties.append(prop)
