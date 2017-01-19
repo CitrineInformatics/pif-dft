@@ -21,7 +21,12 @@ class VaspParser(DFTParser):
         file_path = os.path.join(self._directory, 'CONTCAR')
         if os.path.isfile(file_path):
             return read_vasp(file_path)
-        else: return None
+
+        file_path = os.path.join(self._directory, 'POSCAR')
+        if os.path.isfile(file_path):
+            return read_vasp(file_path)
+
+        return None
         
     def get_cutoff_energy(self):
         # Open up the OUTCAR
