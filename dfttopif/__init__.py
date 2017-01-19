@@ -81,7 +81,7 @@ def directory_to_pif(directory, verbose=0):
         
     # Get information about the chemical system
     chem = ChemicalSystem()
-    chem.chemical_system = parser.get_composition()
+    chem.chemical_formula = parser.get_composition()
         
     # Get software information, to list as method
     software = Software(name=parser.get_name(),
