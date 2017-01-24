@@ -103,6 +103,7 @@ class DFTParser(object):
             'Density of States':'get_dos',
             'Positions': 'get_positions',
             'Forces': 'get_forces',
+            'OUTCAR': 'get_outcar',
         }
         
     def _call_ase(self, func):
