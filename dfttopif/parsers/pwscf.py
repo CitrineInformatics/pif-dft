@@ -341,6 +341,9 @@ class PwscfParser(DFTParser):
             dos.append(sum([float(i) for i in ls[1:1+ndoscol]]))
         return Property(scalars=dos, units='number of states per unit cell', conditions=Value(name='energy', scalars=energy, units='eV'))
 
+    def get_forces(self):
+        return None
+
     def get_band_gap(self):
         '''Compute the band gap from the DOS'''
         dosdata = self.get_dos()

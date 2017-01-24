@@ -101,6 +101,8 @@ class DFTParser(object):
             'Band Gap Energy':'get_band_gap',
             'Pressure':'get_pressure',
             'Density of States':'get_dos',
+            'Positions': 'get_positions',
+            'Forces': 'get_forces',
         }
         
     def _call_ase(self, func):
@@ -157,7 +159,11 @@ class DFTParser(object):
         counts = Counter(strc.get_chemical_symbols())
         return ''.join(k if counts[k]==1 else '%s%d'%(k,counts[k]) \
                 for k in sorted(counts))
-        
+
+    def get_positions(self):
+        strc = self.get_output_structure()
+        return Property(vectors=strc.positions.tolist())
+
     def get_cutoff_energy(self):
         '''Read the cutoff energy from the output
         
