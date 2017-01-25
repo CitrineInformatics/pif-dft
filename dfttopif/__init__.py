@@ -21,7 +21,7 @@ def tarfile_to_pif(filename, temp_root_dir='', verbose=0):
             the DFT calculation in pif format
     """
     temp_dir = temp_root_dir + str(uuid.uuid4())
-    os.mkdir(temp_dir)
+    os.makedirs(temp_dir)
     try:
         tar = tarfile.open(filename, 'r')
         tar.extractall(path=temp_dir)
