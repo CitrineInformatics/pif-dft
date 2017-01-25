@@ -28,9 +28,6 @@ def convert_from_tarfile():
         filename = temp_dir_name + '/file_to_process'
         with open(filename, 'wb') as output:
             shutil.copyfileobj(response.raw, output)
-
-        logging.info(os.listdir(temp_dir_name))
-
         return pif.dumps({'system': tarfile_to_pif(filename, '/tmp/')})
     finally:
         shutil.rmtree(temp_dir_name)
