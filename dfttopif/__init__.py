@@ -7,19 +7,21 @@ from dfttopif.parsers import PwscfParser
 from pypif.obj import *
 
 
-def tarfile_to_pif(filename, verbose=0):
+def tarfile_to_pif(filename, temp_root_dir='', verbose=0):
     """
     Process a tar file that contains DFT data.
 
     Input:
         filename - String, Path to the file to process.
+        temp_root_dir - String, Directory in which to save temporary files. Defaults to working directory.
         verbose - int, How much status messages to print
 
     Output:
         pif - ChemicalSystem, Results and settings of
             the DFT calculation in pif format
     """
-    temp_dir = str(uuid.uuid4())
+    temp_dir = temp_root_dir + str(uuid.uuid4())
+    os.mkdir(temp_dir)
     try:
         tar = tarfile.open(filename, 'r')
         tar.extractall(path=temp_dir)
@@ -51,7 +53,8 @@ def archive_to_pif(filename, verbose=0):
 
 
 def directory_to_pif(directory, verbose=0):
-    '''Given a directory that contains output from
+    """
+    Given a directory that contains output from
     a DFT calculation, parse the data and return
     a pif object
 
@@ -63,7 +66,7 @@ def directory_to_pif(directory, verbose=0):
     Output:
         pif - ChemicalSystem, Results and settings of
             the DFT calculation in pif format
-    '''
+    """
 
     # Look for the first parser compatible with the directory
     foundParser = False
