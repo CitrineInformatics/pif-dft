@@ -50,7 +50,7 @@ def archive_to_pif(filename, verbose=0):
     raise Exception('Cannot process file type')
 
 
-def directory_to_pif(directory, verbose=0):
+def directory_to_pif(directory, verbose=0, quality_report=False):
     '''Given a directory that contains output from
     a DFT calculation, parse the data and return
     a pif object
@@ -132,5 +132,23 @@ def directory_to_pif(directory, verbose=0):
 
         # Add it to the output
         chem.properties.append(prop)
+
+    if quality_report:
+        import requests
+        import json
+        files = {}
+        with open(os.path.join(directory, "OUTCAR"), "r") as f:
+            files['outcar'] = f.read()
+        with open(os.path.join(directory, "INCAR"), "r") as f:
+            files['incar'] = f.read()
+        # print(json.dumps(files))
+        # r = requests.post("https://calval.citrination.com/validate", data=json.dumps(files))
+        r = requests.post("https://calculation-validator-stage.herokuapp.com/validate", data=json.dumps(files))
+        if r.status_code == requests.codes.ok:
+            print(r.json())
+        else:
+            print("Something failed: {}".format(r.status_code))
+            print(r)
+
 
     return chem
