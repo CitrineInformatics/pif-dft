@@ -2,3 +2,6 @@ https://github.com/CitrineInformatics/pypif/zipball/master
 ase
 numpy
 requests
+flask
+flask-cors
+gunicorn
