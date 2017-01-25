@@ -17,7 +17,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
 @app.route('/convert/from/tarfile', methods=['POST'])
-def validate():
+def convert_from_tarfile():
     # Create a temporary directory to save the files and cleanup when
     # finished with it
     temp_dir_name = '/tmp/' + str(uuid.uuid4())
