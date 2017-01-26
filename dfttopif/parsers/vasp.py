@@ -5,6 +5,7 @@ import os
 from ase.calculators.vasp import Vasp
 from ase.io.vasp import read_vasp, read_vasp_out
 from pypif.obj.common.value import Value
+from pypif.obj.common.file_reference import FileReference
 
 class VaspParser(DFTParser):
     '''
@@ -20,7 +21,31 @@ class VaspParser(DFTParser):
     def get_output_structure(self):
         self.atoms = read_vasp_out(os.path.join(self._directory, 'OUTCAR'))
         return self.atoms
-        
+
+    def get_outcar(self):
+        raw_path = os.path.join(self._directory, 'OUTCAR')
+        if raw_path[0:2] == "./":
+            raw_path = raw_path[2:]
+        return Property(files=[FileReference(
+            relative_path=raw_path
+        )])
+
+    def get_incar(self):
+        raw_path = os.path.join(self._directory, 'INCAR')
+        if raw_path[0:2] == "./":
+            raw_path = raw_path[2:]
+        return Value(files=[FileReference(
+            relative_path=raw_path
+        )])
+
+    def get_poscar(self):
+        raw_path = os.path.join(self._directory, 'POSCAR')
+        if raw_path[0:2] == "./":
+            raw_path = raw_path[2:]
+        return Value(files=[FileReference(
+            relative_path=raw_path
+        )])
+
     def get_cutoff_energy(self):
         # Open up the OUTCAR
         with open(os.path.join(self._directory, 'OUTCAR'), 'r') as fp:
