@@ -23,10 +23,29 @@ class VaspParser(DFTParser):
         return self.atoms
 
     def get_outcar(self):
+        raw_path = os.path.join(self._directory, 'OUTCAR')
+        if raw_path[0:2] == "./":
+            raw_path = raw_path[2:]
         return Property(files=[FileReference(
-            relative_path=os.path.join(self._directory, 'OUTCAR')
+            relative_path=raw_path
         )])
-        
+
+    def get_incar(self):
+        raw_path = os.path.join(self._directory, 'INCAR')
+        if raw_path[0:2] == "./":
+            raw_path = raw_path[2:]
+        return Value(files=[FileReference(
+            relative_path=raw_path
+        )])
+
+    def get_poscar(self):
+        raw_path = os.path.join(self._directory, 'POSCAR')
+        if raw_path[0:2] == "./":
+            raw_path = raw_path[2:]
+        return Value(files=[FileReference(
+            relative_path=raw_path
+        )])
+
     def get_cutoff_energy(self):
         # Open up the OUTCAR
         with open(os.path.join(self._directory, 'OUTCAR'), 'r') as fp:
