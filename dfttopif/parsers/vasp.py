@@ -3,14 +3,14 @@ from pypif.obj.common.property import Property
 from .base import DFTParser, Value_if_true
 import os
 from ase.calculators.vasp import Vasp
-from ase.io.vasp import read_vasp
+from ase.io.vasp import read_vasp, read_vasp_out
 from pypif.obj.common.value import Value
 
 class VaspParser(DFTParser):
     '''
     Parser for VASP calculations
     '''
-    
+
     def get_name(self): return "VASP"
     
     def test_if_from(self, directory):
@@ -18,15 +18,8 @@ class VaspParser(DFTParser):
         return os.path.isfile(os.path.join(directory, 'INCAR'))
         
     def get_output_structure(self):
-        file_path = os.path.join(self._directory, 'CONTCAR')
-        if os.path.isfile(file_path):
-            return read_vasp(file_path)
-
-        file_path = os.path.join(self._directory, 'POSCAR')
-        if os.path.isfile(file_path):
-            return read_vasp(file_path)
-
-        return None
+        self.atoms = read_vasp_out(os.path.join(self._directory, 'OUTCAR'))
+        return self.atoms
         
     def get_cutoff_energy(self):
         # Open up the OUTCAR
@@ -235,7 +228,16 @@ class VaspParser(DFTParser):
             
          # Error handling: "in kB" not found
         raise Exception('in kB not found')
-        
+
+    def get_forces(self):
+        self.atoms = read_vasp_out(os.path.join(self._directory, 'OUTCAR'))
+        return Property(
+            vectors=self.atoms.get_calculator().results['forces'].tolist(),
+            conditions=Value(name="positions", vectors=self.atoms.positions.tolist())
+        )
+
+
+
     def get_band_gap(self):
         file_path = os.path.join(self._directory, 'DOSCAR')
         if not os.path.isfile(file_path):

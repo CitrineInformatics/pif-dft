@@ -13,7 +13,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Configure logging
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 
 @app.route('/convert/from/tarfile', methods=['POST'])
