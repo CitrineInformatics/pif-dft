@@ -85,6 +85,8 @@ class DFTParser(object):
             'DFT+U':'get_U_settings',
             'vdW Interactions':'get_vdW_settings',
             'Psuedopotentials':'get_pp_name',
+            'INCAR':'get_incar',
+            'POSCAR':'get_poscar',
         }
         
     def get_result_functions(self):
@@ -103,6 +105,7 @@ class DFTParser(object):
             'Density of States':'get_dos',
             'Positions': 'get_positions',
             'Forces': 'get_forces',
+            'OUTCAR': 'get_outcar',
         }
         
     def _call_ase(self, func):

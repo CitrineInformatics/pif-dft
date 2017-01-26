@@ -344,6 +344,15 @@ class PwscfParser(DFTParser):
     def get_forces(self):
         return None
 
+    def get_outcar(self):
+        return None
+
+    def get_incar(self):
+        return None
+
+    def get_poscar(self):
+        return None
+
     def get_band_gap(self):
         '''Compute the band gap from the DOS'''
         dosdata = self.get_dos()

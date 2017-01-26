@@ -8,4 +8,8 @@ if len(sys.argv) != 2:
     print("Usage: diftopif <path to directory or tarfile>")
     sys.exit(1)
 
-print(pif.dumps(directory_to_pif(sys.argv[1], quality_report=True), indent=4))
+pif_contents = directory_to_pif(sys.argv[1], quality_report=True)
+with open(os.path.join(sys.argv[1], "pif.json"), "w") as f:
+    pif.dump(pif_contents, f)
+
+print(pif.dumps(pif_contents, indent=4))
