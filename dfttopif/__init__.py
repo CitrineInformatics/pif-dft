@@ -52,9 +52,8 @@ def archive_to_pif(filename, verbose=0):
     raise Exception('Cannot process file type')
 
 
-def directory_to_pif(directory, verbose=0):
-    """
-    Given a directory that contains output from
+def directory_to_pif(directory, verbose=0, quality_report=False):
+    '''Given a directory that contains output from
     a DFT calculation, parse the data and return
     a pif object
 
@@ -66,7 +65,7 @@ def directory_to_pif(directory, verbose=0):
     Output:
         pif - ChemicalSystem, Results and settings of
             the DFT calculation in pif format
-    """
+    '''
 
     # Look for the first parser compatible with the directory
     foundParser = False
@@ -135,5 +134,26 @@ def directory_to_pif(directory, verbose=0):
 
         # Add it to the output
         chem.properties.append(prop)
+
+    if quality_report:
+        import tarfile
+        tar = tarfile.open("tmp.tar", "w")
+        tar.add(os.path.join(directory, "OUTCAR"))
+        tar.add(os.path.join(directory, "INCAR"))
+        tar.close()
+
+        import requests
+        import json
+        r = requests.post('https://calval.citrination.com/validate/tarfile', data=open('tmp.tar', 'rb').read())
+
+        if r.status_code == requests.codes.ok:
+            report = r.json()[0]
+            with open(os.path.join(directory, "report.txt"), "w") as f:
+                f.write(report)
+            chem.properties.append(Property(name="quality_report", files=[FileReference(relative_path=os.path.join(directory, "report.txt"))]))
+        else:
+            print("Something failed: {}".format(r.status_code))
+            print(r.status_code)
+
 
     return chem
