@@ -148,9 +148,17 @@ def directory_to_pif(directory, verbose=0, quality_report=False):
 
         if r.status_code == requests.codes.ok:
             report = r.json()[0]
-            with open(os.path.join(directory, "report.txt"), "w") as f:
+            report_file = os.path.join(directory, "report.txt")
+            with open(report_file, "w") as f:
                 f.write(report)
-            chem.properties.append(Property(name="quality_report", files=[FileReference(relative_path=os.path.join(directory, "report.txt"))]))
+            if report_file[0:2] == "./":
+                report_file = report_file[2:]
+            chem.properties.append(
+                    Property(
+                        name="quality_report",
+                        files=[FileReference(relative_path=report_file)]
+                    )
+                )
         else:
             print("Something failed: {}".format(r.status_code))
             print(r.status_code)
