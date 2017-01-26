@@ -8,4 +8,4 @@ if len(sys.argv) != 2:
     print("Usage: diftopif <path to directory or tarfile>")
     sys.exit(1)
 
-print(pif.dumps(directory_to_pif(sys.argv[1]), indent=4))
+print(pif.dumps(directory_to_pif(sys.argv[1], quality_report=True), indent=4))
