@@ -7,19 +7,21 @@ from dfttopif.parsers import PwscfParser
 from pypif.obj import *
 
 
-def tarfile_to_pif(filename, verbose=0):
+def tarfile_to_pif(filename, temp_root_dir='', verbose=0):
     """
     Process a tar file that contains DFT data.
 
     Input:
         filename - String, Path to the file to process.
+        temp_root_dir - String, Directory in which to save temporary files. Defaults to working directory.
         verbose - int, How much status messages to print
 
     Output:
         pif - ChemicalSystem, Results and settings of
             the DFT calculation in pif format
     """
-    temp_dir = str(uuid.uuid4())
+    temp_dir = temp_root_dir + str(uuid.uuid4())
+    os.makedirs(temp_dir)
     try:
         tar = tarfile.open(filename, 'r')
         tar.extractall(path=temp_dir)
@@ -134,21 +136,24 @@ def directory_to_pif(directory, verbose=0, quality_report=False):
         chem.properties.append(prop)
 
     if quality_report:
+        import tarfile
+        tar = tarfile.open("tmp.tar", "w")
+        tar.add(os.path.join(directory, "OUTCAR"))
+        tar.add(os.path.join(directory, "INCAR"))
+        tar.close()
+
         import requests
         import json
-        files = {}
-        with open(os.path.join(directory, "OUTCAR"), "r") as f:
-            files['outcar'] = f.read()
-        with open(os.path.join(directory, "INCAR"), "r") as f:
-            files['incar'] = f.read()
-        # print(json.dumps(files))
-        # r = requests.post("https://calval.citrination.com/validate", data=json.dumps(files))
-        r = requests.post("https://calculation-validator-stage.herokuapp.com/validate", data=json.dumps(files))
+        r = requests.post('https://calval.citrination.com/validate/tarfile', data=open('tmp.tar', 'rb').read())
+
         if r.status_code == requests.codes.ok:
-            print(r.json())
+            report = r.json()[0]
+            with open(os.path.join(directory, "report.txt"), "w") as f:
+                f.write(report)
+            chem.properties.append(Property(name="quality_report", files=[FileReference(relative_path=os.path.join(directory, "report.txt"))]))
         else:
             print("Something failed: {}".format(r.status_code))
-            print(r)
+            print(r.status_code)
 
 
     return chem
