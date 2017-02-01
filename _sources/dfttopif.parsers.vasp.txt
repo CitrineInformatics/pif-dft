@@ -1,0 +1,7 @@
+dfttopif.parsers.vasp module
+============================
+
+.. automodule:: dfttopif.parsers.vasp
+    :members:
+    :undoc-members:
+    :show-inheritance:

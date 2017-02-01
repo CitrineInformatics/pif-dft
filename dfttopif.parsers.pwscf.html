@@ -1,0 +1,224 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dfttopif.parsers.pwscf module &#8212; dfttopif 0.1.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="dfttopif 0.1.1 documentation" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">dfttopif 0.1.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-dfttopif.parsers.pwscf">
+<span id="dfttopif-parsers-pwscf-module"></span><h1>dfttopif.parsers.pwscf module<a class="headerlink" href="#module-dfttopif.parsers.pwscf" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="dfttopif.parsers.pwscf.PwscfParser">
+<em class="property">class </em><code class="descclassname">dfttopif.parsers.pwscf.</code><code class="descname">PwscfParser</code><span class="sig-paren">(</span><em>directory</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dfttopif/parsers/pwscf.html#PwscfParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser" title="dfttopif.parsers.base.DFTParser"><code class="xref py py-class docutils literal"><span class="pre">dfttopif.parsers.base.DFTParser</span></code></a></p>
+<p>Parser for PWSCF calculations</p>
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.get_KPPRA">
+<code class="descname">get_KPPRA</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dfttopif/parsers/pwscf.html#PwscfParser.get_KPPRA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.get_KPPRA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the no. of k-points in the BZ (from the input) times the
+no. of atoms (from the output)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.get_U_settings">
+<code class="descname">get_U_settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dfttopif/parsers/pwscf.html#PwscfParser.get_U_settings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.get_U_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the DFT+U type and parameters from the output</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.get_band_gap">
+<code class="descname">get_band_gap</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dfttopif/parsers/pwscf.html#PwscfParser.get_band_gap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.get_band_gap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the band gap from the DOS</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.get_cutoff_energy">
+<code class="descname">get_cutoff_energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dfttopif/parsers/pwscf.html#PwscfParser.get_cutoff_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.get_cutoff_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the cutoff energy from the output</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.get_dos">
+<code class="descname">get_dos</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dfttopif/parsers/pwscf.html#PwscfParser.get_dos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.get_dos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the total DOS shifted by the Fermi energy</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.get_forces">
+<code class="descname">get_forces</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dfttopif/parsers/pwscf.html#PwscfParser.get_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.get_forces" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.get_incar">
+<code class="descname">get_incar</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dfttopif/parsers/pwscf.html#PwscfParser.get_incar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.get_incar" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.get_name">
+<code class="descname">get_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dfttopif/parsers/pwscf.html#PwscfParser.get_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.get_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.get_outcar">
+<code class="descname">get_outcar</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dfttopif/parsers/pwscf.html#PwscfParser.get_outcar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.get_outcar" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.get_output_structure">
+<code class="descname">get_output_structure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dfttopif/parsers/pwscf.html#PwscfParser.get_output_structure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.get_output_structure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the structure from the output</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.get_poscar">
+<code class="descname">get_poscar</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dfttopif/parsers/pwscf.html#PwscfParser.get_poscar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.get_poscar" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.get_pp_name">
+<code class="descname">get_pp_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dfttopif/parsers/pwscf.html#PwscfParser.get_pp_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.get_pp_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the pseudopotential names from the output</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.get_pressure">
+<code class="descname">get_pressure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dfttopif/parsers/pwscf.html#PwscfParser.get_pressure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.get_pressure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the pressure from the output</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.get_stresses">
+<code class="descname">get_stresses</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dfttopif/parsers/pwscf.html#PwscfParser.get_stresses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.get_stresses" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the stress tensor from the output</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.get_total_energy">
+<code class="descname">get_total_energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dfttopif/parsers/pwscf.html#PwscfParser.get_total_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.get_total_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the total energy from the output</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.get_vdW_settings">
+<code class="descname">get_vdW_settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dfttopif/parsers/pwscf.html#PwscfParser.get_vdW_settings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.get_vdW_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the vdW type if using vdW xc functional or correction
+scheme from the input otherwise</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.get_version_number">
+<code class="descname">get_version_number</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dfttopif/parsers/pwscf.html#PwscfParser.get_version_number"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.get_version_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the version number from the output</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.get_xc_functional">
+<code class="descname">get_xc_functional</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dfttopif/parsers/pwscf.html#PwscfParser.get_xc_functional"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.get_xc_functional" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the xc functional from the output</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.is_relaxed">
+<code class="descname">is_relaxed</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.is_relaxed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.test_if_from">
+<code class="descname">test_if_from</code><span class="sig-paren">(</span><em>directory</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dfttopif/parsers/pwscf.html#PwscfParser.test_if_from"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.test_if_from" title="Permalink to this definition">¶</a></dt>
+<dd><p>Look for PWSCF input and output files</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dfttopif.parsers.pwscf.PwscfParser.uses_SOC">
+<code class="descname">uses_SOC</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#dfttopif.parsers.pwscf.PwscfParser.uses_SOC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/dfttopif.parsers.pwscf.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">dfttopif 0.1.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Citrine Informatics.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>

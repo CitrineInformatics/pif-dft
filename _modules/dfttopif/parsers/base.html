@@ -1,0 +1,390 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dfttopif.parsers.base &#8212; dfttopif 0.1.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="dfttopif 0.1.1 documentation" href="../../../index.html" />
+    <link rel="up" title="dfttopif" href="../../dfttopif.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dfttopif 0.1.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../dfttopif.html" accesskey="U">dfttopif</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dfttopif.parsers.base</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">Counter</span>
+<span class="kn">from</span> <span class="nn">pypif.obj.common</span> <span class="k">import</span> <span class="n">Value</span><span class="p">,</span> <span class="n">Property</span>
+
+
+<div class="viewcode-block" id="Value_if_true"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.Value_if_true">[docs]</a><span class="k">def</span> <span class="nf">Value_if_true</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Returns:</span>
+<span class="sd">        Value if x is True, else None&#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">Value</span><span class="p">()</span> <span class="k">if</span> <span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="DFTParser"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser">[docs]</a><span class="k">class</span> <span class="nc">DFTParser</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Base class for all tools to parse a directory of output files from a DFT Calculation</span>
+<span class="sd">    </span>
+<span class="sd">    To use this class, provide the path to a directory to containing the output files from a DFT calculation. Once</span>
+<span class="sd">     instantiated, call the methods provided by this class in order to retrieve the settings and results of the</span>
+<span class="sd">     calculation.</span>
+<span class="sd">    </span>
+<span class="sd">    To get a list of names of the settings available for this a particular instance, call get_setting_functions(). These</span>
+<span class="sd">     methods return a pypif Value object.</span>
+<span class="sd">    </span>
+<span class="sd">    To get a list of the names of results available via a particular instance, call get_result_functions(). These</span>
+<span class="sd">     methods return a pypif Property object.</span>
+
+<span class="sd">    Developer Notes</span>
+<span class="sd">    ---------------</span>
+<span class="sd">    </span>
+<span class="sd">    Settings and properties should...</span>
+<span class="sd">        return None if property or setting is not applicable, or if the test is a boolean and the value is false</span>
+<span class="sd">        Raise exception if there is an error that would benefit from user intervention</span>
+
+<span class="sd">    To add a new setting or value to the output, add a new entry to the dictionary returned by get_setting_functions()</span>
+<span class="sd">     or get_result_functions(). The key for each entry is a &#39;human-friendly&#39; name of the result and the value is the</span>
+<span class="sd">     name of the function. This design was chosen because there is a single function for defining the human names of the</span>
+<span class="sd">     results, which are what serve as the tags in the pif file. In this way, the same property will be ensured to</span>
+<span class="sd">     have the same name in the pif.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="n">_directory</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&#39;&#39;&#39;Path to directory containing calculation files&#39;&#39;&#39;</span>
+    
+    <span class="n">_converged</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&#39;&#39;&#39; Whether this calculation has converged &#39;&#39;&#39;</span>
+    
+<div class="viewcode-block" id="DFTParser.__init__"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Initialize a parser.</span>
+<span class="sd">        </span>
+<span class="sd">        Input:</span>
+<span class="sd">            directory - String, path to a directory of output files</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="c1"># Sanity check: Make sure the format is correct</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_if_from</span><span class="p">(</span><span class="n">directory</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Files in directory inconsistent with this format&#39;</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">_directory</span> <span class="o">=</span> <span class="n">directory</span></div>
+      
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="DFTParser.test_if_from"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.test_if_from">[docs]</a>    <span class="k">def</span> <span class="nf">test_if_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Test whether a directory of output files</span>
+<span class="sd">        seems like it is from this DFT code.</span>
+<span class="sd">        </span>
+<span class="sd">        Input:</span>
+<span class="sd">            directory - String, path to a directory of output files</span>
+<span class="sd">        Returns: </span>
+<span class="sd">            boolean, whether directory was created by this code</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+        
+<div class="viewcode-block" id="DFTParser.get_setting_functions"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.get_setting_functions">[docs]</a>    <span class="k">def</span> <span class="nf">get_setting_functions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Get a dictionary containing the names of methods</span>
+<span class="sd">        that return settings of the calculation</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict, where the key is the name of the setting,</span>
+<span class="sd">                and the value is function name of this parser</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;XC Functional&#39;</span><span class="p">:</span><span class="s1">&#39;get_xc_functional&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Relaxed&#39;</span><span class="p">:</span><span class="s1">&#39;is_relaxed&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Cutoff Energy&#39;</span><span class="p">:</span><span class="s1">&#39;get_cutoff_energy&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;k-Points per Reciprocal Atom&#39;</span><span class="p">:</span><span class="s1">&#39;get_KPPRA&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Spin-Orbit Coupling&#39;</span><span class="p">:</span><span class="s1">&#39;uses_SOC&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;DFT+U&#39;</span><span class="p">:</span><span class="s1">&#39;get_U_settings&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;vdW Interactions&#39;</span><span class="p">:</span><span class="s1">&#39;get_vdW_settings&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Psuedopotentials&#39;</span><span class="p">:</span><span class="s1">&#39;get_pp_name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;INCAR&#39;</span><span class="p">:</span><span class="s1">&#39;get_incar&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;POSCAR&#39;</span><span class="p">:</span><span class="s1">&#39;get_poscar&#39;</span><span class="p">,</span>
+        <span class="p">}</span></div>
+        
+<div class="viewcode-block" id="DFTParser.get_result_functions"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.get_result_functions">[docs]</a>    <span class="k">def</span> <span class="nf">get_result_functions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Get a dictionary describing the names of methods </span>
+<span class="sd">        that return results of the calculation</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict, where the key is the name of a property,</span>
+<span class="sd">                and the value is the name of the function</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;Converged&#39;</span><span class="p">:</span><span class="s1">&#39;is_converged&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Total Energy&#39;</span><span class="p">:</span><span class="s1">&#39;get_total_energy&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Band Gap Energy&#39;</span><span class="p">:</span><span class="s1">&#39;get_band_gap&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Pressure&#39;</span><span class="p">:</span><span class="s1">&#39;get_pressure&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Density of States&#39;</span><span class="p">:</span><span class="s1">&#39;get_dos&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Positions&#39;</span><span class="p">:</span> <span class="s1">&#39;get_positions&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Forces&#39;</span><span class="p">:</span> <span class="s1">&#39;get_forces&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;OUTCAR&#39;</span><span class="p">:</span> <span class="s1">&#39;get_outcar&#39;</span><span class="p">,</span>
+        <span class="p">}</span></div>
+        
+    <span class="k">def</span> <span class="nf">_call_ase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Make a call to an ASE function.</span>
+<span class="sd">        </span>
+<span class="sd">        Handles changing directories</span>
+<span class="sd">        </span>
+<span class="sd">        Returns: Result of ASE function</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1"># Change directories</span>
+        <span class="n">old_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">)</span>
+        
+        <span class="c1"># Call function</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">func</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">old_path</span><span class="p">)</span>
+            <span class="k">raise</span>
+        
+        <span class="c1"># Change back</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">old_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">res</span>
+        
+<div class="viewcode-block" id="DFTParser.get_name"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Get the name of this program&#39;&#39;&#39;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+        
+<div class="viewcode-block" id="DFTParser.get_version_number"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.get_version_number">[docs]</a>    <span class="k">def</span> <span class="nf">get_version_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Get the version number of code that</span>
+<span class="sd">        created these output files</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            string, Version number</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+    
+<div class="viewcode-block" id="DFTParser.get_output_structure"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.get_output_structure">[docs]</a>    <span class="k">def</span> <span class="nf">get_output_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Get the output structure, if available</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            ase.Atoms - Output structure from this calculation</span>
+<span class="sd">                or None if output file not found</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+    
+<div class="viewcode-block" id="DFTParser.get_composition"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.get_composition">[docs]</a>    <span class="k">def</span> <span class="nf">get_composition</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Get composition of output structure</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            String - Composition based on output structure</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">strc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_output_structure</span><span class="p">()</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">strc</span><span class="o">.</span><span class="n">get_chemical_symbols</span><span class="p">())</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">k</span> <span class="k">if</span> <span class="n">counts</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span> <span class="k">else</span> <span class="s1">&#39;</span><span class="si">%s%d</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">counts</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> \
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">counts</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="DFTParser.get_positions"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.get_positions">[docs]</a>    <span class="k">def</span> <span class="nf">get_positions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">strc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_output_structure</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Property</span><span class="p">(</span><span class="n">vectors</span><span class="o">=</span><span class="n">strc</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="DFTParser.get_cutoff_energy"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.get_cutoff_energy">[docs]</a>    <span class="k">def</span> <span class="nf">get_cutoff_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Read the cutoff energy from the output</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Value, cutoff energy (scalar) and units</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+    
+<div class="viewcode-block" id="DFTParser.uses_SOC"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.uses_SOC">[docs]</a>    <span class="k">def</span> <span class="nf">uses_SOC</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Parse the output file to tell if spin-orbit coupling was used</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Blank Value if true, `None` otherwise</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+        
+<div class="viewcode-block" id="DFTParser.is_relaxed"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.is_relaxed">[docs]</a>    <span class="k">def</span> <span class="nf">is_relaxed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Parse the output file to tell if the structure was relaxed</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Blank Value if true, `None` otherwise</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+    
+<div class="viewcode-block" id="DFTParser.get_xc_functional"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.get_xc_functional">[docs]</a>    <span class="k">def</span> <span class="nf">get_xc_functional</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Parse the output file to tell which exchange-correlation functional was used</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Value - where &quot;scalars&quot; is the name of the functional</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="DFTParser.is_converged"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.is_converged">[docs]</a>    <span class="k">def</span> <span class="nf">is_converged</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Whether the calculation has converged</span>
+<span class="sd">        </span>
+<span class="sd">        Returns: Property where &quot;scalar&quot; is a boolean indicating</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="c1"># Check for cached result</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converged</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_converged</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_converged</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Property</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_converged</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DFTParser.get_pp_name"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.get_pp_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_pp_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Read output to get the pseudopotentials names used for each elements</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Value where the key &quot;scalars&quot; is the list of pseudopotentials names</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="DFTParser.get_KPPRA"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.get_KPPRA">[docs]</a>    <span class="k">def</span> <span class="nf">get_KPPRA</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Read output and calculate the number of k-points per reciprocal atom</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Value, number of k-points per reciprocal atom</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="DFTParser.get_U_settings"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.get_U_settings">[docs]</a>    <span class="k">def</span> <span class="nf">get_U_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Get the DFT+U settings, if used</span>
+
+<span class="sd">        Returns: Value, which could contain several keys</span>
+<span class="sd">            &#39;Type&#39; -&gt; String, type of DFT+U employed</span>
+<span class="sd">            &#39;Values&#39; -&gt; dict of Element -&gt; (L, U, J)</span>
+<span class="sd">        Note: Returns None if DFT+U was not used</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="DFTParser.get_vdW_settings"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.get_vdW_settings">[docs]</a>    <span class="k">def</span> <span class="nf">get_vdW_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Get the vdW settings, if applicable</span>
+
+<span class="sd">        Returns: Value where `scalars` is the name of the vdW method. None if vdW was not used&#39;&#39;&#39;</span>
+
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+    <span class="c1"># Operations for retrieving results</span>
+    <span class="k">def</span> <span class="nf">_is_converged</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Read output to see whether it is converged</span>
+<span class="sd">        </span>
+<span class="sd">        Hidden operation: self.is_converged() is the public</span>
+<span class="sd">        interface, which may draw from a converged result</span>
+<span class="sd">        </span>
+<span class="sd">        Returns: boolean&#39;&#39;&#39;</span>
+        
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        
+<div class="viewcode-block" id="DFTParser.get_total_energy"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.get_total_energy">[docs]</a>    <span class="k">def</span> <span class="nf">get_total_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Get the total energy of the last ionic step</span>
+<span class="sd">        </span>
+<span class="sd">        Returns: Property</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+        
+<div class="viewcode-block" id="DFTParser.get_band_gap"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.get_band_gap">[docs]</a>    <span class="k">def</span> <span class="nf">get_band_gap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Get the band gap energy</span>
+
+<span class="sd">        Returns: Property&#39;&#39;&#39;</span>
+
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="DFTParser.get_pressure"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.get_pressure">[docs]</a>    <span class="k">def</span> <span class="nf">get_pressure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Get the pressure acting on the system</span>
+
+<span class="sd">        Returns: Property, where pressure is a scalar&#39;&#39;&#39;</span>
+
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="DFTParser.get_dos"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.get_dos">[docs]</a>    <span class="k">def</span> <span class="nf">get_dos</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Get the total density of states</span>
+
+<span class="sd">        Returns: Property where DOS is a vector, and the energy at which the DOS was evaluated is a condition&#39;&#39;&#39;</span>
+            
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="DFTParser.get_stresses"><a class="viewcode-back" href="../../../dfttopif.parsers.base.html#dfttopif.parsers.base.DFTParser.get_stresses">[docs]</a>    <span class="k">def</span> <span class="nf">get_stresses</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+       <span class="sd">&#39;&#39;&#39;Get the stress tensor</span>
+
+<span class="sd">       Returns: Property where stresses is a 2d matrix&#39;&#39;&#39;</span>
+
+       <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dfttopif 0.1.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../dfttopif.html" >dfttopif</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Citrine Informatics.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>

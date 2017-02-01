@@ -1,0 +1,20 @@
+dfttopif.parsers package
+========================
+
+Submodules
+----------
+
+.. toctree::
+
+   dfttopif.parsers.abinit
+   dfttopif.parsers.base
+   dfttopif.parsers.pwscf
+   dfttopif.parsers.vasp
+
+Module contents
+---------------
+
+.. automodule:: dfttopif.parsers
+    :members:
+    :undoc-members:
+    :show-inheritance:

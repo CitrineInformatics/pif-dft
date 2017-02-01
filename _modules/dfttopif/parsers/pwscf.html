@@ -1,0 +1,475 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dfttopif.parsers.pwscf &#8212; dfttopif 0.1.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="dfttopif 0.1.1 documentation" href="../../../index.html" />
+    <link rel="up" title="dfttopif" href="../../dfttopif.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dfttopif 0.1.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../dfttopif.html" accesskey="U">dfttopif</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dfttopif.parsers.pwscf</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">pypif.obj.common.property</span> <span class="k">import</span> <span class="n">Property</span>
+
+<span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">DFTParser</span><span class="p">,</span> <span class="n">Value_if_true</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pypif.obj.common.value</span> <span class="k">import</span> <span class="n">Value</span>
+<span class="kn">from</span> <span class="nn">ase</span> <span class="k">import</span> <span class="n">Atoms</span>
+
+<div class="viewcode-block" id="PwscfParser"><a class="viewcode-back" href="../../../dfttopif.parsers.pwscf.html#dfttopif.parsers.pwscf.PwscfParser">[docs]</a><span class="k">class</span> <span class="nc">PwscfParser</span><span class="p">(</span><span class="n">DFTParser</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Parser for PWSCF calculations</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+<div class="viewcode-block" id="PwscfParser.get_name"><a class="viewcode-back" href="../../../dfttopif.parsers.pwscf.html#dfttopif.parsers.pwscf.PwscfParser.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="s2">&quot;PWSCF&quot;</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">search_string</span><span class="p">,</span> <span class="n">search_file</span><span class="p">,</span> <span class="n">basedir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_string</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">case_sens</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return the first line containing a set of strings in a file.</span>
+
+<span class="sd">        If return_string is False, we just return whether such a line</span>
+<span class="sd">        was found. If case_sens is False, the search is case</span>
+<span class="sd">        insensitive.</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">basedir</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span> <span class="n">basedir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_directory</span> <span class="c1"># default</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">basedir</span><span class="p">,</span> <span class="n">search_file</span><span class="p">)):</span>
+            <span class="c1"># if single search string</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">search_string</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">):</span> <span class="n">search_string</span> <span class="o">=</span> <span class="p">[</span><span class="n">search_string</span><span class="p">]</span>
+            <span class="c1"># if case insensitive, convert everything to lowercase</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">case_sens</span><span class="p">:</span> <span class="n">search_string</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">search_string</span><span class="p">]</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">basedir</span><span class="p">,</span> <span class="n">search_file</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="c1"># search for the strings line by line</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                    <span class="n">query_line</span> <span class="o">=</span> <span class="n">line</span> <span class="k">if</span> <span class="n">case_sens</span> <span class="k">else</span> <span class="n">line</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">i</span> <span class="ow">in</span> <span class="n">query_line</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">search_string</span><span class="p">]):</span>
+                        <span class="k">return</span> <span class="n">line</span> <span class="k">if</span> <span class="n">return_string</span> <span class="k">else</span> <span class="kc">True</span>
+                <span class="k">if</span> <span class="n">return_string</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> not found in </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="s1">&#39; &amp; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">search_string</span><span class="p">),</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">basedir</span><span class="p">,</span> <span class="n">search_file</span><span class="p">)))</span>
+                <span class="k">else</span><span class="p">:</span> <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> file does not exist&#39;</span><span class="o">%</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">basedir</span><span class="p">,</span> <span class="n">search_file</span><span class="p">))</span>
+    
+<div class="viewcode-block" id="PwscfParser.test_if_from"><a class="viewcode-back" href="../../../dfttopif.parsers.pwscf.html#dfttopif.parsers.pwscf.PwscfParser.test_if_from">[docs]</a>    <span class="k">def</span> <span class="nf">test_if_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Look for PWSCF input and output files&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inputf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">f</span><span class="p">))]</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_line</span><span class="p">(</span><span class="s1">&#39;Program PWSCF&#39;</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">basedir</span><span class="o">=</span><span class="n">directory</span><span class="p">,</span> <span class="n">return_string</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span> <span class="o">=</span> <span class="n">f</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_line</span><span class="p">(</span><span class="s1">&#39;&amp;control&#39;</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">basedir</span><span class="o">=</span><span class="n">directory</span><span class="p">,</span> <span class="n">return_string</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">case_sens</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">inputf</span> <span class="o">=</span> <span class="n">f</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputf</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">:</span> <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="PwscfParser.get_version_number"><a class="viewcode-back" href="../../../dfttopif.parsers.pwscf.html#dfttopif.parsers.pwscf.PwscfParser.get_version_number">[docs]</a>    <span class="k">def</span> <span class="nf">get_version_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Determine the version number from the output&#39;&#39;&#39;</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_line</span><span class="p">(</span><span class="s1">&#39;Program PWSCF&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">)</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;start&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">2</span><span class="p">:])</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">&#39;v.&#39;</span><span class="p">)</span>
+        <span class="c1"># return Value(scalars=version)</span>
+        <span class="k">return</span> <span class="n">version</span></div>
+
+<div class="viewcode-block" id="PwscfParser.get_xc_functional"><a class="viewcode-back" href="../../../dfttopif.parsers.pwscf.html#dfttopif.parsers.pwscf.PwscfParser.get_xc_functional">[docs]</a>    <span class="k">def</span> <span class="nf">get_xc_functional</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Determine the xc functional from the output&#39;&#39;&#39;</span>
+        <span class="c1"># the xc functional is described by 1 or 4 strings</span>
+        <span class="c1"># SLA  PZ   NOGX NOGC ( 1 1 0 0 0)</span>
+        <span class="c1"># SLA  PW   PBX  PBC (1434)</span>
+        <span class="c1"># PBE ( 1  4  3  4 0 0)</span>
+        <span class="c1"># PBE0 (6484)</span>
+        <span class="c1"># HSE (14*4)</span>
+        <span class="n">xcstring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_line</span><span class="p">(</span><span class="s1">&#39;Exchange-correlation&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">2</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">xcstring</span><span class="p">[</span><span class="n">word</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;(&#39;</span><span class="p">:</span>
+                <span class="n">xcstring</span> <span class="o">=</span> <span class="n">xcstring</span><span class="p">[:</span><span class="n">word</span><span class="p">]</span>
+                <span class="k">break</span>
+        <span class="k">return</span> <span class="n">Value</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">xcstring</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="PwscfParser.get_cutoff_energy"><a class="viewcode-back" href="../../../dfttopif.parsers.pwscf.html#dfttopif.parsers.pwscf.PwscfParser.get_cutoff_energy">[docs]</a>    <span class="k">def</span> <span class="nf">get_cutoff_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Determine the cutoff energy from the output&#39;&#39;&#39;</span>
+        <span class="n">cutoff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_line</span><span class="p">(</span><span class="s1">&#39;kinetic-energy cutoff&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">3</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">Value</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">cutoff</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">units</span><span class="o">=</span><span class="n">cutoff</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="PwscfParser.get_total_energy"><a class="viewcode-back" href="../../../dfttopif.parsers.pwscf.html#dfttopif.parsers.pwscf.PwscfParser.get_total_energy">[docs]</a>    <span class="k">def</span> <span class="nf">get_total_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Determine the total energy from the output&#39;&#39;&#39;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="c1"># reading file backwards in case relaxation run</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">fp</span><span class="o">.</span><span class="n">readlines</span><span class="p">()):</span>
+                <span class="k">if</span> <span class="s2">&quot;!&quot;</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">and</span> <span class="s2">&quot;total energy&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">energy</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">4</span><span class="p">:]</span>
+                    <span class="k">return</span> <span class="n">Property</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">energy</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">units</span><span class="o">=</span><span class="n">energy</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> not found in </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="s1">&#39;! &amp; total energy&#39;</span><span class="p">,</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">)))</span></div>
+
+    <span class="nd">@Value_if_true</span>
+    <span class="k">def</span> <span class="nf">is_relaxed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Determine if relaxation run from the output&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_line</span><span class="p">(</span><span class="s1">&#39;Geometry Optimization&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">,</span> <span class="n">return_string</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_is_converged</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Determine if calculation converged; for a relaxation (static) run</span>
+<span class="sd">        we look for ionic (electronic) convergence in the output&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_relaxed</span><span class="p">():</span>
+            <span class="c1"># relaxation run case</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_line</span><span class="p">([</span><span class="s1">&#39;End of&#39;</span><span class="p">,</span> <span class="s1">&#39;Geometry Optimization&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">,</span> <span class="n">return_string</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># static run case</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_line</span><span class="p">(</span><span class="s1">&#39;convergence has been achieved&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">,</span> <span class="n">return_string</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PwscfParser.get_KPPRA"><a class="viewcode-back" href="../../../dfttopif.parsers.pwscf.html#dfttopif.parsers.pwscf.PwscfParser.get_KPPRA">[docs]</a>    <span class="k">def</span> <span class="nf">get_KPPRA</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Determine the no. of k-points in the BZ (from the input) times the</span>
+<span class="sd">        no. of atoms (from the output)&#39;&#39;&#39;</span>
+        <span class="c1"># Find the no. of k-points</span>
+        <span class="n">fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputf</span><span class="p">))</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">l</span><span class="p">,</span><span class="n">ll</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fp</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">&quot;K_POINTS&quot;</span> <span class="ow">in</span> <span class="n">ll</span><span class="p">:</span>
+                <span class="c1"># determine the type of input</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ll</span><span class="o">.</span><span class="n">split</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s2">&quot;gamma&quot;</span> <span class="ow">in</span> <span class="n">ll</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                        <span class="n">ktype</span> <span class="o">=</span> <span class="s1">&#39;gamma&#39;</span>
+                    <span class="k">elif</span> <span class="s2">&quot;automatic&quot;</span> <span class="ow">in</span> <span class="n">ll</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                        <span class="n">ktype</span> <span class="o">=</span> <span class="s1">&#39;automatic&#39;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">ktype</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                <span class="k">else</span><span class="p">:</span> <span class="n">ktype</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                <span class="k">if</span> <span class="n">ktype</span> <span class="o">==</span> <span class="s1">&#39;gamma&#39;</span><span class="p">:</span>
+                    <span class="c1"># gamma point:</span>
+                    <span class="c1"># K_POINTS {gamma}</span>
+                    <span class="n">nk</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">elif</span> <span class="n">ktype</span> <span class="o">==</span> <span class="s1">&#39;automatic&#39;</span><span class="p">:</span>
+                    <span class="c1"># automatic:</span>
+                    <span class="c1"># K_POINTS automatic</span>
+                    <span class="c1">#  12 12 1 0 0 0</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">[</span><span class="n">l</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]]</span>
+                    <span class="n">nk</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">line</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># manual:</span>
+                    <span class="c1"># K_POINTS</span>
+                    <span class="c1">#  3</span>
+                    <span class="c1">#  0.125  0.125  0.0  1.0</span>
+                    <span class="c1">#  0.125  0.375  0.0  2.0</span>
+                    <span class="c1">#  0.375  0.375  0.0  1.0</span>
+                    <span class="n">nk</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">fp</span><span class="p">[</span><span class="n">l</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">])):</span>
+                        <span class="n">nk</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">fp</span><span class="p">[</span><span class="n">l</span><span class="o">+</span><span class="mi">2</span><span class="o">+</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">3</span><span class="p">]))</span>
+                <span class="c1"># Find the no. of atoms</span>
+                <span class="n">natoms</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_line</span><span class="p">(</span><span class="s1">&#39;number of atoms/cell&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">4</span><span class="p">])</span>
+                <span class="k">return</span> <span class="n">Value</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="n">nk</span><span class="o">*</span><span class="n">natoms</span><span class="p">)</span>
+        <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> not found in </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="s1">&#39;KPOINTS&#39;</span><span class="p">,</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputf</span><span class="p">)))</span></div>
+
+    <span class="nd">@Value_if_true</span>
+    <span class="k">def</span> <span class="nf">uses_SOC</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Looks for line with &quot;with spin-orbit&quot; in the output&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_line</span><span class="p">(</span><span class="s1">&#39;with spin-orbit&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">,</span> <span class="n">return_string</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PwscfParser.get_pp_name"><a class="viewcode-back" href="../../../dfttopif.parsers.pwscf.html#dfttopif.parsers.pwscf.PwscfParser.get_pp_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_pp_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Determine the pseudopotential names from the output&#39;&#39;&#39;</span>
+        <span class="n">ppnames</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Find the number of atom types</span>
+        <span class="n">natomtypes</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_line</span><span class="p">(</span><span class="s1">&#39;number of atomic types&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">5</span><span class="p">])</span>
+        <span class="c1"># Find the pseudopotential names</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;PseudoPot. #&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">ppnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">())</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ppnames</span><span class="p">)</span> <span class="o">==</span> <span class="n">natomtypes</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">Value</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="n">ppnames</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Could not find </span><span class="si">%i</span><span class="s1"> pseudopotential names&#39;</span><span class="o">%</span><span class="n">natomtypes</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PwscfParser.get_U_settings"><a class="viewcode-back" href="../../../dfttopif.parsers.pwscf.html#dfttopif.parsers.pwscf.PwscfParser.get_U_settings">[docs]</a>    <span class="k">def</span> <span class="nf">get_U_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Determine the DFT+U type and parameters from the output&#39;&#39;&#39;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;LDA+U calculation&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">U_param</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="n">U_param</span><span class="p">[</span><span class="s1">&#39;Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">U_param</span><span class="p">[</span><span class="s1">&#39;Values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="c1"># look through next several lines</span>
+                    <span class="k">for</span> <span class="n">nl</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">15</span><span class="p">):</span>
+                        <span class="n">line2</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">line2</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">line2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;atomic&quot;</span><span class="p">:</span>
+                            <span class="k">pass</span> <span class="c1"># column titles</span>
+                        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">line2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+                            <span class="n">U_param</span><span class="p">[</span><span class="s1">&#39;Values&#39;</span><span class="p">][</span><span class="n">line2</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+                            <span class="n">U_param</span><span class="p">[</span><span class="s1">&#39;Values&#39;</span><span class="p">][</span><span class="n">line2</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s1">&#39;L&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                            <span class="n">U_param</span><span class="p">[</span><span class="s1">&#39;Values&#39;</span><span class="p">][</span><span class="n">line2</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s1">&#39;U&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                            <span class="n">U_param</span><span class="p">[</span><span class="s1">&#39;Values&#39;</span><span class="p">][</span><span class="n">line2</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s1">&#39;J&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line2</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+                        <span class="k">else</span><span class="p">:</span> <span class="k">break</span> <span class="c1"># end of data block</span>
+                    <span class="k">return</span> <span class="n">Value</span><span class="p">(</span><span class="o">**</span><span class="n">U_param</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="PwscfParser.get_vdW_settings"><a class="viewcode-back" href="../../../dfttopif.parsers.pwscf.html#dfttopif.parsers.pwscf.PwscfParser.get_vdW_settings">[docs]</a>    <span class="k">def</span> <span class="nf">get_vdW_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Determine the vdW type if using vdW xc functional or correction</span>
+<span class="sd">        scheme from the input otherwise&#39;&#39;&#39;</span>
+        <span class="n">xc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_xc_functional</span><span class="p">()</span><span class="o">.</span><span class="n">scalars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">if</span> <span class="s1">&#39;vdw&#39;</span> <span class="ow">in</span> <span class="n">xc</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span> <span class="c1"># vdW xc functional</span>
+            <span class="k">return</span> <span class="n">Value</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="n">xc</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># look for vdw_corr in input</span>
+            <span class="n">vdW_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;xdm&#39;</span><span class="p">:</span><span class="s1">&#39;Becke-Johnson XDM&#39;</span><span class="p">,</span> <span class="s1">&#39;ts&#39;</span><span class="p">:</span>
+                        <span class="s1">&#39;Tkatchenko-Scheffler&#39;</span><span class="p">,</span> <span class="s1">&#39;ts-vdw&#39;</span><span class="p">:</span>
+                        <span class="s1">&#39;Tkatchenko-Scheffler&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;tkatchenko-scheffler&#39;</span><span class="p">:</span>
+                        <span class="s1">&#39;Tkatchenko-Scheffler&#39;</span><span class="p">,</span> <span class="s1">&#39;grimme-d2&#39;</span><span class="p">:</span> <span class="s1">&#39;Grimme D2&#39;</span><span class="p">,</span> <span class="s1">&#39;dft-d&#39;</span><span class="p">:</span> <span class="s1">&#39;Grimme D2&#39;</span><span class="p">}</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_line</span><span class="p">(</span><span class="s1">&#39;vdw_corr&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputf</span><span class="p">,</span> <span class="n">return_string</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">case_sens</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_line</span><span class="p">(</span><span class="s1">&#39;vdw_corr&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputf</span><span class="p">,</span> <span class="n">return_string</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">case_sens</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="n">vdwkey</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">rstrip</span><span class="p">())</span>
+                <span class="k">return</span> <span class="n">Value</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="n">vdW_dict</span><span class="p">[</span><span class="n">vdwkey</span><span class="p">])</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="PwscfParser.get_pressure"><a class="viewcode-back" href="../../../dfttopif.parsers.pwscf.html#dfttopif.parsers.pwscf.PwscfParser.get_pressure">[docs]</a>    <span class="k">def</span> <span class="nf">get_pressure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Determine the pressure from the output&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_line</span><span class="p">(</span><span class="s1">&#39;total   stress&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">,</span> <span class="n">return_string</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_line</span><span class="p">(</span><span class="s1">&#39;total   stress&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">)</span>
+            <span class="c1"># total   stress  (Ry/bohr**3)                   (kbar)     P=   -2.34</span>
+            <span class="c1"># P= runs into the value if very large pressure</span>
+            <span class="n">pvalue</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;P=&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">Property</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="n">pvalue</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;kbar&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PwscfParser.get_stresses"><a class="viewcode-back" href="../../../dfttopif.parsers.pwscf.html#dfttopif.parsers.pwscf.PwscfParser.get_stresses">[docs]</a>    <span class="k">def</span> <span class="nf">get_stresses</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Determine the stress tensor from the output&#39;&#39;&#39;</span>
+        <span class="n">stress_data</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># stress tensor at each iteration</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;total&quot;</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">and</span> <span class="s2">&quot;stress&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">stress</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+                        <span class="n">stress</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">next</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]])</span>
+                    <span class="n">stress_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stress</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stress_data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># return the final stress tensor</span>
+                <span class="k">return</span> <span class="n">Property</span><span class="p">(</span><span class="n">matrices</span><span class="o">=</span><span class="n">stress_data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;kbar&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span> <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="PwscfParser.get_output_structure"><a class="viewcode-back" href="../../../dfttopif.parsers.pwscf.html#dfttopif.parsers.pwscf.PwscfParser.get_output_structure">[docs]</a>    <span class="k">def</span> <span class="nf">get_output_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Determine the structure from the output&#39;&#39;&#39;</span>
+        <span class="n">bohr_to_angstrom</span> <span class="o">=</span> <span class="mf">0.529177249</span>
+
+        <span class="c1"># determine the number of atoms</span>
+        <span class="n">natoms</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_line</span><span class="p">(</span><span class="s1">&#39;number of atoms/cell&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="c1"># determine the initial lattice parameter</span>
+        <span class="n">alat</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_line</span><span class="p">(</span><span class="s1">&#39;lattice parameter (alat)&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># find the initial unit cell</span>
+        <span class="n">unit_cell</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;crystal axes:&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+                        <span class="n">unit_cell</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="o">*</span><span class="n">alat</span><span class="o">*</span><span class="n">bohr_to_angstrom</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">next</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;)&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()])</span>
+                    <span class="k">break</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unit_cell</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Cannot find the initial unit cell&#39;</span><span class="p">)</span>
+
+        <span class="c1"># find the initial atomic coordinates</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="p">[]</span> <span class="p">;</span> <span class="n">atom_symbols</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;site n.&quot;</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">and</span> <span class="s2">&quot;atom&quot;</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">and</span> <span class="s2">&quot;positions&quot;</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">and</span> <span class="s2">&quot;alat units&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">natoms</span><span class="p">):</span>
+                        <span class="n">coordline</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+                        <span class="n">atom_symbols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">coordline</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">i</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()]))</span>
+                        <span class="n">coord_conv_factor</span> <span class="o">=</span> <span class="n">alat</span><span class="o">*</span><span class="n">bohr_to_angstrom</span>
+                        <span class="n">coords</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="o">*</span><span class="n">coord_conv_factor</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">coordline</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;)&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()])</span>
+                    <span class="k">break</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Cannot find the initial atomic coordinates&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">is_relaxed</span><span class="p">())</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">):</span>
+            <span class="c1"># static run: create, populate, and return the initial structure</span>
+            <span class="n">structure</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">symbols</span><span class="o">=</span><span class="n">atom_symbols</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="n">unit_cell</span><span class="p">,</span> <span class="n">pbc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">structure</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">structure</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># relaxation run: update with the final structure</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s2">&quot;Begin final coordinates&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="s1">&#39;new unit-cell volume&#39;</span> <span class="ow">in</span> <span class="nb">next</span><span class="p">(</span><span class="n">fp</span><span class="p">):</span>
+                            <span class="c1"># unit cell allowed to change</span>
+                            <span class="nb">next</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span> <span class="c1"># blank line</span>
+                            <span class="c1"># get the final unit cell</span>
+                            <span class="n">unit_cell</span> <span class="o">=</span> <span class="p">[]</span>
+                            <span class="n">cellheader</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="s1">&#39;bohr&#39;</span> <span class="ow">in</span> <span class="n">cellheader</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                                <span class="n">cell_conv_factor</span> <span class="o">=</span> <span class="n">bohr_to_angstrom</span>
+                            <span class="k">elif</span> <span class="s1">&#39;angstrom&#39;</span> <span class="ow">in</span> <span class="n">cellheader</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                                <span class="n">cell_conv_factor</span> <span class="o">=</span> <span class="mf">1.0</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">alat</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">cellheader</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;alat=&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;)&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+                                <span class="n">cell_conv_factor</span> <span class="o">=</span> <span class="n">alat</span><span class="o">*</span><span class="n">bohr_to_angstrom</span>
+                            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+                                <span class="n">unit_cell</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="o">*</span><span class="n">cell_conv_factor</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">next</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()])</span>
+                            <span class="nb">next</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span> <span class="c1"># blank line</span>
+
+                        <span class="c1"># get the final atomic coordinates</span>
+                        <span class="n">coordtype</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;)&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">coordtype</span> <span class="o">==</span> <span class="s1">&#39;bohr&#39;</span><span class="p">:</span>
+                            <span class="n">coord_conv_factor</span> <span class="o">=</span> <span class="n">bohr_to_angstrom</span>
+                        <span class="k">elif</span> <span class="n">coordtype</span> <span class="o">==</span> <span class="s1">&#39;angstrom&#39;</span> <span class="ow">or</span> <span class="n">coordtype</span> <span class="o">==</span> <span class="s1">&#39;crystal&#39;</span><span class="p">:</span>
+                            <span class="n">coord_conv_factor</span> <span class="o">=</span> <span class="mf">1.0</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">coord_conv_factor</span> <span class="o">=</span> <span class="n">alat</span><span class="o">*</span><span class="n">bohr_to_angstrom</span>
+                        <span class="n">coords</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># reinitialize the coords</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">natoms</span><span class="p">):</span>
+                            <span class="n">coordline</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                            <span class="n">coords</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="o">*</span><span class="n">coord_conv_factor</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">coordline</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">]])</span>
+
+                        <span class="c1"># create, populate, and return the final structure</span>
+                        <span class="n">structure</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">symbols</span><span class="o">=</span><span class="n">atom_symbols</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="n">unit_cell</span><span class="p">,</span> <span class="n">pbc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">coordtype</span> <span class="o">==</span> <span class="s1">&#39;crystal&#39;</span><span class="p">:</span>
+                            <span class="n">structure</span><span class="o">.</span><span class="n">set_scaled_positions</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="c1"># direct coord</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">structure</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="c1"># cartesian coord</span>
+                        <span class="k">return</span> <span class="n">structure</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Cannot find the final coordinates&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PwscfParser.get_dos"><a class="viewcode-back" href="../../../dfttopif.parsers.pwscf.html#dfttopif.parsers.pwscf.PwscfParser.get_dos">[docs]</a>    <span class="k">def</span> <span class="nf">get_dos</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Find the total DOS shifted by the Fermi energy&#39;&#39;&#39;</span>
+        <span class="c1"># find the dos file</span>
+        <span class="n">fildos</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="n">f</span><span class="p">))]</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="n">fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="n">f</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+            <span class="n">first_line</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;E (eV)&quot;</span> <span class="ow">in</span> <span class="n">first_line</span> <span class="ow">and</span> <span class="s2">&quot;Int dos(E)&quot;</span> <span class="ow">in</span> <span class="n">first_line</span><span class="p">:</span>
+                <span class="n">fildos</span> <span class="o">=</span> <span class="n">f</span>
+                <span class="n">ndoscol</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">())</span><span class="o">-</span><span class="mi">2</span> <span class="c1"># number of spin channels</span>
+                <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">break</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fildos</span><span class="p">:</span> <span class="k">return</span> <span class="kc">None</span> <span class="c1"># cannot find DOS</span>
+
+        <span class="c1"># get the Fermi energy</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_line</span><span class="p">(</span><span class="s1">&#39;the Fermi energy is&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputf</span><span class="p">)</span>
+        <span class="n">efermi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;is&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># grab the DOS</span>
+        <span class="n">energy</span> <span class="o">=</span> <span class="p">[]</span> <span class="p">;</span> <span class="n">dos</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="n">fildos</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+        <span class="nb">next</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span> <span class="c1"># comment line</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">ls</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="n">energy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">ls</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">-</span><span class="n">efermi</span><span class="p">)</span>
+            <span class="n">dos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">sum</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ls</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="o">+</span><span class="n">ndoscol</span><span class="p">]]))</span>
+        <span class="k">return</span> <span class="n">Property</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="n">dos</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;number of states per unit cell&#39;</span><span class="p">,</span> <span class="n">conditions</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;energy&#39;</span><span class="p">,</span> <span class="n">scalars</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;eV&#39;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="PwscfParser.get_forces"><a class="viewcode-back" href="../../../dfttopif.parsers.pwscf.html#dfttopif.parsers.pwscf.PwscfParser.get_forces">[docs]</a>    <span class="k">def</span> <span class="nf">get_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="PwscfParser.get_outcar"><a class="viewcode-back" href="../../../dfttopif.parsers.pwscf.html#dfttopif.parsers.pwscf.PwscfParser.get_outcar">[docs]</a>    <span class="k">def</span> <span class="nf">get_outcar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="PwscfParser.get_incar"><a class="viewcode-back" href="../../../dfttopif.parsers.pwscf.html#dfttopif.parsers.pwscf.PwscfParser.get_incar">[docs]</a>    <span class="k">def</span> <span class="nf">get_incar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="PwscfParser.get_poscar"><a class="viewcode-back" href="../../../dfttopif.parsers.pwscf.html#dfttopif.parsers.pwscf.PwscfParser.get_poscar">[docs]</a>    <span class="k">def</span> <span class="nf">get_poscar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="PwscfParser.get_band_gap"><a class="viewcode-back" href="../../../dfttopif.parsers.pwscf.html#dfttopif.parsers.pwscf.PwscfParser.get_band_gap">[docs]</a>    <span class="k">def</span> <span class="nf">get_band_gap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Compute the band gap from the DOS&#39;&#39;&#39;</span>
+        <span class="n">dosdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dos</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">dosdata</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span> <span class="c1"># cannot find DOS</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">energy</span> <span class="o">=</span> <span class="n">dosdata</span><span class="o">.</span><span class="n">conditions</span><span class="o">.</span><span class="n">scalars</span>
+            <span class="n">dos</span> <span class="o">=</span> <span class="n">dosdata</span><span class="o">.</span><span class="n">scalars</span>
+            <span class="n">step_size</span> <span class="o">=</span> <span class="n">energy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="n">energy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">not_found</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">;</span> <span class="n">l</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">;</span> <span class="n">bot</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="mi">3</span> <span class="p">;</span> <span class="n">top</span> <span class="o">=</span> <span class="o">-</span><span class="mi">10</span><span class="o">**</span><span class="mi">3</span>
+            <span class="k">while</span> <span class="n">not_found</span> <span class="ow">and</span> <span class="n">l</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">dos</span><span class="p">):</span>
+                <span class="c1"># iterate through the data</span>
+                <span class="n">e</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">energy</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">dens</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dos</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                <span class="c1"># note: dos already shifted by efermi</span>
+                <span class="k">if</span> <span class="n">e</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">dens</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="p">:</span>
+                    <span class="n">bot</span> <span class="o">=</span> <span class="n">e</span>
+                <span class="k">elif</span> <span class="n">e</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">dens</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="p">:</span>
+                    <span class="n">top</span> <span class="o">=</span> <span class="n">e</span>
+                    <span class="n">not_found</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">l</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">top</span> <span class="o">&lt;</span> <span class="n">bot</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Algorithm failed to find the band gap&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">top</span> <span class="o">-</span> <span class="n">bot</span> <span class="o">&lt;</span> <span class="n">step_size</span><span class="o">*</span><span class="mi">2</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Property</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;eV&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bandgap</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">top</span><span class="o">-</span><span class="n">bot</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">Property</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="nb">round</span><span class="p">(</span><span class="n">bandgap</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;eV&#39;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dfttopif 0.1.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../dfttopif.html" >dfttopif</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Citrine Informatics.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>

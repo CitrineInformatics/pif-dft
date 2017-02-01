@@ -1,0 +1,24 @@
+dfttopif package
+================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    dfttopif.parsers
+
+Submodules
+----------
+
+.. toctree::
+
+   dfttopif.web
+
+Module contents
+---------------
+
+.. automodule:: dfttopif
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,7 @@
+dfttopif.parsers.abinit module
+==============================
+
+.. automodule:: dfttopif.parsers.abinit
+    :members:
+    :undoc-members:
+    :show-inheritance:

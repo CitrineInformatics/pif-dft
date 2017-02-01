@@ -1,0 +1,257 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dfttopif &#8212; dfttopif 0.1.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="dfttopif 0.1.1 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">dfttopif 0.1.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dfttopif</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">import</span> <span class="nn">tarfile</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">from</span> <span class="nn">dfttopif.parsers</span> <span class="k">import</span> <span class="n">VaspParser</span>
+<span class="kn">from</span> <span class="nn">dfttopif.parsers</span> <span class="k">import</span> <span class="n">PwscfParser</span>
+<span class="kn">from</span> <span class="nn">pypif.obj</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="tarfile_to_pif"><a class="viewcode-back" href="../dfttopif.html#dfttopif.tarfile_to_pif">[docs]</a><span class="k">def</span> <span class="nf">tarfile_to_pif</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">temp_root_dir</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Process a tar file that contains DFT data.</span>
+
+<span class="sd">    Input:</span>
+<span class="sd">        filename - String, Path to the file to process.</span>
+<span class="sd">        temp_root_dir - String, Directory in which to save temporary files. Defaults to working directory.</span>
+<span class="sd">        verbose - int, How much status messages to print</span>
+
+<span class="sd">    Output:</span>
+<span class="sd">        pif - ChemicalSystem, Results and settings of</span>
+<span class="sd">            the DFT calculation in pif format</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">temp_dir</span> <span class="o">=</span> <span class="n">temp_root_dir</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">tar</span> <span class="o">=</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+        <span class="n">tar</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">temp_dir</span><span class="p">)</span>
+        <span class="n">tar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">):</span>
+            <span class="n">cur_dir</span> <span class="o">=</span> <span class="n">temp_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">i</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">cur_dir</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">directory_to_pif</span><span class="p">(</span><span class="n">cur_dir</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">directory_to_pif</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="archive_to_pif"><a class="viewcode-back" href="../dfttopif.html#dfttopif.archive_to_pif">[docs]</a><span class="k">def</span> <span class="nf">archive_to_pif</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given a archive file that contains output from a DFT calculation, parse the data and return a PIF object.</span>
+
+<span class="sd">    Input:</span>
+<span class="sd">        filename - String, Path to the file to process.</span>
+<span class="sd">        verbose - int, How much status messages to print</span>
+
+<span class="sd">    Output:</span>
+<span class="sd">        pif - ChemicalSystem, Results and settings of</span>
+<span class="sd">            the DFT calculation in pif format</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">is_tarfile</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">tarfile_to_pif</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Cannot process file type&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="directory_to_pif"><a class="viewcode-back" href="../dfttopif.html#dfttopif.directory_to_pif">[docs]</a><span class="k">def</span> <span class="nf">directory_to_pif</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">quality_report</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Given a directory that contains output from</span>
+<span class="sd">    a DFT calculation, parse the data and return</span>
+<span class="sd">    a pif object</span>
+
+<span class="sd">    Input:</span>
+<span class="sd">        directory - String, path to directory containing</span>
+<span class="sd">            DFT results</span>
+<span class="sd">        verbose - int, How much status messages to print</span>
+
+<span class="sd">    Output:</span>
+<span class="sd">        pif - ChemicalSystem, Results and settings of</span>
+<span class="sd">            the DFT calculation in pif format</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="c1"># Look for the first parser compatible with the directory</span>
+    <span class="n">foundParser</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">possible_parser</span> <span class="ow">in</span> <span class="p">[</span><span class="n">VaspParser</span><span class="p">,</span> <span class="n">PwscfParser</span><span class="p">]:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">parser</span> <span class="o">=</span> <span class="n">possible_parser</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">parser</span><span class="o">.</span><span class="n">test_if_from</span><span class="p">(</span><span class="n">directory</span><span class="p">):</span>
+                <span class="n">foundParser</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">break</span>
+        <span class="k">except</span><span class="p">:</span> <span class="k">pass</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">foundParser</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Directory is not in correct format for an existing parser&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found a </span><span class="si">%s</span><span class="s2"> directory&quot;</span><span class="p">,</span> <span class="n">parser</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+        
+    <span class="c1"># Get information about the chemical system</span>
+    <span class="n">chem</span> <span class="o">=</span> <span class="n">ChemicalSystem</span><span class="p">()</span>
+    <span class="n">chem</span><span class="o">.</span><span class="n">chemical_formula</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">get_composition</span><span class="p">()</span>
+        
+    <span class="c1"># Get software information, to list as method</span>
+    <span class="n">software</span> <span class="o">=</span> <span class="n">Software</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">parser</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span>
+        <span class="n">version</span><span class="o">=</span><span class="n">parser</span><span class="o">.</span><span class="n">get_version_number</span><span class="p">())</span>
+        
+    <span class="c1"># Define the DFT method object</span>
+    <span class="n">method</span> <span class="o">=</span> <span class="n">Method</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Density Functional Theory&#39;</span><span class="p">,</span>
+        <span class="n">software</span><span class="o">=</span><span class="n">software</span><span class="p">)</span>
+        
+    <span class="c1"># Get the settings (aka. &quot;conditions&quot;) of the DFT calculations</span>
+    <span class="n">conditions</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">parser</span><span class="o">.</span><span class="n">get_setting_functions</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="c1"># Get the condition</span>
+        <span class="n">cond</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="n">func</span><span class="p">)()</span>
+
+        <span class="c1"># If the condition is None or False, skip it</span>
+        <span class="k">if</span> <span class="n">cond</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Set the name</span>
+        <span class="n">cond</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+
+        <span class="c1"># Set the types</span>
+        <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cond</span><span class="p">)</span>
+    
+    <span class="c1"># Get the properties of the system</span>
+    <span class="n">chem</span><span class="o">.</span><span class="n">properties</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">parser</span><span class="o">.</span><span class="n">get_result_functions</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="c1"># Get the property</span>
+        <span class="n">prop</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="n">func</span><span class="p">)()</span>
+        
+        <span class="c1"># If the property is None, skip it</span>
+        <span class="k">if</span> <span class="n">prop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Add name and other data</span>
+        <span class="n">prop</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="n">prop</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span>
+        <span class="n">prop</span><span class="o">.</span><span class="n">data_type</span><span class="o">=</span><span class="s1">&#39;COMPUTATIONAL&#39;</span>
+        <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="n">Value</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">prop</span><span class="o">.</span><span class="n">conditions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">prop</span><span class="o">.</span><span class="n">conditions</span> <span class="o">=</span> <span class="n">conditions</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">conditions</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">prop</span><span class="o">.</span><span class="n">conditions</span> <span class="o">=</span> <span class="p">[</span><span class="n">prop</span><span class="o">.</span><span class="n">conditions</span><span class="p">]</span>
+            <span class="n">prop</span><span class="o">.</span><span class="n">conditions</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">conditions</span><span class="p">)</span>
+
+        <span class="c1"># Add it to the output</span>
+        <span class="n">chem</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">quality_report</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">tarfile</span>
+        <span class="n">tar</span> <span class="o">=</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;tmp.tar&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+        <span class="n">tar</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="s2">&quot;OUTCAR&quot;</span><span class="p">))</span>
+        <span class="n">tar</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="s2">&quot;INCAR&quot;</span><span class="p">))</span>
+        <span class="n">tar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="kn">import</span> <span class="nn">requests</span>
+        <span class="kn">import</span> <span class="nn">json</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;https://calval.citrination.com/validate/tarfile&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;tmp.tar&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="n">requests</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
+            <span class="n">report</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">report_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="s2">&quot;report.txt&quot;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">report_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">report</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">report_file</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;./&quot;</span><span class="p">:</span>
+                <span class="n">report_file</span> <span class="o">=</span> <span class="n">report_file</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+            <span class="n">chem</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">Property</span><span class="p">(</span>
+                        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;quality_report&quot;</span><span class="p">,</span>
+                        <span class="n">files</span><span class="o">=</span><span class="p">[</span><span class="n">FileReference</span><span class="p">(</span><span class="n">relative_path</span><span class="o">=</span><span class="n">report_file</span><span class="p">)]</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Something failed: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">status_code</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+
+
+    <span class="k">return</span> <span class="n">chem</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">dfttopif 0.1.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Citrine Informatics.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>

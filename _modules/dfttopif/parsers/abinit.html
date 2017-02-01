@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dfttopif.parsers.abinit &#8212; dfttopif 0.1.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="dfttopif 0.1.1 documentation" href="../../../index.html" />
+    <link rel="up" title="dfttopif" href="../../dfttopif.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dfttopif 0.1.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../dfttopif.html" accesskey="U">dfttopif</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dfttopif.parsers.abinit</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">DFTParser</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">from</span> <span class="nn">ase.calculators.abinit</span> <span class="k">import</span> <span class="n">Abinit</span>
+<span class="kn">from</span> <span class="nn">pypif.obj.common</span> <span class="k">import</span> <span class="n">Value</span><span class="p">,</span> <span class="n">Property</span>
+
+<div class="viewcode-block" id="AbinitParser"><a class="viewcode-back" href="../../../dfttopif.parsers.abinit.html#dfttopif.parsers.abinit.AbinitParser">[docs]</a><span class="k">class</span> <span class="nc">AbinitParser</span><span class="p">(</span><span class="n">DFTParser</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Parser for ABINIT calculations</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">_label</span> <span class="o">=</span> <span class="kc">None</span>
+    
+<div class="viewcode-block" id="AbinitParser.get_name"><a class="viewcode-back" href="../../../dfttopif.parsers.abinit.html#dfttopif.parsers.abinit.AbinitParser.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="s2">&quot;ABINIT&quot;</span></div>
+    
+<div class="viewcode-block" id="AbinitParser.test_if_from"><a class="viewcode-back" href="../../../dfttopif.parsers.abinit.html#dfttopif.parsers.abinit.AbinitParser.test_if_from">[docs]</a>    <span class="k">def</span> <span class="nf">test_if_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+        <span class="c1"># Check whether any file has as name ABINIT in the file in the first two lines</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">f</span><span class="p">))]</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="n">fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">f</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="p">[</span><span class="n">fp</span><span class="o">.</span><span class="n">readline</span><span class="p">(),</span> <span class="n">fp</span><span class="o">.</span><span class="n">readline</span><span class="p">()]:</span>
+                <span class="k">if</span> <span class="s2">&quot;ABINIT&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+        
+    <span class="k">def</span> <span class="nf">_get_label</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Find the label for the output files </span>
+<span class="sd">         for this calculation</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="n">f</span><span class="p">))]</span> 
+            <span class="n">foundfiles</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;.files&quot;</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span> 
+                    <span class="n">foundfiles</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">+</span> <span class="s1">&#39;.files&#39;</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">line</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">+</span> <span class="s2">&quot;.in&quot;</span><span class="p">:</span>
+                       <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                       <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;first line must be label.in&#39;</span><span class="p">)</span> 
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">line</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">+</span> <span class="s2">&quot;.txt&quot;</span><span class="p">:</span>
+                       <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                       <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;second line must be label.txt&#39;</span><span class="p">)</span> 
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">line</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">+</span> <span class="s2">&quot;i&quot;</span><span class="p">:</span>
+                       <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                       <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;third line must be labeli&#39;</span><span class="p">)</span> 
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">line</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">+</span> <span class="s2">&quot;o&quot;</span><span class="p">:</span>
+                       <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                       <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;fourth line must be labelo&#39;</span><span class="p">)</span> 
+                    <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">foundfiles</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;label.files not found&#39;</span><span class="p">)</span>
+                                
+<span class="c1">#ASE format</span>
+<span class="c1">#        (self.prefix + &#39;.in&#39;) # input</span>
+<span class="c1">#        (self.prefix + &#39;.txt&#39;)# output</span>
+<span class="c1">#        (self.prefix + &#39;i&#39;)   # input</span>
+<span class="c1">#        (self.prefix + &#39;o&#39;)   # output</span>
+                
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span>
+
+<div class="viewcode-block" id="AbinitParser.get_cutoff_energy"><a class="viewcode-back" href="../../../dfttopif.parsers.abinit.html#dfttopif.parsers.abinit.AbinitParser.get_cutoff_energy">[docs]</a>    <span class="k">def</span> <span class="nf">get_cutoff_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Open up the label.txt file</span>
+        <span class="n">fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">+</span> <span class="s1">&#39;.out&#39;</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+        <span class="n">foundecho</span> <span class="o">=</span> <span class="kc">False</span> 
+        <span class="c1"># Look for ecut after the occurence of &quot;echo values of preprocessed input variables&quot;</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;echo values of preprocessed input variables&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">foundecho</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="s2">&quot;ecut&quot;</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">and</span> <span class="n">foundecho</span><span class="p">:</span>
+                <span class="n">words</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="k">return</span> <span class="n">Value</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">units</span><span class="o">=</span><span class="n">words</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="c1"># Error handling: ecut not found</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;ecut not found&#39;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dfttopif 0.1.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../dfttopif.html" >dfttopif</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Citrine Informatics.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>

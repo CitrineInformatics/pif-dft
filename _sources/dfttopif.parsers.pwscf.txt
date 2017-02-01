@@ -1,0 +1,7 @@
+dfttopif.parsers.pwscf module
+=============================
+
+.. automodule:: dfttopif.parsers.pwscf
+    :members:
+    :undoc-members:
+    :show-inheritance:

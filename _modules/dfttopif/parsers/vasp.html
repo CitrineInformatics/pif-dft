@@ -1,0 +1,409 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dfttopif.parsers.vasp &#8212; dfttopif 0.1.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="dfttopif 0.1.1 documentation" href="../../../index.html" />
+    <link rel="up" title="dfttopif" href="../../dfttopif.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dfttopif 0.1.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../dfttopif.html" accesskey="U">dfttopif</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dfttopif.parsers.vasp</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">pypif.obj.common.property</span> <span class="k">import</span> <span class="n">Property</span>
+
+<span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">DFTParser</span><span class="p">,</span> <span class="n">Value_if_true</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">ase.calculators.vasp</span> <span class="k">import</span> <span class="n">Vasp</span>
+<span class="kn">from</span> <span class="nn">ase.io.vasp</span> <span class="k">import</span> <span class="n">read_vasp</span><span class="p">,</span> <span class="n">read_vasp_out</span>
+<span class="kn">from</span> <span class="nn">pypif.obj.common.value</span> <span class="k">import</span> <span class="n">Value</span>
+<span class="kn">from</span> <span class="nn">pypif.obj.common.file_reference</span> <span class="k">import</span> <span class="n">FileReference</span>
+
+<div class="viewcode-block" id="VaspParser"><a class="viewcode-back" href="../../../dfttopif.parsers.vasp.html#dfttopif.parsers.vasp.VaspParser">[docs]</a><span class="k">class</span> <span class="nc">VaspParser</span><span class="p">(</span><span class="n">DFTParser</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Parser for VASP calculations</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+<div class="viewcode-block" id="VaspParser.get_name"><a class="viewcode-back" href="../../../dfttopif.parsers.vasp.html#dfttopif.parsers.vasp.VaspParser.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="s2">&quot;VASP&quot;</span></div>
+    
+<div class="viewcode-block" id="VaspParser.test_if_from"><a class="viewcode-back" href="../../../dfttopif.parsers.vasp.html#dfttopif.parsers.vasp.VaspParser.test_if_from">[docs]</a>    <span class="k">def</span> <span class="nf">test_if_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+        <span class="c1"># Check whether it has an INCAR file</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="s1">&#39;INCAR&#39;</span><span class="p">))</span></div>
+        
+<div class="viewcode-block" id="VaspParser.get_output_structure"><a class="viewcode-back" href="../../../dfttopif.parsers.vasp.html#dfttopif.parsers.vasp.VaspParser.get_output_structure">[docs]</a>    <span class="k">def</span> <span class="nf">get_output_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="o">=</span> <span class="n">read_vasp_out</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;OUTCAR&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span></div>
+
+<div class="viewcode-block" id="VaspParser.get_outcar"><a class="viewcode-back" href="../../../dfttopif.parsers.vasp.html#dfttopif.parsers.vasp.VaspParser.get_outcar">[docs]</a>    <span class="k">def</span> <span class="nf">get_outcar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">raw_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;OUTCAR&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">raw_path</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;./&quot;</span><span class="p">:</span>
+            <span class="n">raw_path</span> <span class="o">=</span> <span class="n">raw_path</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">Property</span><span class="p">(</span><span class="n">files</span><span class="o">=</span><span class="p">[</span><span class="n">FileReference</span><span class="p">(</span>
+            <span class="n">relative_path</span><span class="o">=</span><span class="n">raw_path</span>
+        <span class="p">)])</span></div>
+
+<div class="viewcode-block" id="VaspParser.get_incar"><a class="viewcode-back" href="../../../dfttopif.parsers.vasp.html#dfttopif.parsers.vasp.VaspParser.get_incar">[docs]</a>    <span class="k">def</span> <span class="nf">get_incar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">raw_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;INCAR&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">raw_path</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;./&quot;</span><span class="p">:</span>
+            <span class="n">raw_path</span> <span class="o">=</span> <span class="n">raw_path</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">Value</span><span class="p">(</span><span class="n">files</span><span class="o">=</span><span class="p">[</span><span class="n">FileReference</span><span class="p">(</span>
+            <span class="n">relative_path</span><span class="o">=</span><span class="n">raw_path</span>
+        <span class="p">)])</span></div>
+
+<div class="viewcode-block" id="VaspParser.get_poscar"><a class="viewcode-back" href="../../../dfttopif.parsers.vasp.html#dfttopif.parsers.vasp.VaspParser.get_poscar">[docs]</a>    <span class="k">def</span> <span class="nf">get_poscar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">raw_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;POSCAR&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">raw_path</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;./&quot;</span><span class="p">:</span>
+            <span class="n">raw_path</span> <span class="o">=</span> <span class="n">raw_path</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">Value</span><span class="p">(</span><span class="n">files</span><span class="o">=</span><span class="p">[</span><span class="n">FileReference</span><span class="p">(</span>
+            <span class="n">relative_path</span><span class="o">=</span><span class="n">raw_path</span>
+        <span class="p">)])</span></div>
+
+<div class="viewcode-block" id="VaspParser.get_cutoff_energy"><a class="viewcode-back" href="../../../dfttopif.parsers.vasp.html#dfttopif.parsers.vasp.VaspParser.get_cutoff_energy">[docs]</a>    <span class="k">def</span> <span class="nf">get_cutoff_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Open up the OUTCAR</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;OUTCAR&#39;</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+         <span class="c1"># Look for ENCUT</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;ENCUT&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">words</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                    <span class="k">return</span> <span class="n">Value</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="n">units</span><span class="o">=</span><span class="n">words</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+                
+        <span class="c1"># Error handling: ENCUT not found</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;ENCUT not found&#39;</span><span class="p">)</span></div>
+
+    <span class="nd">@Value_if_true</span>
+    <span class="k">def</span> <span class="nf">uses_SOC</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Open up the OUTCAR</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;OUTCAR&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        
+            <span class="c1">#look for LSORBIT</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;LSORBIT&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">words</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                    <span class="k">return</span> <span class="n">words</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;T&#39;</span>
+        
+        <span class="c1"># Error handling: LSORBIT not found</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;LSORBIT not found&#39;</span><span class="p">)</span>
+        
+    <span class="nd">@Value_if_true</span>
+    <span class="k">def</span> <span class="nf">is_relaxed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Open up the OUTCAR</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;OUTCAR&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        
+            <span class="c1">#  Look for NSW</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;NSW&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">words</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">0</span>
+                
+        <span class="c1"># Error handling: NSW not found</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;NSW not found&#39;</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="VaspParser.get_xc_functional"><a class="viewcode-back" href="../../../dfttopif.parsers.vasp.html#dfttopif.parsers.vasp.VaspParser.get_xc_functional">[docs]</a>    <span class="k">def</span> <span class="nf">get_xc_functional</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Open up the OUTCAR</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;OUTCAR&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        
+            <span class="c1"># Look for TITEL</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;TITEL&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">words</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                    <span class="k">return</span> <span class="n">Value</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="n">words</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                    <span class="k">break</span></div>
+            
+<div class="viewcode-block" id="VaspParser.get_pp_name"><a class="viewcode-back" href="../../../dfttopif.parsers.vasp.html#dfttopif.parsers.vasp.VaspParser.get_pp_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_pp_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Open up the OUTCAR</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;OUTCAR&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        
+            <span class="c1">#initialize empty list to store pseudopotentials</span>
+            <span class="n">pp</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># Look for TITEL</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;TITEL&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">words</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                    <span class="n">pp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">Value</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="n">pp</span><span class="p">)</span>
+                
+        <span class="c1"># Error handling: TITEL not found</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;TITEL not found&#39;</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="VaspParser.get_KPPRA"><a class="viewcode-back" href="../../../dfttopif.parsers.vasp.html#dfttopif.parsers.vasp.VaspParser.get_KPPRA">[docs]</a>    <span class="k">def</span> <span class="nf">get_KPPRA</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Open up the OUTCAR</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;OUTCAR&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="c1">#store the number of atoms and number of irreducible K-points</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;NIONS&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">words</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                    <span class="n">NI</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="mi">11</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="s2">&quot;NKPTS&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">words</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                    <span class="n">NIRK</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+            <span class="c1">#check if the number of k-points was reduced by VASP if so, sum all the k-points weight</span>
+            <span class="k">if</span> <span class="s2">&quot;irreducible&quot;</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;OUTCAR&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">():</span>
+                <span class="n">fp</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                    <span class="c1">#sum all the k-points weight</span>
+                    <span class="k">if</span> <span class="s2">&quot;Coordinates               Weight&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                        <span class="n">NK</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+                        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">counter</span> <span class="o">==</span> <span class="n">NIRK</span><span class="p">:</span>
+                                <span class="k">break</span>
+                            <span class="n">NK</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">3</span><span class="p">])</span>
+                            <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">return</span> <span class="n">Value</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="p">(</span><span class="n">NI</span><span class="o">*</span><span class="n">NK</span><span class="p">))</span>
+            <span class="c1">#if k-points were not reduced KPPRA equals the number of atoms * number of irreducible k-points</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Value</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="p">(</span><span class="n">NI</span><span class="o">*</span><span class="n">NIRK</span><span class="p">))</span>
+
+                
+        <span class="c1"># Error handling: NKPTS or NIONS not found</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;NIONS, irredicuble or Coordinates not found&#39;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_is_converged</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_ase</span><span class="p">(</span><span class="n">Vasp</span><span class="p">()</span><span class="o">.</span><span class="n">read_convergence</span><span class="p">)</span>
+
+<div class="viewcode-block" id="VaspParser.get_total_energy"><a class="viewcode-back" href="../../../dfttopif.parsers.vasp.html#dfttopif.parsers.vasp.VaspParser.get_total_energy">[docs]</a>    <span class="k">def</span> <span class="nf">get_total_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Property</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_call_ase</span><span class="p">(</span><span class="n">Vasp</span><span class="p">()</span><span class="o">.</span><span class="n">read_energy</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;eV&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VaspParser.get_version_number"><a class="viewcode-back" href="../../../dfttopif.parsers.vasp.html#dfttopif.parsers.vasp.VaspParser.get_version_number">[docs]</a>    <span class="k">def</span> <span class="nf">get_version_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Open up the OUTCAR</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;OUTCAR&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        
+            <span class="c1">#look for vasp</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;vasp&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">words</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                    <span class="k">return</span> <span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;vasp.&#39;</span><span class="p">))</span>
+                    <span class="k">break</span>
+        
+        <span class="c1"># Error handling: vasp not found</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;vasp not found&#39;</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="VaspParser.get_U_settings"><a class="viewcode-back" href="../../../dfttopif.parsers.vasp.html#dfttopif.parsers.vasp.VaspParser.get_U_settings">[docs]</a>    <span class="k">def</span> <span class="nf">get_U_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1">#Open up the OUTCAR</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;OUTCAR&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="c1">#Check if U is used</span>
+            <span class="k">if</span> <span class="s2">&quot;LDAU&quot;</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;OUTCAR&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">():</span>
+                <span class="n">U_param</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">atoms</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="c1">#get the list of pseupotential used</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s2">&quot;TITEL&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                        <span class="n">atoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">3</span><span class="p">])</span>
+                    <span class="c1">#Get the U type used</span>
+                    <span class="k">if</span> <span class="s2">&quot;LDAUTYPE&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                            <span class="n">U_param</span><span class="p">[</span><span class="s1">&#39;Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">atoms</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+                <span class="n">fp</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="c1">#Get the L value</span>
+                <span class="n">U_param</span><span class="p">[</span><span class="s1">&#39;Values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">atom</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">))):</span>
+                        <span class="k">if</span> <span class="s2">&quot;LDAUL&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                                <span class="n">U_param</span><span class="p">[</span><span class="s1">&#39;Values&#39;</span><span class="p">][</span><span class="n">atom</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="n">i</span><span class="p">])}</span>
+                <span class="n">fp</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="c1">#Get the U value            </span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">atom</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">))):</span>
+                        <span class="k">if</span> <span class="s2">&quot;LDAUU&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                                <span class="n">U_param</span><span class="p">[</span><span class="s1">&#39;Values&#39;</span><span class="p">][</span><span class="n">atom</span><span class="p">][</span><span class="s1">&#39;U&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">fp</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="c1">#Get the J value</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">atom</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">))):</span>
+                        <span class="k">if</span> <span class="s2">&quot;LDAUJ&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                                <span class="n">U_param</span><span class="p">[</span><span class="s1">&#39;Values&#39;</span><span class="p">][</span><span class="n">atom</span><span class="p">][</span><span class="s1">&#39;J&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="n">i</span><span class="p">])</span>
+                <span class="k">return</span> <span class="n">Value</span><span class="p">(</span><span class="o">**</span><span class="n">U_param</span><span class="p">)</span>
+            <span class="c1">#if U is not used, return None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span></div>
+            
+<div class="viewcode-block" id="VaspParser.get_vdW_settings"><a class="viewcode-back" href="../../../dfttopif.parsers.vasp.html#dfttopif.parsers.vasp.VaspParser.get_vdW_settings">[docs]</a>    <span class="k">def</span> <span class="nf">get_vdW_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1">#define the name of the vdW methods in function of their keyword</span>
+        <span class="n">vdW_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;BO&#39;</span><span class="p">:</span><span class="s1">&#39;optPBE-vdW&#39;</span><span class="p">,</span> <span class="s1">&#39;MK&#39;</span><span class="p">:</span><span class="s1">&#39;optB88-vdW&#39;</span><span class="p">,</span> <span class="s1">&#39;ML&#39;</span><span class="p">:</span><span class="s1">&#39;optB86b-vdW&#39;</span><span class="p">,</span><span class="s1">&#39;RE&#39;</span><span class="p">:</span><span class="s1">&#39;vdW-DF&#39;</span><span class="p">,</span><span class="s1">&#39;OR&#39;</span><span class="p">:</span><span class="s1">&#39;Klimes-Bowler-Michaelides&#39;</span><span class="p">}</span>
+        <span class="c1">#Open up the OUTCAR</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;OUTCAR&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="c1">#Check if vdW is used</span>
+            <span class="k">if</span> <span class="s2">&quot;LUSE_VDW&quot;</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;OUTCAR&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">():</span>
+                <span class="c1">#if vdW is used, get its keyword             </span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s2">&quot;GGA     =&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                        <span class="n">words</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                        <span class="k">return</span> <span class="n">Value</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="n">vdW_dict</span><span class="p">[</span><span class="n">words</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+            <span class="c1">#if vdW is not used, return None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span></div>
+            
+<div class="viewcode-block" id="VaspParser.get_pressure"><a class="viewcode-back" href="../../../dfttopif.parsers.vasp.html#dfttopif.parsers.vasp.VaspParser.get_pressure">[docs]</a>    <span class="k">def</span> <span class="nf">get_pressure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1">#define pressure dictionnary because since when is kB = kbar? Come on VASP people</span>
+        <span class="n">pressure_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;kB&#39;</span><span class="p">:</span><span class="s1">&#39;kbar&#39;</span><span class="p">}</span>
+        <span class="c1">#Check if ISIF = 0 is used</span>
+        <span class="k">if</span> <span class="s2">&quot;ISIF   =      0&quot;</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;OUTCAR&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">():</span>
+            <span class="c1">#if ISIF = 0 is used, print this crap</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="c1">#if ISIF is not 0 then extract pressure and units</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1">#scan file in reverse to have the final pressure</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;OUTCAR&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">readlines</span><span class="p">()):</span>
+                <span class="k">if</span> <span class="s2">&quot;external pressure&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">words</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                    <span class="k">return</span> <span class="n">Property</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span> <span class="n">units</span><span class="o">=</span><span class="n">pressure_dict</span><span class="p">[</span><span class="n">words</span><span class="p">[</span><span class="mi">4</span><span class="p">]])</span>
+                    <span class="k">break</span></div>
+    
+<div class="viewcode-block" id="VaspParser.get_stresses"><a class="viewcode-back" href="../../../dfttopif.parsers.vasp.html#dfttopif.parsers.vasp.VaspParser.get_stresses">[docs]</a>    <span class="k">def</span> <span class="nf">get_stresses</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1">#Check if ISIF = 0 is used</span>
+        <span class="k">if</span> <span class="s2">&quot;ISIF   =      0&quot;</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;OUTCAR&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="c1">#Check if ISIF = 1 is used</span>
+        <span class="k">elif</span> <span class="s2">&quot;ISIF   =      1&quot;</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;OUTCAR&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1">#scan file in reverse to have the final pressure</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;OUTCAR&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+                <span class="k">if</span> <span class="s2">&quot;in kB&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">words</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                    <span class="n">XX</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span> <span class="n">YY</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="mi">3</span><span class="p">]);</span> <span class="n">ZZ</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="mi">4</span><span class="p">]);</span> <span class="n">XY</span><span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="mi">5</span><span class="p">]);</span> <span class="n">YZ</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="mi">6</span><span class="p">]);</span> <span class="n">ZX</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">Property</span><span class="p">(</span><span class="n">matrices</span><span class="o">=</span><span class="p">[[</span><span class="n">XX</span><span class="p">,</span><span class="n">XY</span><span class="p">,</span><span class="n">ZX</span><span class="p">],[</span><span class="n">XY</span><span class="p">,</span><span class="n">YY</span><span class="p">,</span><span class="n">YZ</span><span class="p">],[</span><span class="n">ZX</span><span class="p">,</span><span class="n">YZ</span><span class="p">,</span><span class="n">ZZ</span><span class="p">]],</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;kbar&#39;</span><span class="p">)</span>
+            
+         <span class="c1"># Error handling: &quot;in kB&quot; not found</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;in kB not found&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VaspParser.get_forces"><a class="viewcode-back" href="../../../dfttopif.parsers.vasp.html#dfttopif.parsers.vasp.VaspParser.get_forces">[docs]</a>    <span class="k">def</span> <span class="nf">get_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="o">=</span> <span class="n">read_vasp_out</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;OUTCAR&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">Property</span><span class="p">(</span>
+            <span class="n">vectors</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_calculator</span><span class="p">()</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;forces&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="n">conditions</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;positions&quot;</span><span class="p">,</span> <span class="n">vectors</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="VaspParser.get_band_gap"><a class="viewcode-back" href="../../../dfttopif.parsers.vasp.html#dfttopif.parsers.vasp.VaspParser.get_band_gap">[docs]</a>    <span class="k">def</span> <span class="nf">get_band_gap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;DOSCAR&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="c1">#open DOSCAR</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;DOSCAR&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
+                <span class="n">l</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="n">efermi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">3</span><span class="p">])</span>
+            <span class="n">step1</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">step2</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">step_size</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">step2</span><span class="p">)</span><span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="n">step1</span><span class="p">)</span>
+            <span class="n">not_found</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">while</span> <span class="n">not_found</span><span class="p">:</span>
+                <span class="n">l</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="n">e</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+                <span class="n">dens</span> <span class="o">=</span> <span class="mf">0.0</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)):</span>
+                    <span class="n">dens</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">l</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">e</span> <span class="o">&lt;</span> <span class="n">efermi</span> <span class="ow">and</span> <span class="n">dens</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="p">:</span>
+                    <span class="n">bot</span> <span class="o">=</span> <span class="n">e</span>
+                <span class="k">elif</span> <span class="n">e</span> <span class="o">&gt;</span> <span class="n">efermi</span> <span class="ow">and</span> <span class="n">dens</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="p">:</span>
+                    <span class="n">top</span> <span class="o">=</span> <span class="n">e</span>
+                    <span class="n">not_found</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">top</span> <span class="o">-</span> <span class="n">bot</span> <span class="o">&lt;</span> <span class="n">step_size</span><span class="o">*</span><span class="mi">2</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Property</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;eV&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bandgap</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">top</span> <span class="o">-</span> <span class="n">bot</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">Property</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="nb">round</span><span class="p">(</span><span class="n">bandgap</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;eV&#39;</span><span class="p">)</span></div>
+                
+<div class="viewcode-block" id="VaspParser.get_dos"><a class="viewcode-back" href="../../../dfttopif.parsers.vasp.html#dfttopif.parsers.vasp.VaspParser.get_dos">[docs]</a>    <span class="k">def</span> <span class="nf">get_dos</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;DOSCAR&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="c1">#open DOSCAR</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">,</span> <span class="s1">&#39;DOSCAR&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
+                <span class="n">l</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="n">n_step</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">energy</span> <span class="o">=</span> <span class="p">[];</span> <span class="n">dos</span> <span class="o">=</span> <span class="p">[]</span>            
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_step</span><span class="p">):</span>
+                <span class="n">l</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="n">e</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+                <span class="n">energy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="n">dens</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)):</span>
+                    <span class="n">dens</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">l</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+                <span class="n">dos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dens</span><span class="p">)</span>
+
+            <span class="c1"># Convert to property</span>
+            <span class="k">return</span> <span class="n">Property</span><span class="p">(</span><span class="n">scalars</span><span class="o">=</span><span class="n">dos</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;number of states per unit cell&#39;</span><span class="p">,</span>
+                            <span class="n">conditions</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;energy&#39;</span><span class="p">,</span> <span class="n">scalars</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;eV&#39;</span><span class="p">))</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dfttopif 0.1.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../dfttopif.html" >dfttopif</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Citrine Informatics.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>
