@@ -1,13 +1,13 @@
 dfttopif
 ========
-[![Build Status](https://travis-ci.com/CitrineInformatics/pif-dft.svg?token=vC5kuseMWnCyTUzLrqNu&branch=master)](https://travis-ci.com/CitrineInformatics/pif-dft)
+[![Build Status](https://travis-ci.org/CitrineInformatics/pif-dft.svg?branch=master)](https://travis-ci.org/CitrineInformatics/pif-dft)
 
 A Python library for extracting the input settings and results from Density Functional Theory calculations, and then storing that data in pif format.
 
 Requirements
 ------------
 
-Python 2.7 or >=3.3.0, with dependencies listed in [requirements.txt](https://github.com/CitrineInformatics/pif-dft/blob/master/requirements.txt)
+Python 2.7 or >=3.3, with dependencies listed in [requirements.txt](https://github.com/CitrineInformatics/pif-dft/blob/master/requirements.txt)
 
 Installation
 ------------
@@ -34,3 +34,12 @@ Option 2: Generate the pif object via the python API
 from dfttopif import directory_to_pif
 data = directory_to_pif('/path/to/calculation/')
 ```
+
+Development
+-----------
+
+`dfttopif` is a collaborative effort.  Contributions are welcome, both issues and pull requests.
+This project follows [gitflow workflow](https://www.atlassian.com/git/tutorials/comparing-workflows#gitflow-workflow),
+so please make PRs to the `develop` branch.
+
+API documentation is maintained in the source code and hosted on [github pages](http://citrineinformatics.github.io/pif-dft/).
