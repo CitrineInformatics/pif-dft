@@ -1,11 +1,22 @@
 language: python
-python:
-  - "2.7"
 
-# command to install dependencies
+python:
+- '2.7'
+- '3.3'
+- '3.4'
+- '3.5'
+- '3.6'
+
 install:
-  - pip install -r requirements.txt
-  - python setup.py install
-# command to run tests
-script: 
-  nosetests
+- pip install -r requirements.txt
+- python setup.py install
+
+script: nosetests
+
+deploy:
+  provider: pypi
+  on:
+    branch: master
+  user: "CitrineInformatics"
+  password:
+    secure: Ia11lxiPHrHdgXNwLZgEcV6Z5gvn/sRpUA7zADss5q5TiWOEqaa0aK6RBzd9/8b2byXpurwfLmI4Py33TvdW5HpqNRRA6ujA2jogfY4pTmnuz6+FwfOwDTEGouKPO6c0YVg03Guh35bI8H2PuoOuTE/dcYc9bhk6NiGTG2cijC5VicrYjLlpCnXTzaJOXUBb8bfcMBD1uu2u42r+gKVyasIYkvW4VWudVzTyQD2lhEZJiloD+0gtvtSiTCm/hpHtOzJec4vAPpbaEgA37AOg3wZ9xgWTaUuP4PAig9zWVSTjDrhb7C1gKY4XyQfCZdYDbF78HGQEWRy3Hqf1+4ixqk1IuEOu25mo50gkB0ltVctPk9IxWFloGeIVdrFxRuJZhYDWcoXY/NJEs8uXrVUo+swL49KnkqDKcUrvEMC2b2LqibJOKxEdFiOMDk3X/B5Yq6KtE2KBzsQdqYUS5wBi0DRP1pB+J5UyhGTqJ/lxsJ/sM5iOM+GuqAIkKDSSdLnIqynIgDemMe3SoVf+j+2/i1sk3xKDCTjUhr1HDTHYfFdlgJ5jMAXpR6Yg5lpC61tX6NLAxh7xdl5T37vsp9xk7KX2Me9/69/XmF3oYQ1bJZ84tJOhAt95voZWc/M+9Tafko+FLQrXIXyVsKCXESYPCwQOZTQit9OKMqt8hOF56AE=
