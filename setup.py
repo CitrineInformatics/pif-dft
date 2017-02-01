@@ -8,7 +8,7 @@ with open('LICENSE') as f:
 
 setup(
     name='dfttopif',
-    version='0.1.4',
+    version='0.1.5',
     description='Library for parsing Density Functional Theory calculations',
     long_description=readme,
     url='https://github.com/CitrineInformatics/pif-dft',
