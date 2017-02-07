@@ -143,12 +143,13 @@ def directory_to_pif(directory, verbose=0, quality_report=False):
         tar.close()
 
         import requests
-        import json
         r = requests.post('https://calval.citrination.com/validate/tarfile', data=open('tmp.tar', 'rb').read())
+        os.remove("tmp.tar")
 
         if r.status_code == requests.codes.ok:
             report = r.json()[0]
-            report_file = os.path.join(directory, "report.txt")
+            score = int(report.split('\n')[0].split()[-1]) # the score is the last token on the first line
+            report_file = os.path.join(directory, "quality_report.txt")
             with open(report_file, "w") as f:
                 f.write(report)
             if report_file[0:2] == "./":
@@ -156,12 +157,12 @@ def directory_to_pif(directory, verbose=0, quality_report=False):
             chem.properties.append(
                     Property(
                         name="quality_report",
+                        scalars=[Scalar(value=score)],
                         files=[FileReference(relative_path=report_file)]
                     )
                 )
         else:
             print("Something failed: {}".format(r.status_code))
             print(r.status_code)
-
 
     return chem
