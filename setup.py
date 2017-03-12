@@ -8,6 +8,7 @@ setup(
     install_requires=[
         'ase',
         'pypif',
+        'requests'
     ],
     packages=find_packages(exclude=('tests', 'docs'))
 )
