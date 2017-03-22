@@ -166,3 +166,14 @@ def directory_to_pif(directory, verbose=0, quality_report=False):
             print(r.status_code)
 
     return chem
+
+def convert(files=None, **kwargs):
+    """
+    Wrap directory to pif as a dice extension
+    :param files: a list of files, should only have one file here
+    :param kwargs: any additional keyword arguments
+    :return: the created pif
+    """
+    assert len(files) == 1
+
+    return directory_to_pif(files[0], **kwargs)

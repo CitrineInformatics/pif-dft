@@ -7,10 +7,15 @@ setup(
     url='https://github.com/CitrineInformatics/pif-dft',
     install_requires=[
         'ase',
-        'pypif',
+        'pypif>=1.1.6',
     ],
     extras_require={
         'report': ["requests"],
     },
     packages=find_packages(exclude=('tests', 'docs')),
+    entry_points={
+        'citrine.dice.converter': [
+            'dft = dfttopif'
+        ]
+    }
 )
