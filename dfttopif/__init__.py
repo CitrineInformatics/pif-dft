@@ -121,7 +121,7 @@ def directory_to_pif(directory, verbose=0, quality_report=False):
 
         # Add name and other data
         prop.name = name
-        prop.method = [method,]
+        prop.methods = [method,]
         prop.data_type='COMPUTATIONAL'
         if verbose > 0 and isinstance(prop, Value):
             print(name)
