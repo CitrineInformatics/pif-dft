@@ -16,18 +16,20 @@ def _add_quality_report(directory, pif, inline=True):
     tar.close()
 
     import requests
-    #r = requests.post('https://calval.citrination.com/validate/tarfile', data=open('tmp.tar', 'rb').read())
-    r = requests.post('https://calculation-validator-stage.herokuapp.com/validate/json/tarfile', data=open('tmp.tar', 'rb').read())
+    if inline:
+        r = requests.post('https://calval.citrination.com/validate/json/tarfile', data=open('tmp.tar', 'rb').read())
+        report = json.loads(r.json()[0])
+        score = report["score"]
+    else:
+        r = requests.post('https://calval.citrination.com/validate/tarfile', data=open('tmp.tar', 'rb').read())
+        report = r.json()[0]
+        score = int(report.split('\n')[0].split()[-1]) # the score is the last token on the first line
     os.remove("tmp.tar")
 
     if r.status_code != requests.codes.ok:
         print("Unable to generate quality report; request returned with status {}".format(r.status_code))
         return
 
-    print(r.json())
-    report = json.loads(r.json()[0])
-    score = report["score"]
-    #score = int(report.split('\n')[0].split()[-1]) # the score is the last token on the first line
     if inline:
         setattr(pif, "quality_report", report)
     else:
