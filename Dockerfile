@@ -1,4 +1,4 @@
-FROM 010850123561.dkr.ecr.us-west-2.amazonaws.com/citrine-executor-python
+FROM 010850123561.dkr.ecr.us-west-2.amazonaws.com/citrine-executor-python:latest-onbuild
 
 # Add commands here if you want
 # Note that these have already been run via onbuild:
