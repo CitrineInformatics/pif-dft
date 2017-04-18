@@ -93,7 +93,7 @@ def archive_to_pif(filename, verbose=0):
     raise Exception('Cannot process file type')
 
 
-def directory_to_pif(directory, verbose=0, quality_report=True):
+def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
     '''Given a directory that contains output from
     a DFT calculation, parse the data and return
     a pif object
@@ -144,6 +144,9 @@ def directory_to_pif(directory, verbose=0, quality_report=True):
         if cond is None:
             continue
 
+        if inline and cond.files is not None:
+            continue
+
         # Set the name
         cond.name = name
 
@@ -158,6 +161,9 @@ def directory_to_pif(directory, verbose=0, quality_report=True):
         
         # If the property is None, skip it
         if prop is None:
+            continue
+
+        if inline and prop.files is not None:
             continue
 
         # Add name and other data
@@ -192,4 +198,4 @@ def convert(files=None, **kwargs):
     if (len(files) == 1):
         return directory_to_pif(files[0], **kwargs)
     else:
-        return directory_to_pif(os.path.commonpath(files), **kwargs)
+        return directory_to_pif(os.path.commonprefix(files), **kwargs)
