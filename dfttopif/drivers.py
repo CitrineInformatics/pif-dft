@@ -198,4 +198,6 @@ def convert(files=None, **kwargs):
     if (len(files) == 1):
         return directory_to_pif(files[0], **kwargs)
     else:
-        return directory_to_pif(os.path.commonprefix(files), **kwargs)
+        prefix = os.path.join(".", os.path.commonprefix(files))
+        print("Trying to use prefix {} from {}".format(prefix, os.getcwd()))
+        return directory_to_pif(prefix, **kwargs)
