@@ -183,7 +183,7 @@ def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
         chem.properties.append(prop)
 
     # Check to see if we should add the quality report
-    if quality_report:
+    if quality_report and isinstance(parser, VaspParser) :
         _add_quality_report(directory, chem)
 
     return chem
