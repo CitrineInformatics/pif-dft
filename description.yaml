@@ -1,5 +1,6 @@
 # This file describes the converter
-name: vasp                       # Any valid python key (should be unique)
+name: VASP                       # Any valid python key (should be unique)
+namespace: Citrine
 version: 0.1.0                   # Please use 3-number versions
 description: Convert a VASP calc to a PIF # Any string
 
