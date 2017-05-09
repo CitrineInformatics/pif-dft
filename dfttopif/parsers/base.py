@@ -84,7 +84,7 @@ class DFTParser(object):
             'Spin-Orbit Coupling':'uses_SOC',
             'DFT+U':'get_U_settings',
             'vdW Interactions':'get_vdW_settings',
-            'Psuedopotentials':'get_pp_name',
+            'Pseudopotentials':'get_pp_name',
             'INCAR':'get_incar',
             'POSCAR':'get_poscar',
         }
