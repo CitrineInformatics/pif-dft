@@ -188,13 +188,17 @@ def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
 
     return chem
 
-def convert(files=None, **kwargs):
+def convert(files=[], **kwargs):
     """
     Wrap directory to pif as a dice extension
-    :param files: a list of files, should only have one file here
+    :param files: a list of files, which must be non-empty
     :param kwargs: any additional keyword arguments
     :return: the created pif
     """
+
+    if len(files) < 1:
+        raise ValueError("Files needs to be a non-empty list")
+
     if (len(files) == 1):
         return directory_to_pif(files[0], **kwargs)
     else:
