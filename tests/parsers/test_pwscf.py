@@ -12,6 +12,14 @@ class TestPWSCFParser(unittest.TestCase):
         unpack_example(os.path.join('examples', 'pwscf', name+'.tar.gz'))
         return PwscfParser(name)
 
+    def test_Au_nscf(self):
+        """Test that a NSCF calculation is even parseable"""
+        # Parse the results
+        parser = self.get_parser('Au.nscf')
+
+        # Test the settings
+        self.assertEquals('PWSCF', parser.get_name())
+
     def test_NaF(self):
         # Parse the results
         parser = self.get_parser('NaF.scf')
