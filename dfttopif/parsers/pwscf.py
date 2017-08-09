@@ -84,7 +84,7 @@ class PwscfParser(DFTParser):
                 if "!" in line and "total energy" in line:
                     energy = line.split()[4:]
                     return Property(scalars=float(energy[0]), units=energy[1])
-            raise Exception('%s not found in %s'%('! & total energy',os.path.join(self._directory, self.outputf)))
+            return None
 
     @Value_if_true
     def is_relaxed(self):
