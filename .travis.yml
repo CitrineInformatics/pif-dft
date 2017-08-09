@@ -28,7 +28,7 @@ install:
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy
   - source activate test-environment
   - pip install -r requirements.txt
-  - python install --no-deps -e .
+  - pip install --no-deps -e .
 
 script: nosetests
 
