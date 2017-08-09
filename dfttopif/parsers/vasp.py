@@ -4,8 +4,8 @@ from .base import DFTParser, Value_if_true
 import os
 from ase.calculators.vasp import Vasp
 from ase.io.vasp import read_vasp, read_vasp_out
-from pypif.obj.common.value import Value
-from pypif.obj.common.file_reference import FileReference
+from pypif.obj import Value, FileReference
+
 
 class VaspParser(DFTParser):
     '''

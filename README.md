@@ -7,7 +7,7 @@ A Python library for extracting the input settings and results from Density Func
 Requirements
 ------------
 
-Python 2.7 or >=3.3, with dependencies listed in [requirements.txt](https://github.com/CitrineInformatics/pif-dft/blob/master/requirements.txt)
+Python 2.7 or >=3.4, with dependencies listed in [requirements.txt](https://github.com/CitrineInformatics/pif-dft/blob/master/requirements.txt)
 
 Installation
 ------------
