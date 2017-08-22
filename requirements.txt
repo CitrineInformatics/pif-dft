@@ -5,3 +5,4 @@ flask
 flask-cors
 gunicorn
 pypif==1.1.6
+https://github.com/CitrineInformatics/dft-parser

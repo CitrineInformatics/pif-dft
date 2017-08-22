@@ -3,13 +3,22 @@ from pypif.obj.common.property import Property
 from .base import DFTParser, Value_if_true
 import os
 from pypif.obj.common.value import Value
+from dft_parser.pwscf.stdout_parser import PwscfStdOutputParser
 from ase import Atoms
 
 class PwscfParser(DFTParser):
     '''
     Parser for PWSCF calculations
     '''
-    
+
+    def __init__(self, directory):
+        super(PwscfParser, self).__init__(directory)
+        self.settings = {}
+        parser = PwscfStdOutputParser()
+        with open(os.path.join(directory, self.outputf), "r") as f:
+            for line in parser.parse(f.readlines()):
+                self.settings.update(line)
+
     def get_name(self): return "PWSCF"
 
     def _get_line(self, search_string, search_file, basedir=None, return_string=True, case_sens=True):
@@ -51,39 +60,27 @@ class PwscfParser(DFTParser):
 
     def get_version_number(self):
         '''Determine the version number from the output'''
-        line = self._get_line('Program PWSCF', self.outputf)
-        version = " ".join(line.split('start')[0].split()[2:]).lstrip('v.')
-        # return Value(scalars=version)
-        return version
+        return self.settings["version"]
 
     def get_xc_functional(self):
         '''Determine the xc functional from the output'''
-        # the xc functional is described by 1 or 4 strings
-        # SLA  PZ   NOGX NOGC ( 1 1 0 0 0)
-        # SLA  PW   PBX  PBC (1434)
-        # PBE ( 1  4  3  4 0 0)
-        # PBE0 (6484)
-        # HSE (14*4)
-        xcstring = self._get_line('Exchange-correlation', self.outputf).split()[2:6]
-        for word in range(4):
-            if xcstring[word][0] == '(':
-                xcstring = xcstring[:word]
-                break
-        return Value(scalars=" ".join(xcstring))
+        return Value(scalars=" ".join(self.settings["exchange-correlation"]))
 
     def get_cutoff_energy(self):
         '''Determine the cutoff energy from the output'''
-        cutoff = self._get_line('kinetic-energy cutoff', self.outputf).split()[3:]
-        return Value(scalars=float(cutoff[0]), units=cutoff[1])
+        return Value(
+            scalars=self.settings["kinetic-energy cutoff"],
+            units=self.settings['kinetic-energy cutoff units']
+        )
 
     def get_total_energy(self):
         '''Determine the total energy from the output'''
-        with open(os.path.join(self._directory, self.outputf)) as fp:
-            # reading file backwards in case relaxation run
-            for line in reversed(fp.readlines()):
-                if "!" in line and "total energy" in line:
-                    energy = line.split()[4:]
-                    return Property(scalars=float(energy[0]), units=energy[1])
+        if 'total energy' in self.settings:
+            return Property(
+                scalars=self.settings['total energy'],
+                units=self.settings['total energy units']
+            )
+        else:
             return None
 
     @Value_if_true
@@ -205,29 +202,16 @@ class PwscfParser(DFTParser):
 
     def get_pressure(self):
         '''Determine the pressure from the output'''
-        if self._get_line('total   stress', self.outputf, return_string=False) == False:
+        if "pressure" not in self.settings:
             return None
-        else:
-            line = self._get_line('total   stress', self.outputf)
-            # total   stress  (Ry/bohr**3)                   (kbar)     P=   -2.34
-            # P= runs into the value if very large pressure
-            pvalue = float(line.split()[-1].replace('P=', ''))
-            return Property(scalars=pvalue, units='kbar')
+        return Property(scalars=self.settings['pressure'], units=self.settings['pressure units'])
 
     def get_stresses(self):
         '''Determine the stress tensor from the output'''
-        stress_data = [] # stress tensor at each iteration
-        with open(os.path.join(self._directory, self.outputf)) as fp:
-            for line in fp:
-                if "total" in line and "stress" in line:
-                    stress = []
-                    for i in range(3):
-                        stress.append([float(j) for j in next(fp).split()[3:6]])
-                    stress_data.append(stress)
-            if len(stress_data) > 0:
-                # return the final stress tensor
-                return Property(matrices=stress_data[-1], units='kbar')
-            else: return None
+        if "stress" not in self.settings:
+            return None
+        return Property(matrices=self.settings["stress"], units=self.settings["stress units"])
+
 
     def get_output_structure(self):
         '''Determine the structure from the output'''

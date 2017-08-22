@@ -8,6 +8,7 @@ setup(
     install_requires=[
         'ase',
         'pypif==1.1.6',
+        'dft_parser"
     ],
     extras_require={
         'report': ["requests"],

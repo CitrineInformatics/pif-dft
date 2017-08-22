@@ -90,7 +90,7 @@ class TestPWSCFParser(unittest.TestCase):
         self.assertEquals(None, parser.get_vdW_settings())
 
         pressure = parser.get_pressure()
-        self.assertEquals(-77.72, pressure.scalars[0].value)
+        self.assertEquals(-2.34, pressure.scalars[0].value)
         self.assertEquals('kbar', pressure.units)
 
         stresses = parser.get_stresses()
