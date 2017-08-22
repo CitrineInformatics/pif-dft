@@ -5,4 +5,4 @@ flask
 flask-cors
 gunicorn
 pypif==1.1.6
-git+https://github.com/CitrineInformatics/dft-parser
+https://github.com/CitrineInformatics/dft-parser/zipball/master
