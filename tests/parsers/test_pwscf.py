@@ -41,6 +41,10 @@ class TestPWSCFParser(unittest.TestCase):
         energy = parser.get_total_energy()
         self.assertEquals(-143.96084355, energy.scalars[0].value)
         self.assertEquals('Ry', energy.units)
+        self.assertEquals(-83.49879681, parser.get_one_electron_energy_contribution().scalars[0].value)
+        self.assertEquals(48.83409529, parser.get_hartree_energy_contribution().scalars[0].value)
+        self.assertEquals(-23.86775310, parser.get_xc_energy_contribution().scalars[0].value)
+        self.assertEquals(-85.42838893, parser.get_ewald_energy_contribution().scalars[0].value)
 
         self.assertEquals(None, parser.uses_SOC())
         self.assertEquals(None, parser.is_relaxed())

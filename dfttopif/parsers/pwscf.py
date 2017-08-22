@@ -19,6 +19,14 @@ class PwscfParser(DFTParser):
             for line in parser.parse(f.readlines()):
                 self.settings.update(line)
 
+    def get_result_functions(self):
+        base_results = super(PwscfParser, self).get_result_functions()
+        base_results["One-electron energy contribution"] = "get_one_electron_energy_contribution"
+        base_results["Hartree energy contribution"] = "get_hartree_energy_contribution"
+        base_results["Exchange-correlation energy contribution"] = "get_xc_energy_contribution"
+        base_results["Ewald energy contribution"] = "get_ewald_energy_contribution"
+        return base_results
+
     def get_name(self): return "PWSCF"
 
     def _get_line(self, search_string, search_file, basedir=None, return_string=True, case_sens=True):
@@ -372,3 +380,28 @@ class PwscfParser(DFTParser):
             else:
                 bandgap = float(top-bot)
                 return Property(scalars=round(bandgap,3), units='eV')
+
+    def get_one_electron_energy_contribution(self):
+        key = "one-electron energy contribution"
+        if key not in self.settings:
+            return None
+        return Property(scalars=[self.settings[key]], units=self.settings["{} units".format(key)])
+
+    def get_hartree_energy_contribution(self):
+        key = "hartree energy contribution"
+        if key not in self.settings:
+            return None
+        return Property(scalars=[self.settings[key]], units=self.settings["{} units".format(key)])
+
+    def get_xc_energy_contribution(self):
+        key = "xc energy contribution"
+        if key not in self.settings:
+            return None
+        return Property(scalars=[self.settings[key]], units=self.settings["{} units".format(key)])
+
+    def get_ewald_energy_contribution(self):
+        key = "ewald energy contribution"
+        if key not in self.settings:
+            return None
+        return Property(scalars=[self.settings[key]], units=self.settings["{} units".format(key)])
+
