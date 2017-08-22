@@ -326,7 +326,14 @@ class PwscfParser(DFTParser):
         return Property(scalars=dos, units='number of states per unit cell', conditions=Value(name='energy', scalars=energy, units='eV'))
 
     def get_forces(self):
-        return None
+        if "forces" not in self.settings:
+            return None
+        return Property(vectors=self.settings['forces'], units=self.settings['force units'])
+
+    def get_total_force(self):
+        if "total force" not in self.settings:
+            return None
+        return Property(scalars=[self.settings['total force']], units=self.settings['force units'])
 
     def get_outcar(self):
         return None

@@ -100,6 +100,9 @@ class TestPWSCFParser(unittest.TestCase):
 
         self.assertEquals(None, parser.get_band_gap())
 
+        self.assertAlmostEqual(0.000141, parser.get_total_force().scalars[0].value)
+        self.assertAlmostEqual(0.00005032, parser.get_forces().vectors[11][2].value)
+
         # Delete the data
         delete_example('TiO2.vcrelax')
         

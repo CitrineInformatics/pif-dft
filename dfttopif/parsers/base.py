@@ -105,6 +105,7 @@ class DFTParser(object):
             'Density of States':'get_dos',
             'Positions': 'get_positions',
             'Forces': 'get_forces',
+            'Total force': 'get_total_force',
             'OUTCAR': 'get_outcar',
         }
         
@@ -296,3 +297,6 @@ class DFTParser(object):
        Returns: Property where stresses is a 2d matrix'''
 
        raise NotImplementedError
+
+    def get_total_force(self):
+       return None
