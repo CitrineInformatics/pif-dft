@@ -40,6 +40,7 @@ class TestPifGenerator(unittest.TestCase):
         Test ability to parse VASP directories
         '''
         
+        test_quality_report = True
         for file in glob.glob(os.path.join('examples','vasp','*.tar.gz')):
             # Get the example files
             unpack_example(file)
@@ -47,7 +48,9 @@ class TestPifGenerator(unittest.TestCase):
             
             # Make the pif file
             # print("\tpif for example:", name)
-            result = directory_to_pif(name)
+            result = directory_to_pif(name, quality_report=test_quality_report)
+            # Only hit the quality report endpoint once to avoid load spikes in automated tests
+            test_quality_report=False
             assert result.chemical_formula is not None
             assert result.properties is not None
             # print(pif.dumps(result, indent=4))
