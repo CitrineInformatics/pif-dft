@@ -16,7 +16,7 @@ class VaspParser(DFTParser):
     
     def test_if_from(self, directory):
         # Check whether it has an INCAR file
-        return os.path.isfile(os.path.join(directory, 'INCAR'))
+        return os.path.isfile(os.path.join(directory, 'OUTCAR'))
         
     def get_output_structure(self):
         self.atoms = read_vasp_out(os.path.join(self._directory, 'OUTCAR'))
