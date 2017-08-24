@@ -3,7 +3,7 @@ from pypif.obj.common.property import Property
 from .base import DFTParser, Value_if_true
 import os
 from pypif.obj.common.value import Value
-from dft_parser.pwscf.stdout_parser import PwscfStdOutputParser
+from dftparse.pwscf.stdout_parser import PwscfStdOutputParser
 from ase import Atoms
 
 class PwscfParser(DFTParser):
