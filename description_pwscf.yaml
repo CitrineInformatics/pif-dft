@@ -1,0 +1,8 @@
+# This file describes the converter
+name: pwscf                       # Any valid python key (should be unique)
+namespace: citrine/ingest/dft
+version: auto                   # Please use 3-number versions
+description: Converts a Quantum Espresso calculation to a PIF # Any string
+displayName: "Citrine: Quantum Espresso"
+
+arguments: []

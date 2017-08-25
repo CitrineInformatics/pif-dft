@@ -12,6 +12,14 @@ class TestPWSCFParser(unittest.TestCase):
         unpack_example(os.path.join('examples', 'pwscf', name+'.tar.gz'))
         return PwscfParser(name)
 
+    def test_Au_nscf(self):
+        """Test that a NSCF calculation is even parseable"""
+        # Parse the results
+        parser = self.get_parser('Au.nscf')
+
+        # Test the settings
+        self.assertEquals('PWSCF', parser.get_name())
+
     def test_NaF(self):
         # Parse the results
         parser = self.get_parser('NaF.scf')
@@ -33,6 +41,10 @@ class TestPWSCFParser(unittest.TestCase):
         energy = parser.get_total_energy()
         self.assertEquals(-143.96084355, energy.scalars[0].value)
         self.assertEquals('Ry', energy.units)
+        self.assertEquals(-83.49879681, parser.get_one_electron_energy_contribution().scalars[0].value)
+        self.assertEquals(48.83409529, parser.get_hartree_energy_contribution().scalars[0].value)
+        self.assertEquals(-23.86775310, parser.get_xc_energy_contribution().scalars[0].value)
+        self.assertEquals(-85.42838893, parser.get_ewald_energy_contribution().scalars[0].value)
 
         self.assertEquals(None, parser.uses_SOC())
         self.assertEquals(None, parser.is_relaxed())
@@ -82,7 +94,7 @@ class TestPWSCFParser(unittest.TestCase):
         self.assertEquals(None, parser.get_vdW_settings())
 
         pressure = parser.get_pressure()
-        self.assertEquals(-77.72, pressure.scalars[0].value)
+        self.assertEquals(-2.34, pressure.scalars[0].value)
         self.assertEquals('kbar', pressure.units)
 
         stresses = parser.get_stresses()
@@ -91,6 +103,15 @@ class TestPWSCFParser(unittest.TestCase):
         self.assertEquals('kbar', stresses.units)
 
         self.assertEquals(None, parser.get_band_gap())
+
+        self.assertAlmostEqual(0.000141, parser.get_total_force().scalars[0].value)
+        self.assertAlmostEqual(0.00005032, parser.get_forces().vectors[11][2].value)
+
+        # Test energy contribution terms (from the end of the calculation)
+        self.assertAlmostEqual(-317.64355286, parser.get_one_electron_energy_contribution().scalars[0].value)
+        self.assertAlmostEqual(200.00443558, parser.get_hartree_energy_contribution().scalars[0].value)
+        self.assertAlmostEqual(-112.62810014, parser.get_xc_energy_contribution().scalars[0].value)
+        self.assertAlmostEqual(-494.41277661, parser.get_ewald_energy_contribution().scalars[0].value)
 
         # Delete the data
         delete_example('TiO2.vcrelax')

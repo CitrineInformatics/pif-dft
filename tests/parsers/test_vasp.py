@@ -57,8 +57,19 @@ class TestVASPParser(unittest.TestCase):
         delete_example('perov_relax_U')
         
     def test_AlNi(self):
-        # Parse the results
         parser = self.get_parser('AlNi_static_LDA')
+        self._evaluate_AlNi(parser)
+        delete_example('AlNi_static_LDA')
+
+    def test_AlNi_without_incar(self):
+        """Make sure AlNi test also works without an INCAR an INCAR still parses"""
+        parser = self.get_parser('AlNi_static_LDA')
+        os.unlink(os.path.join('AlNi_static_LDA','INCAR'))
+        self._evaluate_AlNi(parser)
+        delete_example('AlNi_static_LDA')
+
+    def _evaluate_AlNi(self, parser):
+        """Test that AlNi was parsed correctly"""
         
         # Test the settings
         self.assertEquals('VASP', parser.get_name())
@@ -100,8 +111,6 @@ class TestVASPParser(unittest.TestCase):
                           list(map(lambda x: x.value, dos.scalars)))
         self.assertEquals('number of states per unit cell', dos.units)
         
-        # Delete the data
-        delete_example('AlNi_static_LDA')
         
     def test_SOC(self):
         # Parse the results

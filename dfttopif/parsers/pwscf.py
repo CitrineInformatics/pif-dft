@@ -3,14 +3,36 @@ from pypif.obj.common.property import Property
 from .base import DFTParser, Value_if_true
 import os
 from pypif.obj.common.value import Value
+from dftparse.pwscf.stdout_parser import PwscfStdOutputParser
 from ase import Atoms
 
 class PwscfParser(DFTParser):
     '''
     Parser for PWSCF calculations
     '''
-    
+
+    def __init__(self, directory):
+        super(PwscfParser, self).__init__(directory)
+        self.settings = {}
+        parser = PwscfStdOutputParser()
+        with open(os.path.join(directory, self.outputf), "r") as f:
+            for line in parser.parse(f.readlines()):
+                self.settings.update(line)
+
+    def get_result_functions(self):
+        base_results = super(PwscfParser, self).get_result_functions()
+        base_results["One-electron energy contribution"] = "get_one_electron_energy_contribution"
+        base_results["Hartree energy contribution"] = "get_hartree_energy_contribution"
+        base_results["Exchange-correlation energy contribution"] = "get_xc_energy_contribution"
+        base_results["Ewald energy contribution"] = "get_ewald_energy_contribution"
+        return base_results
+
     def get_name(self): return "PWSCF"
+
+    def _get_key_with_units(self, key):
+        if key not in self.settings:
+            return None
+        return Property(scalars=[self.settings[key]], units=self.settings["{} units".format(key)])
 
     def _get_line(self, search_string, search_file, basedir=None, return_string=True, case_sens=True):
         '''Return the first line containing a set of strings in a file.
@@ -51,40 +73,22 @@ class PwscfParser(DFTParser):
 
     def get_version_number(self):
         '''Determine the version number from the output'''
-        line = self._get_line('Program PWSCF', self.outputf)
-        version = " ".join(line.split('start')[0].split()[2:]).lstrip('v.')
-        # return Value(scalars=version)
-        return version
+        return self.settings["version"]
 
     def get_xc_functional(self):
         '''Determine the xc functional from the output'''
-        # the xc functional is described by 1 or 4 strings
-        # SLA  PZ   NOGX NOGC ( 1 1 0 0 0)
-        # SLA  PW   PBX  PBC (1434)
-        # PBE ( 1  4  3  4 0 0)
-        # PBE0 (6484)
-        # HSE (14*4)
-        xcstring = self._get_line('Exchange-correlation', self.outputf).split()[2:6]
-        for word in range(4):
-            if xcstring[word][0] == '(':
-                xcstring = xcstring[:word]
-                break
-        return Value(scalars=" ".join(xcstring))
+        return Value(scalars=" ".join(self.settings["exchange-correlation"]))
 
     def get_cutoff_energy(self):
         '''Determine the cutoff energy from the output'''
-        cutoff = self._get_line('kinetic-energy cutoff', self.outputf).split()[3:]
-        return Value(scalars=float(cutoff[0]), units=cutoff[1])
+        return Value(
+            scalars=self.settings["kinetic-energy cutoff"],
+            units=self.settings['kinetic-energy cutoff units']
+        )
 
     def get_total_energy(self):
         '''Determine the total energy from the output'''
-        with open(os.path.join(self._directory, self.outputf)) as fp:
-            # reading file backwards in case relaxation run
-            for line in reversed(fp.readlines()):
-                if "!" in line and "total energy" in line:
-                    energy = line.split()[4:]
-                    return Property(scalars=float(energy[0]), units=energy[1])
-            raise Exception('%s not found in %s'%('! & total energy',os.path.join(self._directory, self.outputf)))
+        return self._get_key_with_units("total energy")
 
     @Value_if_true
     def is_relaxed(self):
@@ -205,29 +209,13 @@ class PwscfParser(DFTParser):
 
     def get_pressure(self):
         '''Determine the pressure from the output'''
-        if self._get_line('total   stress', self.outputf, return_string=False) == False:
-            return None
-        else:
-            line = self._get_line('total   stress', self.outputf)
-            # total   stress  (Ry/bohr**3)                   (kbar)     P=   -2.34
-            # P= runs into the value if very large pressure
-            pvalue = float(line.split()[-1].replace('P=', ''))
-            return Property(scalars=pvalue, units='kbar')
+        return self._get_key_with_units("pressure")
 
     def get_stresses(self):
         '''Determine the stress tensor from the output'''
-        stress_data = [] # stress tensor at each iteration
-        with open(os.path.join(self._directory, self.outputf)) as fp:
-            for line in fp:
-                if "total" in line and "stress" in line:
-                    stress = []
-                    for i in range(3):
-                        stress.append([float(j) for j in next(fp).split()[3:6]])
-                    stress_data.append(stress)
-            if len(stress_data) > 0:
-                # return the final stress tensor
-                return Property(matrices=stress_data[-1], units='kbar')
-            else: return None
+        if "stress" not in self.settings:
+            return None
+        return Property(matrices=self.settings["stress"], units=self.settings["stress units"])
 
     def get_output_structure(self):
         '''Determine the structure from the output'''
@@ -342,7 +330,14 @@ class PwscfParser(DFTParser):
         return Property(scalars=dos, units='number of states per unit cell', conditions=Value(name='energy', scalars=energy, units='eV'))
 
     def get_forces(self):
-        return None
+        if "forces" not in self.settings:
+            return None
+        return Property(vectors=self.settings['forces'], units=self.settings['force units'])
+
+    def get_total_force(self):
+        if "total force" not in self.settings:
+            return None
+        return Property(scalars=[self.settings['total force']], units=self.settings['force units'])
 
     def get_outcar(self):
         return None
@@ -381,3 +376,15 @@ class PwscfParser(DFTParser):
             else:
                 bandgap = float(top-bot)
                 return Property(scalars=round(bandgap,3), units='eV')
+
+    def get_one_electron_energy_contribution(self):
+        return self._get_key_with_units("one-electron energy contribution")
+
+    def get_hartree_energy_contribution(self):
+        return self._get_key_with_units("hartree energy contribution")
+
+    def get_xc_energy_contribution(self):
+        return self._get_key_with_units("xc energy contribution")
+
+    def get_ewald_energy_contribution(self):
+        return self._get_key_with_units("ewald energy contribution")
