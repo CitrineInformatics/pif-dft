@@ -107,6 +107,12 @@ class TestPWSCFParser(unittest.TestCase):
         self.assertAlmostEqual(0.000141, parser.get_total_force().scalars[0].value)
         self.assertAlmostEqual(0.00005032, parser.get_forces().vectors[11][2].value)
 
+        # Test energy contribution terms (from the end of the calculation)
+        self.assertAlmostEqual(-317.64355286, parser.get_one_electron_energy_contribution().scalars[0].value)
+        self.assertAlmostEqual(200.00443558, parser.get_hartree_energy_contribution().scalars[0].value)
+        self.assertAlmostEqual(-112.62810014, parser.get_xc_energy_contribution().scalars[0].value)
+        self.assertAlmostEqual(-494.41277661, parser.get_ewald_energy_contribution().scalars[0].value)
+
         # Delete the data
         delete_example('TiO2.vcrelax')
         

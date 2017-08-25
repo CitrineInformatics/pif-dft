@@ -29,6 +29,11 @@ class PwscfParser(DFTParser):
 
     def get_name(self): return "PWSCF"
 
+    def _get_key_with_units(self, key):
+        if key not in self.settings:
+            return None
+        return Property(scalars=[self.settings[key]], units=self.settings["{} units".format(key)])
+
     def _get_line(self, search_string, search_file, basedir=None, return_string=True, case_sens=True):
         '''Return the first line containing a set of strings in a file.
 
@@ -83,13 +88,7 @@ class PwscfParser(DFTParser):
 
     def get_total_energy(self):
         '''Determine the total energy from the output'''
-        if 'total energy' in self.settings:
-            return Property(
-                scalars=self.settings['total energy'],
-                units=self.settings['total energy units']
-            )
-        else:
-            return None
+        return self._get_key_with_units("total energy")
 
     @Value_if_true
     def is_relaxed(self):
@@ -210,16 +209,13 @@ class PwscfParser(DFTParser):
 
     def get_pressure(self):
         '''Determine the pressure from the output'''
-        if "pressure" not in self.settings:
-            return None
-        return Property(scalars=self.settings['pressure'], units=self.settings['pressure units'])
+        return self._get_key_with_units("pressure")
 
     def get_stresses(self):
         '''Determine the stress tensor from the output'''
         if "stress" not in self.settings:
             return None
         return Property(matrices=self.settings["stress"], units=self.settings["stress units"])
-
 
     def get_output_structure(self):
         '''Determine the structure from the output'''
@@ -382,26 +378,13 @@ class PwscfParser(DFTParser):
                 return Property(scalars=round(bandgap,3), units='eV')
 
     def get_one_electron_energy_contribution(self):
-        key = "one-electron energy contribution"
-        if key not in self.settings:
-            return None
-        return Property(scalars=[self.settings[key]], units=self.settings["{} units".format(key)])
+        return self._get_key_with_units("one-electron energy contribution")
 
     def get_hartree_energy_contribution(self):
-        key = "hartree energy contribution"
-        if key not in self.settings:
-            return None
-        return Property(scalars=[self.settings[key]], units=self.settings["{} units".format(key)])
+        return self._get_key_with_units("hartree energy contribution")
 
     def get_xc_energy_contribution(self):
-        key = "xc energy contribution"
-        if key not in self.settings:
-            return None
-        return Property(scalars=[self.settings[key]], units=self.settings["{} units".format(key)])
+        return self._get_key_with_units("xc energy contribution")
 
     def get_ewald_energy_contribution(self):
-        key = "ewald energy contribution"
-        if key not in self.settings:
-            return None
-        return Property(scalars=[self.settings[key]], units=self.settings["{} units".format(key)])
-
+        return self._get_key_with_units("ewald energy contribution")
