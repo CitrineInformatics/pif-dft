@@ -31,6 +31,10 @@ class TestPWSCFParser(unittest.TestCase):
         self.assertEquals(2.2713025676424632, strc.cell[0][2])
         self.assertEquals(['F', 'Na'], strc.get_chemical_symbols())
         self.assertEquals('FNa', parser.get_composition())
+
+        # Test the density
+        self.assertAlmostEqual(2.975233747, parser.get_density().scalars[0].value)
+        self.assertEqual("g/(cm^3)", parser.get_density().units)
         
         cutoff = parser.get_cutoff_energy()
         self.assertEquals(50.0, cutoff.scalars[0].value)
