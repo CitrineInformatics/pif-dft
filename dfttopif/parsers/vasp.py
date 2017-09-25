@@ -276,7 +276,7 @@ class VaspParser(DFTParser):
         """Get the bandgap from the EIGENVAL file"""
         with open(outcar_fname, "r") as f:
             parser = OutcarParser()
-            nelec = next(filter(lambda x: "number of electrons" in x, parser.parse(f.readlines())))["number of electrons"]
+            nelec = next(iter(filter(lambda x: "number of electrons" in x, parser.parse(f.readlines()))))["number of electrons"]
         with open(eigenval_fname, "r") as f:
             eigenval_info = list(EigenvalParser().parse(f.readlines()))
         # spin_polarized = (2 == len(next(filter(lambda x: "kpoint" in x, eigenval_info))["occupancies"][0]))
