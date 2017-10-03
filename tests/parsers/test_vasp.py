@@ -22,7 +22,11 @@ class TestVASPParser(unittest.TestCase):
         self.assertAlmostEquals(3.9088966983609255, strc.cell[1][1])
         self.assertEquals(['La','Mn','O','O','O'], strc.get_chemical_symbols())
         self.assertEquals('LaMnO3', parser.get_composition())
-        
+
+        # Test the density
+        self.assertEqual("g/(cm^3)", parser.get_density().units)
+        self.assertAlmostEqual(6.7238121, parser.get_density().scalars[0].value)
+
         res = parser.get_cutoff_energy()
         self.assertEquals(400, res.scalars[0].value)
         self.assertEquals('eV', res.units)

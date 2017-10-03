@@ -1,10 +1,12 @@
-from pypif.obj.common.property import Property
+from pypif.obj import Property, Scalar
 
 from .base import DFTParser, Value_if_true
 import os
 from ase.calculators.vasp import Vasp
 from ase.io.vasp import read_vasp, read_vasp_out
 from pypif.obj import Value, FileReference
+from dftparse.vasp.outcar_parser import OutcarParser
+from dftparse.vasp.eigenval_parser import EigenvalParser
 
 
 class VaspParser(DFTParser):
@@ -261,14 +263,33 @@ class VaspParser(DFTParser):
             conditions=Value(name="positions", vectors=self.atoms.positions.tolist())
         )
 
+    @staticmethod
+    def _get_bandgap_from_bands(energies, nelec):
+        """Compute difference in conduction band min and valence band max"""
+        nelec = int(nelec)
+        valence = [x[nelec-1] for x in energies]
+        conduction = [x[nelec] for x in energies]
+        return max(min(conduction) - max(valence), 0.0)
 
+    @staticmethod
+    def _get_bandgap_eigenval(eigenval_fname, outcar_fname):
+        """Get the bandgap from the EIGENVAL file"""
+        with open(outcar_fname, "r") as f:
+            parser = OutcarParser()
+            nelec = next(iter(filter(lambda x: "number of electrons" in x, parser.parse(f.readlines()))))["number of electrons"]
+        with open(eigenval_fname, "r") as f:
+            eigenval_info = list(EigenvalParser().parse(f.readlines()))
+        # spin_polarized = (2 == len(next(filter(lambda x: "kpoint" in x, eigenval_info))["occupancies"][0]))
+        # if spin_polarized:
+        all_energies = [zip(*x["energies"]) for x in eigenval_info if "energies" in x]
+        spin_energies = zip(*all_energies)
+        gaps = [VaspParser._get_bandgap_from_bands(x, nelec/2.0) for x in spin_energies]
+        return min(gaps)
 
-    def get_band_gap(self):
-        file_path = os.path.join(self._directory, 'DOSCAR')
-        if not os.path.isfile(file_path):
-            return None
-        #open DOSCAR
-        with open(os.path.join(self._directory, 'DOSCAR')) as fp:
+    @staticmethod
+    def _get_bandgap_doscar(filename):
+        """Get the bandgap from the DOSCAR file"""
+        with open(filename) as fp:
             for i in range(6):
                 l = fp.readline()
             efermi = float(l.split()[3])
@@ -288,10 +309,25 @@ class VaspParser(DFTParser):
                     top = e
                     not_found = False
             if top - bot < step_size*2:
-                return Property(scalars=0, units='eV')
+                bandgap = 0.0
             else:
                 bandgap = float(top - bot)
-                return Property(scalars=round(bandgap,3), units='eV')
+
+        return bandgap
+
+    def get_band_gap(self):
+        """Get the bandgap, either from the EIGENVAL or DOSCAR files"""
+        doscar_path = os.path.join(self._directory, 'DOSCAR')
+        outcar_path = os.path.join(self._directory, 'OUTCAR')
+        eigenval_path = os.path.join(self._directory, 'EIGENVAL')
+
+        if os.path.isfile(outcar_path) and os.path.isfile(eigenval_path):
+            bandgap = VaspParser._get_bandgap_eigenval(eigenval_path, outcar_path)
+        elif os.path.isfile(doscar_path):
+            bandgap = VaspParser._get_bandgap_doscar(doscar_path)
+        else:
+            return None
+        return Property(scalars=Scalar(value=round(bandgap, 3)), units='eV')
                 
     def get_dos(self):
         file_path = os.path.join(self._directory, 'DOSCAR')

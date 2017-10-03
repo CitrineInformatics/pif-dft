@@ -1,6 +1,6 @@
 import os
 from collections import Counter
-from pypif.obj.common import Value, Property
+from pypif.obj.common import Value, Property, Scalar
 
 
 def Value_if_true(func):
@@ -106,6 +106,7 @@ class DFTParser(object):
             'Positions': 'get_positions',
             'Forces': 'get_forces',
             'Total force': 'get_total_force',
+            'Density': 'get_density',
             'OUTCAR': 'get_outcar',
         }
         
@@ -163,6 +164,12 @@ class DFTParser(object):
         counts = Counter(strc.get_chemical_symbols())
         return ''.join(k if counts[k]==1 else '%s%d'%(k,counts[k]) \
                 for k in sorted(counts))
+
+    def get_density(self):
+        """Compute the density from the output structure"""
+        strc = self.get_output_structure()
+        density = sum(strc.get_masses()) / strc.get_volume() * 1.660539040
+        return Property(scalars=Scalar(value=density), units="g/(cm^3)")
 
     def get_positions(self):
         strc = self.get_output_structure()
