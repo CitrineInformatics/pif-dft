@@ -2,7 +2,7 @@ from .base import DFTParser
 import os
 import glob
 from ase.calculators.abinit import Abinit
-from pypif.obj.common import Value, Property
+from pypif.obj.common import Value, Property, Scalar
 
 class AbinitParser(DFTParser):
     '''
@@ -16,12 +16,13 @@ class AbinitParser(DFTParser):
         # Check whether any file has as name ABINIT in the file in the first two lines
         files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
         for f in files:
-            fp = open(os.path.join(directory, f), 'r')
-            for line in [fp.readline(), fp.readline()]:
-                if "ABINIT" in line:
-                    fp.close()
-                    return True
-            fp.close()
+            try:
+                with open(os.path.join(directory, f), 'r') as fp:
+                    for line in [fp.readline(), fp.readline()]:
+                        if "ABINIT" in line:
+                            return True
+            except:
+                continue
         return False
         
     def _get_label(self):
@@ -69,6 +70,8 @@ class AbinitParser(DFTParser):
             return self._label
 
     def get_cutoff_energy(self):
+        if not self._label:
+            self._get_label()
         # Open up the label.txt file
         fp = open(os.path.join(self._directory, self._label + '.out'), 'r')
         foundecho = False 
@@ -78,6 +81,6 @@ class AbinitParser(DFTParser):
                 foundecho = True
             if "ecut" in line and foundecho:
                 words = line.split()
-                return Value(scalars=float(words[1]), units=words[2])
+                return Value(scalars=[Scalar(value=float(words[1]))], units=words[2])
         # Error handling: ecut not found
         raise Exception('ecut not found')

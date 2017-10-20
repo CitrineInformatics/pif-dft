@@ -193,7 +193,7 @@ class PwscfParser(DFTParser):
         scheme from the input otherwise'''
         xc = self.get_xc_functional().scalars[0].value
         if 'vdw' in xc.lower(): # vdW xc functional
-            return Value(scalars=xc)
+            return Value(scalars=[Scalar(value=xc)])
         else:
             # look for vdw_corr in input
             vdW_dict = {'xdm':'Becke-Johnson XDM', 'ts':
