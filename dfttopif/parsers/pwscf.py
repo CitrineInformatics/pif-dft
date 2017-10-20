@@ -1,4 +1,4 @@
-from pypif.obj.common.property import Property
+from pypif.obj.common import Property, Scalar
 
 from .base import DFTParser, Value_if_true
 import os
@@ -32,7 +32,7 @@ class PwscfParser(DFTParser):
     def _get_key_with_units(self, key):
         if key not in self.settings:
             return None
-        return Property(scalars=[self.settings[key]], units=self.settings["{} units".format(key)])
+        return Property(scalars=[Scalar(value=self.settings[key])], units=self.settings["{} units".format(key)])
 
     def _get_line(self, search_string, search_file, basedir=None, return_string=True, case_sens=True):
         '''Return the first line containing a set of strings in a file.
@@ -77,12 +77,12 @@ class PwscfParser(DFTParser):
 
     def get_xc_functional(self):
         '''Determine the xc functional from the output'''
-        return Value(scalars=" ".join(self.settings["exchange-correlation"]))
+        return Value(scalars=[Scalar(value=" ".join(self.settings["exchange-correlation"]))])
 
     def get_cutoff_energy(self):
         '''Determine the cutoff energy from the output'''
         return Value(
-            scalars=self.settings["kinetic-energy cutoff"],
+            scalars=[Scalar(value=self.settings["kinetic-energy cutoff"])],
             units=self.settings['kinetic-energy cutoff units']
         )
 
@@ -143,7 +143,7 @@ class PwscfParser(DFTParser):
                         nk += int(float(fp[l+2+k].split()[3]))
                 # Find the no. of atoms
                 natoms = int(self._get_line('number of atoms/cell', self.outputf).split()[4])
-                return Value(scalars=nk*natoms)
+                return Value(scalars=[Scalar(value=nk*natoms)])
         fp.close()
         raise Exception('%s not found in %s'%('KPOINTS',os.path.join(self._directory, self.inputf)))
 
@@ -161,7 +161,7 @@ class PwscfParser(DFTParser):
         with open(os.path.join(self._directory, self.outputf)) as fp:
             for line in fp:
                 if "PseudoPot. #" in line:
-                    ppnames.append(next(fp).split('/')[-1].rstrip())
+                    ppnames.append(Scalar(value=next(fp).split('/')[-1].rstrip()))
                     if len(ppnames) == natomtypes:
                         return Value(scalars=ppnames)
             raise Exception('Could not find %i pseudopotential names'%natomtypes)
@@ -204,7 +204,7 @@ class PwscfParser(DFTParser):
             if self._get_line('vdw_corr', self.inputf, return_string=False, case_sens=False):
                 line = self._get_line('vdw_corr', self.inputf, return_string=True, case_sens=False)
                 vdwkey = str(line.split('=')[-1].replace("'", "").replace(',', '').lower().rstrip())
-                return Value(scalars=vdW_dict[vdwkey])
+                return Value(scalars=[Scalar(value=vdW_dict[vdwkey])])
             return None
 
     def get_pressure(self):
@@ -215,7 +215,8 @@ class PwscfParser(DFTParser):
         '''Determine the stress tensor from the output'''
         if "stress" not in self.settings:
             return None
-        return Property(matrices=self.settings["stress"], units=self.settings["stress units"])
+        wrapped = [[Scalar(value=x) for x in y] for y in self.settings["stress"]]
+        return Property(matrices=[wrapped], units=self.settings["stress units"])
 
     def get_output_structure(self):
         '''Determine the structure from the output'''
@@ -325,19 +326,20 @@ class PwscfParser(DFTParser):
         next(fp) # comment line
         for line in fp:
             ls = line.split()
-            energy.append(float(ls[0])-efermi)
-            dos.append(sum([float(i) for i in ls[1:1+ndoscol]]))
+            energy.append(Scalar(value=float(ls[0])-efermi))
+            dos.append(Scalar(value=sum([float(i) for i in ls[1:1+ndoscol]])))
         return Property(scalars=dos, units='number of states per unit cell', conditions=Value(name='energy', scalars=energy, units='eV'))
 
     def get_forces(self):
         if "forces" not in self.settings:
             return None
-        return Property(vectors=self.settings['forces'], units=self.settings['force units'])
+        wrapped = [[Scalar(value=x) for x in y] for y in self.settings['forces']]
+        return Property(vectors=wrapped, units=self.settings['force units'])
 
     def get_total_force(self):
         if "total force" not in self.settings:
             return None
-        return Property(scalars=[self.settings['total force']], units=self.settings['force units'])
+        return Property(scalars=[Scalar(value=self.settings['total force'])], units=self.settings['force units'])
 
     def get_outcar(self):
         return None
@@ -372,10 +374,10 @@ class PwscfParser(DFTParser):
             if top < bot:
                 raise Exception('Algorithm failed to find the band gap')
             elif top - bot < step_size*2:
-                return Property(scalars=0, units='eV')
+                return Property(scalars=[Scalar(value=0)], units='eV')
             else:
                 bandgap = float(top-bot)
-                return Property(scalars=round(bandgap,3), units='eV')
+                return Property(scalars=[Scalar(value=round(bandgap,3))], units='eV')
 
     def get_one_electron_energy_contribution(self):
         return self._get_key_with_units("one-electron energy contribution")

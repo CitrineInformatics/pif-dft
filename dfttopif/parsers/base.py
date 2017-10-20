@@ -173,7 +173,9 @@ class DFTParser(object):
 
     def get_positions(self):
         strc = self.get_output_structure()
-        return Property(vectors=strc.positions.tolist())
+        raw = strc.positions.tolist()
+        wrapped = [[Scalar(value=x) for x in y] for y in raw]
+        return Property(vectors=wrapped)
 
     def get_cutoff_energy(self):
         '''Read the cutoff energy from the output
