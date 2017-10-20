@@ -55,7 +55,7 @@ class VaspParser(DFTParser):
             for line in fp:
                 if "ENCUT" in line:
                     words = line.split()
-                    return Value(scalars=float(words[2]), units=words[3])
+                    return Value(scalars=[Scalar(value=float(words[2]))], units=words[3])
                 
         # Error handling: ENCUT not found
         raise Exception('ENCUT not found')

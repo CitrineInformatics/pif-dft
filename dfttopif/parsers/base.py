@@ -169,7 +169,7 @@ class DFTParser(object):
         """Compute the density from the output structure"""
         strc = self.get_output_structure()
         density = sum(strc.get_masses()) / strc.get_volume() * 1.660539040
-        return Property(scalars=Scalar(value=density), units="g/(cm^3)")
+        return Property(scalars=[Scalar(value=density)], units="g/(cm^3)")
 
     def get_positions(self):
         strc = self.get_output_structure()
@@ -220,7 +220,7 @@ class DFTParser(object):
         # Check for cached result
         if self._converged is None:
             self._converged = self._is_converged()
-        return Property(scalars=self._converged)
+        return Property(scalars=[Scalar(value=self._converged)])
 
     def get_pp_name(self):
         '''Read output to get the pseudopotentials names used for each elements
