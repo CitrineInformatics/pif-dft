@@ -4,5 +4,5 @@ requests
 flask
 flask-cors
 gunicorn
-pypif==1.1.6
+pypif==2.0.1
 dftparse==0.2.1

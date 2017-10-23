@@ -55,7 +55,7 @@ class VaspParser(DFTParser):
             for line in fp:
                 if "ENCUT" in line:
                     words = line.split()
-                    return Value(scalars=float(words[2]), units=words[3])
+                    return Value(scalars=[Scalar(value=float(words[2]))], units=words[3])
                 
         # Error handling: ENCUT not found
         raise Exception('ENCUT not found')
@@ -96,7 +96,7 @@ class VaspParser(DFTParser):
             for line in fp:
                 if "TITEL" in line:
                     words = line.split()
-                    return Value(scalars=words[2])
+                    return Value(scalars=[Scalar(value=words[2])])
                     break
             
     def get_pp_name(self):
@@ -110,7 +110,7 @@ class VaspParser(DFTParser):
                 if "TITEL" in line:
                     words = line.split()
                     pp.append(words[3])
-            return Value(scalars=pp)
+            return Value(vectors=[[Scalar(value=x) for x in pp]])
                 
         # Error handling: TITEL not found
         raise Exception('TITEL not found')
@@ -138,10 +138,10 @@ class VaspParser(DFTParser):
                                 break
                             NK += float(line.split()[3])
                             counter += 1
-                return Value(scalars=(NI*NK))
+                return Value(scalars=[Scalar(value=NI*NK)])
             #if k-points were not reduced KPPRA equals the number of atoms * number of irreducible k-points
             else:
-                return Value(scalars=(NI*NIRK))
+                return Value(scalars=[Scalar(value=NI*NIRK)])
 
                 
         # Error handling: NKPTS or NIONS not found
@@ -151,7 +151,7 @@ class VaspParser(DFTParser):
         return self._call_ase(Vasp().read_convergence)
 
     def get_total_energy(self):
-        return Property(scalars=self._call_ase(Vasp().read_energy)[0], units='eV')
+        return Property(scalars=[Scalar(value=self._call_ase(Vasp().read_energy)[0])], units='eV')
 
     def get_version_number(self):
         # Open up the OUTCAR
@@ -217,7 +217,7 @@ class VaspParser(DFTParser):
                 for line in fp:
                     if "GGA     =" in line:
                         words = line.split()
-                        return Value(scalars=vdW_dict[words[2]])
+                        return Value(scalars=[Scalar(value=vdW_dict[words[2]])])
             #if vdW is not used, return None
             else:
                 return None
@@ -235,7 +235,7 @@ class VaspParser(DFTParser):
             for line in reversed(open(os.path.join(self._directory, 'OUTCAR')).readlines()):
                 if "external pressure" in line:
                     words = line.split()
-                    return Property(scalars=float(words[3]), units=pressure_dict[words[4]])
+                    return Property(scalars=[Scalar(value=float(words[3]))], units=pressure_dict[words[4]])
                     break
     
     def get_stresses(self):
@@ -251,16 +251,22 @@ class VaspParser(DFTParser):
                 if "in kB" in line:
                     words = line.split()
                     XX = float(words[2]); YY = float(words[3]); ZZ = float(words[4]); XY= float(words[5]); YZ = float(words[6]); ZX = float(words[7])
-            return Property(matrices=[[XX,XY,ZX],[XY,YY,YZ],[ZX,YZ,ZZ]], units='kbar')
+            matrix = [[XX,XY,ZX],[XY,YY,YZ],[ZX,YZ,ZZ]]
+            wrapped = [[Scalar(value=x) for x in y] for y in matrix]
+            return Property(matrices=[wrapped], units='kbar')
             
          # Error handling: "in kB" not found
         raise Exception('in kB not found')
 
     def get_forces(self):
         self.atoms = read_vasp_out(os.path.join(self._directory, 'OUTCAR'))
+        forces_raw = self.atoms.get_calculator().results['forces'].tolist()
+        forces_wrapped = [[Scalar(value=x) for x in y] for y in forces_raw]
+        positions_raw = self.atoms.positions.tolist()
+        positions_wrapped = [[Scalar(value=x) for x in y] for y in positions_raw]
         return Property(
-            vectors=self.atoms.get_calculator().results['forces'].tolist(),
-            conditions=Value(name="positions", vectors=self.atoms.positions.tolist())
+            vectors=forces_wrapped,
+            conditions=Value(name="positions", vectors=positions_wrapped)
         )
 
     @staticmethod
@@ -327,7 +333,7 @@ class VaspParser(DFTParser):
             bandgap = VaspParser._get_bandgap_doscar(doscar_path)
         else:
             return None
-        return Property(scalars=Scalar(value=round(bandgap, 3)), units='eV')
+        return Property(scalars=[Scalar(value=round(bandgap, 3))], units='eV')
                 
     def get_dos(self):
         file_path = os.path.join(self._directory, 'DOSCAR')
@@ -342,11 +348,11 @@ class VaspParser(DFTParser):
             for i in range(n_step):
                 l = fp.readline().split()
                 e = float(l.pop(0))
-                energy.append(e)
+                energy.append(Scalar(value=e))
                 dens = 0
                 for j in range(int(len(l)/2)):
                     dens += float(l[j])
-                dos.append(dens)
+                dos.append(Scalar(value=dens))
 
             # Convert to property
             return Property(scalars=dos, units='number of states per unit cell',
