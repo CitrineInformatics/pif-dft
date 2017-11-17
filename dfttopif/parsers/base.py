@@ -108,6 +108,7 @@ class DFTParser(object):
             'Total force': 'get_total_force',
             'Density': 'get_density',
             'OUTCAR': 'get_outcar',
+            'Total magnetization': 'get_total_magnetization',
         }
         
     def _call_ase(self, func):
@@ -308,4 +309,7 @@ class DFTParser(object):
        raise NotImplementedError
 
     def get_total_force(self):
+       return None
+
+    def get_total_magnetization(self):
        return None

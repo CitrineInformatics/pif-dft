@@ -357,3 +357,15 @@ class VaspParser(DFTParser):
             # Convert to property
             return Property(scalars=dos, units='number of states per unit cell',
                             conditions=Value(name='energy', scalars=energy, units='eV'))
+
+    def get_total_magnetization(self):
+        file_path = os.path.join(self._directory, "OUTCAR")
+        if not os.path.isfile(file_path):
+            return None
+        parser = OutcarParser()
+        with open(file_path, "r") as fp:
+            matches = list(filter(lambda x: "total magnetization" in x, parser.parse(fp.readlines())))
+        if len(matches) == 0:
+            return None
+        total_magnetization = matches[-1]["total magnetization"]
+        return Property(scalars=[Scalar(value=total_magnetization)], units="Bohr")
