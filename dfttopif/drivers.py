@@ -48,6 +48,7 @@ def _add_quality_report(directory, pif, inline=True):
 
     return pif
 
+
 def tarfile_to_pif(filename, temp_root_dir='', verbose=0):
     """
     Process a tar file that contains DFT data.
@@ -116,7 +117,8 @@ def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
             if parser.test_if_from(directory):
                 foundParser = True
                 break
-        except: pass
+        except:
+            pass
     if not foundParser:
         raise Exception('Directory is not in correct format for an existing parser')
     if verbose > 0:
@@ -128,11 +130,11 @@ def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
         
     # Get software information, to list as method
     software = Software(name=parser.get_name(),
-        version=parser.get_version_number())
+                        version=parser.get_version_number())
         
     # Define the DFT method object
     method = Method(name='Density Functional Theory',
-        software=[software])
+                    software=[software])
         
     # Get the settings (aka. "conditions") of the DFT calculations
     conditions = []
@@ -188,6 +190,7 @@ def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
 
     return chem
 
+
 def convert(files=[], **kwargs):
     """
     Wrap directory to pif as a dice extension
@@ -199,7 +202,7 @@ def convert(files=[], **kwargs):
     if len(files) < 1:
         raise ValueError("Files needs to be a non-empty list")
 
-    if (len(files) == 1):
+    if len(files) == 1:
         return directory_to_pif(files[0], **kwargs)
     else:
         prefix = os.path.join(".", os.path.commonprefix(files))
