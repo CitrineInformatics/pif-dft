@@ -77,16 +77,16 @@ class DFTParser(object):
                 and the value is function name of this parser
         '''
         return {
-            'XC Functional':'get_xc_functional',
-            'Relaxed':'is_relaxed',
-            'Cutoff Energy':'get_cutoff_energy',
-            'k-Points per Reciprocal Atom':'get_KPPRA',
-            'Spin-Orbit Coupling':'uses_SOC',
-            'DFT+U':'get_U_settings',
-            'vdW Interactions':'get_vdW_settings',
-            'Pseudopotentials':'get_pp_name',
-            'INCAR':'get_incar',
-            'POSCAR':'get_poscar',
+            'XC Functional': 'get_xc_functional',
+            'Relaxed': 'is_relaxed',
+            'Cutoff Energy': 'get_cutoff_energy',
+            'k-Points per Reciprocal Atom': 'get_KPPRA',
+            'Spin-Orbit Coupling': 'uses_SOC',
+            'DFT+U': 'get_U_settings',
+            'vdW Interactions': 'get_vdW_settings',
+            'Pseudopotentials': 'get_pp_name',
+            'INCAR': 'get_incar',
+            'POSCAR': 'get_poscar',
         }
         
     def get_result_functions(self):
@@ -98,11 +98,11 @@ class DFTParser(object):
                 and the value is the name of the function
         '''
         return {
-            'Converged':'is_converged',
-            'Total Energy':'get_total_energy',
-            'Band Gap Energy':'get_band_gap',
-            'Pressure':'get_pressure',
-            'Density of States':'get_dos',
+            'Converged': 'is_converged',
+            'Total Energy': 'get_total_energy',
+            'Band Gap Energy': 'get_band_gap',
+            'Pressure': 'get_pressure',
+            'Density of States': 'get_dos',
             'Positions': 'get_positions',
             'Forces': 'get_forces',
             'Total force': 'get_total_force',
@@ -147,27 +147,30 @@ class DFTParser(object):
         raise NotImplementedError
     
     def get_output_structure(self):
-        '''Get the output structure, if available
+        """
+        Get the output structure, if available
         
         Returns:
             ase.Atoms - Output structure from this calculation
                 or None if output file not found
-        '''
+        """
         raise NotImplementedError
     
     def get_composition(self):
-        '''Get composition of output structure
+        """
+        Get composition of output structure
         
         Returns:
             String - Composition based on output structure
-        '''
+        """
         strc = self.get_output_structure()
         counts = Counter(strc.get_chemical_symbols())
-        return ''.join(k if counts[k]==1 else '%s%d'%(k,counts[k]) \
-                for k in sorted(counts))
+        return ''.join(k if counts[k] == 1 else '%s%d' % (k, counts[k]) for k in sorted(counts))
 
     def get_density(self):
-        """Compute the density from the output structure"""
+        """
+        Compute the density from the output structure
+        """
         strc = self.get_output_structure()
         density = sum(strc.get_masses()) / strc.get_volume() * 1.660539040
         return Property(scalars=[Scalar(value=density)], units="g/(cm^3)")
