@@ -1,7 +1,9 @@
 from pypif.obj import *
 from .base import DFTParser, Value_if_true
 import os
+from dftparse.util import *
 from dftparse.wien2k.scf_parser import ScfParser
+from dftparse.wien2k.absorp_parser import AbsorpParser
 
 
 class Wien2kParser(DFTParser):
@@ -49,4 +51,24 @@ class Wien2kParser(DFTParser):
             return None
         total_energy = matches[-1]["total energy"]
         total_energy_units = matches[-1]["total energy units"]
+        return Property(scalars=[Scalar(value=total_energy)], units=total_energy_units)
+
+    def get_absorption(self):
+        # Get the .absorp file
+        for filename in os.listdir(self._directory):
+            if os.path.splitext(filename)[1] == ".absorp":
+                file_path = os.path.join(self._directory, filename)
+        if not file_path:
+            return None
+
+        parser = AbsorpParser()
+        with open(file_path, "r") as fp:
+            matches = list(filter(lambda x: len(x) > 0 and "#" not in x and len(x.split()) == 5,
+                                  parser.parse(fp.readlines())))
+        if len(matches) == 0:
+            return None
+
+        non_empty_matches = remove_empty(matches)
+        dic_of_lsts = transpose_list(non_empty_matches)
+
         return Property(scalars=[Scalar(value=total_energy)], units=total_energy_units)
