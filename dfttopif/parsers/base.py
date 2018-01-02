@@ -347,3 +347,12 @@ class DFTParser(object):
 
     def get_total_magnetization(self):
         return None
+
+    def get_absorption(self):
+        """
+        Get data from absorption data from file in case of Wien2k
+
+        Returns: (list) of property object containing xx and zz components of optical conductivity and absorption.
+
+        """
+        raise NotImplementedError
