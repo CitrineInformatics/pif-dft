@@ -95,7 +95,8 @@ def archive_to_pif(filename, verbose=0):
 
 
 def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
-    '''Given a directory that contains output from
+    """
+    Given a directory that contains output from
     a DFT calculation, parse the data and return
     a pif object
 
@@ -107,7 +108,7 @@ def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
     Output:
         pif - ChemicalSystem, Results and settings of
             the DFT calculation in pif format
-    '''
+    """
 
     # Look for the first parser compatible with the directory
     foundParser = False
