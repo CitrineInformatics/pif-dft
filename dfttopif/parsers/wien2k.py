@@ -21,7 +21,7 @@ class Wien2kParser(DFTParser):
         return False
 
     def get_version_number(self):
-        # Open up the .scf file
+        # Get version number from the .scf file
         for filename in os.listdir(self._directory):
             if os.path.splitext(filename)[1] == ".scf":
 
@@ -37,7 +37,7 @@ class Wien2kParser(DFTParser):
                 raise Exception("Wien2k version not found")
 
     def get_total_energy(self):
-        # Get the .scf file
+        # Get data the .scf file
         for filename in os.listdir(self._directory):
             if os.path.splitext(filename)[1] == ".scf":
                 file_path = os.path.join(self._directory, filename)
@@ -53,8 +53,16 @@ class Wien2kParser(DFTParser):
         total_energy_units = matches[-1]["total energy units"]
         return Property(scalars=[Scalar(value=total_energy)], units=total_energy_units)
 
+    @staticmethod
+    def _get_wavelengths(energy_lst):
+        wavelgths_lst = []
+        for energy in energy_lst:
+            wavelgths_lst.append(energy/1240)
+
+        return wavelgths_lst
+
     def get_absorption(self):
-        # Get the .absorp file
+        # Get data from the .absorp file
         for filename in os.listdir(self._directory):
             if os.path.splitext(filename)[1] == ".absorp":
                 file_path = os.path.join(self._directory, filename)
@@ -68,7 +76,20 @@ class Wien2kParser(DFTParser):
         if len(matches) == 0:
             return None
 
+        # Convert list of dics returned by dftparse to dic of lists
         non_empty_matches = remove_empty(matches)
         dic_of_lsts = transpose_list(non_empty_matches)
 
-        return Property(scalars=[Scalar(value=total_energy)], units=total_energy_units)
+        # Get wavelengths
+        wavelengths = Wien2kParser._get_wavelengths(dic_of_lsts["energy"])
+
+        props_lst = [Property(name="Re $\sigma_{xx}$", scalars=dic_of_lsts["re_sigma_xx"], units="1/(Ohm.cm)",
+                              conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)]),
+                     Property(name="Re $\sigma_{zz}$", scalars=dic_of_lsts["re_sigma_zz"], units="1/(Ohm.cm)",
+                              conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)]),
+                     Property(name="$\\alpha_{xx}$", scalars=dic_of_lsts["absorp_xx"], units="10$^{4}$/cm",
+                              conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)]),
+                     Property(name="$\\alpha_{zz}$", scalars=dic_of_lsts["absorp_zz"], units="10$^{4}$/cm",
+                              conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])]
+
+        return props_lst
