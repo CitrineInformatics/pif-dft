@@ -176,8 +176,8 @@ def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
 
             # Add name and other data
             prop.name = name
-            prop.methods = [method,]
-            prop.data_type='COMPUTATIONAL'
+            prop.methods = [method, ]
+            prop.data_type = "COMPUTATIONAL"
             if verbose > 0 and isinstance(prop, Value):
                 print(name)
             if prop.conditions is None:
@@ -191,7 +191,7 @@ def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
             chem.properties.append(prop)
 
     # Check to see if we should add the quality report
-    if quality_report and isinstance(parser, VaspParser) :
+    if quality_report and isinstance(parser, VaspParser):
         _add_quality_report(directory, chem)
 
     return chem
