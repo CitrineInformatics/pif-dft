@@ -3,6 +3,7 @@ from .base import DFTParser, Value_if_true
 import os
 from dftparse.util import *
 from dftparse.wien2k.scf_parser import ScfParser
+from dftparse.wien2k.scf2_parser import Scf2Parser
 from dftparse.wien2k.absorp_parser import AbsorpParser
 
 
@@ -52,6 +53,23 @@ class Wien2kParser(DFTParser):
         total_energy = matches[-1]["total energy"]
         total_energy_units = matches[-1]["total energy units"]
         return Property(scalars=[Scalar(value=total_energy)], units=total_energy_units)
+
+    def get_band_gap(self):
+        # Get data the .scf2 file
+        for filename in os.listdir(self._directory):
+            if os.path.splitext(filename)[1] == ".scf2":
+                file_path = os.path.join(self._directory, filename)
+        if not file_path:
+            return None
+
+        parser = Scf2Parser()
+        with open(file_path, "r") as fp:
+            matches = list(filter(lambda x: ":GAP (global)" in x, parser.parse(fp.readlines())))
+        if len(matches) == 0:
+            return None
+        band_gap = matches[-1]["band gap"]
+        band_gap_units = matches[-1]["band gap units"]
+        return Property(scalars=[Scalar(value=band_gap)], units=band_gap_units)
 
     @staticmethod
     def _get_wavelengths(energy_lst):
