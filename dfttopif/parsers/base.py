@@ -116,6 +116,7 @@ class DFTParser(object):
             'Density': 'get_density',
             'OUTCAR': 'get_outcar',
             'Total magnetization': 'get_total_magnetization',
+            'Absorption': 'get_absorption'
         }
         
     def _call_ase(self, func):
