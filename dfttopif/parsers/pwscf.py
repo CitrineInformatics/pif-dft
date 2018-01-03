@@ -446,3 +446,6 @@ class PwscfParser(DFTParser):
 
     def get_ewald_energy_contribution(self):
         return self._get_key_with_units("ewald energy contribution")
+
+    def get_absorption(self):
+        return None
