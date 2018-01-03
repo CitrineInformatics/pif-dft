@@ -97,8 +97,7 @@ class Wien2kParser(DFTParser):
 
         parser = AbsorpParser()
         with open(file_path, "r") as fp:
-            matches = list(filter(lambda x: len(x) > 0 and "#" not in x and len(x.split()) == 5,
-                                  parser.parse(fp.readlines())))
+            matches = list(filter(lambda x: "energy" in x, parser.parse(fp.readlines())))
         if len(matches) == 0:
             return None
 
