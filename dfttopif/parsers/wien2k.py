@@ -123,3 +123,24 @@ class Wien2kParser(DFTParser):
                               conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])]
 
         return props_lst
+
+    def uses_SOC(self):
+        return None
+
+    def is_relaxed(self):
+        return None
+
+    def get_U_settings(self):
+        return None
+
+    def get_vdW_settings(self):
+        return None
+
+    def get_pressure(self):
+        return None
+
+    def get_stresses(self):
+        return None
+
+    def get_dos(self):
+        return None
