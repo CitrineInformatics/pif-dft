@@ -75,7 +75,7 @@ class Wien2kParser(DFTParser):
     def _get_wavelengths(energy_lst):
         wavelgths_lst = []
         for energy in energy_lst:
-            wavelgths_lst.append(energy/1240)
+            wavelgths_lst.append(Scalar(value=energy/1240))
 
         return wavelgths_lst
 
