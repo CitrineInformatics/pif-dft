@@ -47,7 +47,7 @@ class Wien2kParser(DFTParser):
 
         parser = ScfParser()
         with open(file_path, "r") as fp:
-            matches = list(filter(lambda x: ":ENE" in x, parser.parse(fp.readlines())))
+            matches = list(filter(lambda x: "total energy" in x, parser.parse(fp.readlines())))
         if len(matches) == 0:
             return None
         total_energy = matches[-1]["total energy"]
@@ -64,7 +64,7 @@ class Wien2kParser(DFTParser):
 
         parser = Scf2Parser()
         with open(file_path, "r") as fp:
-            matches = list(filter(lambda x: ":GAP (global)" in x, parser.parse(fp.readlines())))
+            matches = list(filter(lambda x: "band gap" in x, parser.parse(fp.readlines())))
         if len(matches) == 0:
             return None
         band_gap = matches[-1]["band gap"]
