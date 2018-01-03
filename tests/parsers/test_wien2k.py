@@ -42,7 +42,9 @@ class TestWien2kParser(unittest.TestCase):
         self.assertEquals(len(absorp_props), 4)
 
         for absorp_prop in absorp_props:
+            props_notfound = True
             if absorp_prop.name == "Re $\sigma_{xx}$":
+                props_notfound = False
                 self.assertEquals(len(absorp_prop.scalars), 8)
                 self.assertEquals(absorp_prop.scalars[0].value, 11.508)
                 self.assertEquals(absorp_prop.units, "1/(Ohm.cm)")
@@ -59,6 +61,7 @@ class TestWien2kParser(unittest.TestCase):
                     raise ValueError("Condition 'Wavelength' not found")
 
             elif absorp_prop.name == "$\\alpha_{zz}$":
+                props_notfound = False
                 self.assertEquals(len(absorp_prop.scalars), 8)
                 self.assertEquals(absorp_prop.scalars[7].value, 194.137)
                 self.assertEquals(absorp_prop.units, "10$^{4}$/cm")
@@ -73,6 +76,9 @@ class TestWien2kParser(unittest.TestCase):
 
                 if cond_notfound:
                     raise ValueError("Condition 'Wavelength' not found")
+
+        if props_notfound:
+            raise ValueError("Absorption properties not parsed")
 
         # Delete the data
         delete_example("SiO2opt")
