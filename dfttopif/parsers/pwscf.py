@@ -456,9 +456,9 @@ class PwscfParser(DFTParser):
         return None
 
     @staticmethod
-    def get_absorption_xx():
+    def get_absorp_xx():
         return None
 
     @staticmethod
-    def get_absorption_zz():
+    def get_absorp_zz():
         return None
