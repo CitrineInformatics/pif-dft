@@ -446,19 +446,3 @@ class PwscfParser(DFTParser):
 
     def get_ewald_energy_contribution(self):
         return self._get_key_with_units("ewald energy contribution")
-
-    @staticmethod
-    def get_optical_conductivity_xx():
-        return None
-
-    @staticmethod
-    def get_optical_conductivity_zz():
-        return None
-
-    @staticmethod
-    def get_absorp_xx():
-        return None
-
-    @staticmethod
-    def get_absorp_zz():
-        return None

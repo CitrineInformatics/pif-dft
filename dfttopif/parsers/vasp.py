@@ -398,19 +398,3 @@ class VaspParser(DFTParser):
             return None
         total_magnetization = matches[-1]["total magnetization"]
         return Property(scalars=[Scalar(value=total_magnetization)], units="Bohr")
-
-    @staticmethod
-    def get_optical_conductivity_xx():
-        return None
-
-    @staticmethod
-    def get_optical_conductivity_zz():
-        return None
-
-    @staticmethod
-    def get_absorp_xx():
-        return None
-
-    @staticmethod
-    def get_absorp_zz():
-        return None
