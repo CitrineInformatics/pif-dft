@@ -35,7 +35,7 @@ class Wien2kParser(DFTParser):
                             return words[2].strip("WIEN2k_")
 
                 # Error handling: version not found
-                raise Exception("Wien2k version not found")
+                raise ValueError("Wien2k version not found")
 
     def get_total_energy(self):
         # Get data the .scf file
