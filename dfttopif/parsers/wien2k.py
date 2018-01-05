@@ -87,11 +87,12 @@ class Wien2kParser(DFTParser):
 
         return scalar_objs_lst
 
-    def get_absorption(self):
+    @staticmethod
+    def _extract_absorp_data(directory):
         # Get data from the .absorp file
-        for filename in os.listdir(self._directory):
+        for filename in os.listdir(directory):
             if os.path.splitext(filename)[1] == ".absorp":
-                file_path = os.path.join(self._directory, filename)
+                file_path = os.path.join(directory, filename)
         if not file_path:
             return None
 
@@ -105,23 +106,51 @@ class Wien2kParser(DFTParser):
         non_empty_matches = remove_empty(matches)
         dic_of_lsts = transpose_list(non_empty_matches)
 
+        return dic_of_lsts
+
+    def get_optical_conductivity_xx(self):
+
+        absorpdata_dic = Wien2kParser._extract_absorp_data(self._directory)
+
         # Get wavelengths and other scalar lists
-        wavelengths = Wien2kParser._get_wavelengths(dic_of_lsts["energy"])
-        re_sigma_xx = Wien2kParser._get_scalars_lst(dic_of_lsts["re_sigma_xx"])
-        re_sigma_zz = Wien2kParser._get_scalars_lst(dic_of_lsts["re_sigma_zz"])
-        absorp_xx = Wien2kParser._get_scalars_lst(dic_of_lsts["absorp_xx"])
-        absorp_zz = Wien2kParser._get_scalars_lst(dic_of_lsts["absorp_zz"])
+        wavelengths = Wien2kParser._get_wavelengths(absorpdata_dic["energy"])
+        re_sigma_xx = Wien2kParser._get_scalars_lst(absorpdata_dic["re_sigma_xx"])
 
-        props_lst = [Property(name="Re $\sigma_{xx}$", scalars=re_sigma_xx, units="1/(Ohm.cm)",
-                              conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)]),
-                     Property(name="Re $\sigma_{zz}$", scalars=re_sigma_zz, units="1/(Ohm.cm)",
-                              conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)]),
-                     Property(name="$\\alpha_{xx}$", scalars=absorp_xx, units="10$^{4}$/cm",
-                              conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)]),
-                     Property(name="$\\alpha_{zz}$", scalars=absorp_zz, units="10$^{4}$/cm",
-                              conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])]
+        return Property(name="Re $\sigma_{xx}$", scalars=re_sigma_xx, units="1/(Ohm.cm)",
+                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
 
-        return props_lst
+    def get_optical_conductivity_zz(self):
+
+        absorpdata_dic = Wien2kParser._extract_absorp_data(self._directory)
+
+        # Get wavelengths and other scalar lists
+        wavelengths = Wien2kParser._get_wavelengths(absorpdata_dic["energy"])
+        re_sigma_xx = Wien2kParser._get_scalars_lst(absorpdata_dic["re_sigma_zz"])
+
+        return Property(name="Re $\sigma_{zz}$", scalars=re_sigma_xx, units="1/(Ohm.cm)",
+                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+
+    def get_absorp_xx(self):
+
+        absorpdata_dic = Wien2kParser._extract_absorp_data(self._directory)
+
+        # Get wavelengths and other scalar lists
+        wavelengths = Wien2kParser._get_wavelengths(absorpdata_dic["energy"])
+        re_sigma_xx = Wien2kParser._get_scalars_lst(absorpdata_dic["absorp_xx"])
+
+        return Property(name="absorp$_{xx}$", scalars=re_sigma_xx, units="10$^{4}$/cm",
+                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+
+    def get_absorp_zz(self):
+
+        absorpdata_dic = Wien2kParser._extract_absorp_data(self._directory)
+
+        # Get wavelengths and other scalar lists
+        wavelengths = Wien2kParser._get_wavelengths(absorpdata_dic["energy"])
+        re_sigma_xx = Wien2kParser._get_scalars_lst(absorpdata_dic["absorp_zz"])
+
+        return Property(name="absorp$_{zz}$", scalars=re_sigma_xx, units="10$^{4}$/cm",
+                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
 
     def uses_SOC(self):
         return None
