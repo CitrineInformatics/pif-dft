@@ -162,35 +162,30 @@ def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
     for name, func in parser.get_result_functions().items():
 
         # Get list of props
-        props_lst = getattr(parser, func)()
-        if not isinstance(props_lst, list):
-            props_lst = [props_lst]
+        prop = getattr(parser, func)()
 
-        for prop in props_lst:
+        # If the property is None, skip it
+        if prop is None:
+            continue
 
-            # If the property is None, skip it
-            if prop is None:
-                continue
+        if inline and prop.files is not None:
+            continue
 
-            if inline and prop.files is not None:
-                continue
+        # Add name and other data
+        prop.name = name
+        prop.methods = [method, ]
+        prop.data_type = "COMPUTATIONAL"
+        if verbose > 0 and isinstance(prop, Value):
+            print(name)
+        if prop.conditions is None:
+            prop.conditions = conditions
+        else:
+            if not isinstance(prop.conditions, list):
+                prop.conditions = [prop.conditions]
+            prop.conditions.extend(conditions)
 
-            # Add name and other data
-            if not prop.name:
-                prop.name = name
-            prop.methods = [method, ]
-            prop.data_type = "COMPUTATIONAL"
-            if verbose > 0 and isinstance(prop, Value):
-                print(name)
-            if prop.conditions is None:
-                prop.conditions = conditions
-            else:
-                if not isinstance(prop.conditions, list):
-                    prop.conditions = [prop.conditions]
-                prop.conditions.extend(conditions)
-
-            # Add it to the output
-            chem.properties.append(prop)
+        # Add it to the output
+        chem.properties.append(prop)
 
     # Check to see if we should add the quality report
     if quality_report and isinstance(parser, VaspParser):
