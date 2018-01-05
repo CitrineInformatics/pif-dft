@@ -116,7 +116,7 @@ class Wien2kParser(DFTParser):
         wavelengths = Wien2kParser._get_wavelengths(absorpdata_dic["energy"])
         re_sigma_xx = Wien2kParser._get_scalars_lst(absorpdata_dic["re_sigma_xx"])
 
-        return Property(name="Re $\sigma_{xx}$", scalars=re_sigma_xx, units="1/(Ohm.cm)",
+        return Property(scalars=re_sigma_xx, units="1/(Ohm.cm)",
                         conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
 
     def get_optical_conductivity_zz(self):
@@ -127,7 +127,7 @@ class Wien2kParser(DFTParser):
         wavelengths = Wien2kParser._get_wavelengths(absorpdata_dic["energy"])
         re_sigma_xx = Wien2kParser._get_scalars_lst(absorpdata_dic["re_sigma_zz"])
 
-        return Property(name="Re $\sigma_{zz}$", scalars=re_sigma_xx, units="1/(Ohm.cm)",
+        return Property(scalars=re_sigma_xx, units="1/(Ohm.cm)",
                         conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
 
     def get_absorp_xx(self):
@@ -138,7 +138,7 @@ class Wien2kParser(DFTParser):
         wavelengths = Wien2kParser._get_wavelengths(absorpdata_dic["energy"])
         re_sigma_xx = Wien2kParser._get_scalars_lst(absorpdata_dic["absorp_xx"])
 
-        return Property(name="absorp$_{xx}$", scalars=re_sigma_xx, units="10$^{4}$/cm",
+        return Property(scalars=re_sigma_xx, units="10$^{4}$/cm",
                         conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
 
     def get_absorp_zz(self):
@@ -149,7 +149,7 @@ class Wien2kParser(DFTParser):
         wavelengths = Wien2kParser._get_wavelengths(absorpdata_dic["energy"])
         re_sigma_xx = Wien2kParser._get_scalars_lst(absorpdata_dic["absorp_zz"])
 
-        return Property(name="absorp$_{zz}$", scalars=re_sigma_xx, units="10$^{4}$/cm",
+        return Property(scalars=re_sigma_xx, units="10$^{4}$/cm",
                         conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
 
     def uses_SOC(self):

@@ -116,10 +116,10 @@ class DFTParser(object):
             'Density': 'get_density',
             'OUTCAR': 'get_outcar',
             'Total magnetization': 'get_total_magnetization',
-            'Optical conductivity xx': 'get_optical_conductivity_xx',
-            'Optical conductivity zz': 'get_optical_conductivity_zz',
-            'Absorption xx': 'get_absorp_xx',
-            'Absorption zz': 'get_absorp_zz'
+            'Optical conductivity xx (Re $\sigma_{xx}$)': 'get_optical_conductivity_xx',
+            'Optical conductivity zz (Re $\sigma_{zz}$)': 'get_optical_conductivity_zz',
+            'Absorption xx (absorp$_{xx}$)': 'get_absorp_xx',
+            'Absorption zz (absorp$_{zz}$)': 'get_absorp_zz'
         }
         
     def _call_ase(self, func):
