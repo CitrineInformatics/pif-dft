@@ -2,6 +2,7 @@ import unittest
 from dfttopif.parsers.wien2k import Wien2kParser
 from ..test_pif import unpack_example, delete_example
 import os
+from pypif.obj import *
 
 
 class TestWien2kParser(unittest.TestCase):
@@ -37,48 +38,34 @@ class TestWien2kParser(unittest.TestCase):
         self.assertEquals(0.709, prop_bandgap.scalars[0].value)
         self.assertEquals("eV", prop_bandgap.units)
 
-        absorp_props = parser.get_absorption()
+        re_sigma_xx_prop = parser.get_optical_conductivity_xx()
+        self.assertIsInstance(re_sigma_xx_prop, Property)
+        self.assertEquals(len(re_sigma_xx_prop.scalars), 8)
+        self.assertEquals(re_sigma_xx_prop.scalars[0].value, 11.508)
+        self.assertEquals(re_sigma_xx_prop.units, "1/(Ohm.cm)")
 
-        self.assertEquals(len(absorp_props), 4)
+        cond_notfound = True
+        for cond in re_sigma_xx_prop.conditions:
+            if cond.name == "Wavelength":
+                cond_notfound = False
+                self.assertEquals(cond.units, "nm")
+                self.assertEquals(len(cond.scalars), 8)
+                self.assertAlmostEqual(cond.scalars[0].value, 0.00044986)
 
-        for absorp_prop in absorp_props:
-            props_notfound = True
-            if absorp_prop.name == "Re $\sigma_{xx}$":
-                props_notfound = False
-                self.assertEquals(len(absorp_prop.scalars), 8)
-                self.assertEquals(absorp_prop.scalars[0].value, 11.508)
-                self.assertEquals(absorp_prop.units, "1/(Ohm.cm)")
+        if cond_notfound:
+            raise ValueError("Condition 'Wavelength' not found")
 
-                cond_notfound = True
-                for cond in absorp_prop.conditions:
-                    if cond.name == "Wavelength":
-                        cond_notfound = False
-                        self.assertEquals(cond.units, "nm")
-                        self.assertEquals(len(cond.scalars), 8)
-                        self.assertAlmostEqual(cond.scalars[0].value, 0.00044986)
+        absorp_zz_prop = parser.get_absorp_zz()
+        self.assertIsInstance(absorp_zz_prop, Property)
+        self.assertEquals(len(absorp_zz_prop.scalars), 8)
+        self.assertEquals(absorp_zz_prop.scalars[7].value, 194.137)
+        self.assertEquals(absorp_zz_prop.units, "10$^{4}$/cm")
 
-                if cond_notfound:
-                    raise ValueError("Condition 'Wavelength' not found")
-
-            elif absorp_prop.name == "$\\alpha_{zz}$":
-                props_notfound = False
-                self.assertEquals(len(absorp_prop.scalars), 8)
-                self.assertEquals(absorp_prop.scalars[7].value, 194.137)
-                self.assertEquals(absorp_prop.units, "10$^{4}$/cm")
-
-                cond_notfound = True
-                for cond in absorp_prop.conditions:
-                    if cond.name == "Wavelength":
-                        cond_notfound = False
-                        self.assertEquals(cond.units, "nm")
-                        self.assertEquals(len(cond.scalars), 8)
-                        self.assertAlmostEqual(round(cond.scalars[7].value, 6), 0.010566)
-
-                if cond_notfound:
-                    raise ValueError("Condition 'Wavelength' not found")
-
-        if props_notfound:
-            raise ValueError("Absorption properties not parsed")
+        for cond in re_sigma_xx_prop.conditions:
+            if cond.name == "Wavelength":
+                self.assertEquals(cond.units, "nm")
+                self.assertEquals(len(cond.scalars), 8)
+                self.assertAlmostEqual(round(cond.scalars[7].value, 6), 0.010566)
 
         # Delete the data
         delete_example("SiO2opt")
