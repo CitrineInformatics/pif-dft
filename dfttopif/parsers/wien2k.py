@@ -13,7 +13,15 @@ class Wien2kParser(DFTParser):
     """
 
     def get_name(self): return "Wien2k"
-    
+
+    def get_result_functions(self):
+        base_results = super(Wien2kParser, self).get_result_functions()
+        base_results["Optical conductivity xx (Re $\sigma_{xx}$)"] = "get_optical_conductivity_xx"
+        base_results["Optical conductivity zz (Re $\sigma_{zz}$)"] = "get_optical_conductivity_zz"
+        base_results["Absorption xx ($\\alpha_{xx}$)"] = "get_absorp_xx"
+        base_results["Absorption zz ($\\alpha_{zz}$)"] = "get_absorp_zz"
+        return base_results
+
     def test_if_from(self, directory):
         # Check whether it has a .scf file (analogous to an OUTCAR file)
         for filename in os.listdir(directory):
