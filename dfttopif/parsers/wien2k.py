@@ -47,7 +47,7 @@ class Wien2kParser(DFTParser):
 
         parser = ScfParser()
         with open(file_path, "r") as fp:
-            matches = list(filter(lambda x: "total energy" in x, parser.parse(fp.readlines())))
+            matches = [x for x in parser.parse(fp.readlines()) if "total energy" in x]
         if len(matches) == 0:
             return None
         total_energy = matches[-1]["total energy"]
@@ -64,7 +64,7 @@ class Wien2kParser(DFTParser):
 
         parser = Scf2Parser()
         with open(file_path, "r") as fp:
-            matches = list(filter(lambda x: "band gap" in x, parser.parse(fp.readlines())))
+            matches = [x for x in parser.parse(fp.readlines()) if "band gap" in x]
         if len(matches) == 0:
             return None
         band_gap = matches[-1]["band gap"]
@@ -73,19 +73,11 @@ class Wien2kParser(DFTParser):
 
     @staticmethod
     def _get_wavelengths(energy_lst):
-        wavelgths_lst = []
-        for energy in energy_lst:
-            wavelgths_lst.append(Scalar(value=energy/1240))
-
-        return wavelgths_lst
+        return [Scalar(value=energy/1240) for energy in energy_lst]
 
     @staticmethod
     def _get_scalars_lst(floats_lst):
-        scalar_objs_lst = []
-        for num in floats_lst:
-            scalar_objs_lst.append(Scalar(value=num))
-
-        return scalar_objs_lst
+        return [Scalar(value=num) for num in floats_lst]
 
     @staticmethod
     def _extract_absorp_data(directory):
@@ -98,7 +90,7 @@ class Wien2kParser(DFTParser):
 
         parser = AbsorpParser()
         with open(file_path, "r") as fp:
-            matches = list(filter(lambda x: "energy" in x, parser.parse(fp.readlines())))
+            matches = [x for x in parser.parse(fp.readlines()) if "energy" in x]
         if len(matches) == 0:
             return None
 
