@@ -21,6 +21,7 @@ class TestWien2kParser(unittest.TestCase):
         # Test the settings
         self.assertEquals("Wien2k", parser.get_name())
 
+        # total energy
         prop_energy = parser.get_total_energy()
         self.assertEquals(-780.127232, prop_energy.scalars[0].value)
         self.assertEquals("Ry", prop_energy.units)
@@ -34,10 +35,12 @@ class TestWien2kParser(unittest.TestCase):
         self.assertEquals(None, parser.get_stresses())
         self.assertEquals(None, parser.get_dos())
 
+        # band gap
         prop_bandgap = parser.get_band_gap()
         self.assertEquals(0.709, prop_bandgap.scalars[0].value)
         self.assertEquals("eV", prop_bandgap.units)
 
+        # .absorp
         re_sigma_xx_prop = parser.get_optical_conductivity_xx()
         self.assertIsInstance(re_sigma_xx_prop, Property)
         self.assertEquals(len(re_sigma_xx_prop.scalars), 8)
@@ -67,6 +70,7 @@ class TestWien2kParser(unittest.TestCase):
                 self.assertEquals(len(cond.scalars), 8)
                 self.assertAlmostEqual(round(cond.scalars[7].value, 6), 0.010566)
 
+        # .eloss
         eloss_xx_prop = parser.get_eloss_xx()
         self.assertIsInstance(eloss_xx_prop, Property)
         self.assertEquals(len(eloss_xx_prop.scalars), 6)
@@ -82,6 +86,28 @@ class TestWien2kParser(unittest.TestCase):
 
         if cond_notfound:
             raise ValueError("Condition 'Wavelength' not found")
+
+        # .epsilon
+        im_eps_xx_prop = parser.get_im_eps_xx()
+        self.assertIsInstance(im_eps_xx_prop, Property)
+        self.assertEquals(len(im_eps_xx_prop.scalars), 6)
+        self.assertEquals(im_eps_xx_prop.scalars[0].value, 0.149891)
+
+        cond_notfound = True
+        for cond in im_eps_xx_prop.conditions:
+            if cond.name == "Frequency":
+                cond_notfound = False
+                self.assertEquals(cond.units, "Hz")
+                self.assertEquals(len(cond.scalars), 6)
+                self.assertAlmostEqual(round(cond.scalars[0].value, 4), 128303916000000.0)
+
+        if cond_notfound:
+            raise ValueError("Condition 'Frequency' not found")
+
+        re_eps_zz_prop = parser.get_re_eps_zz()
+        self.assertIsInstance(re_eps_zz_prop, Property)
+        self.assertEquals(len(re_eps_zz_prop.scalars), 6)
+        self.assertEquals(re_eps_zz_prop.scalars[0].value, 8.01805)
 
         # Delete the data
         delete_example("SiO2opt")
