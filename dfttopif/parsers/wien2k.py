@@ -32,6 +32,10 @@ class Wien2kParser(DFTParser):
         base_results["Im $\\varepsilon_{zz}$"] = "get_im_eps_zz"
         base_results["reflect$_{xx}$"] = "get_reflect_xx"
         base_results["reflect$_{zz}$"] = "get_reflect_zz"
+        base_results["ref_ind$_{xx}$"] = "get_ref_ind_xx"
+        base_results["ref_ind$_{zz}$"] = "get_ref_ind_zz"
+        base_results["extinct$_{xx}$"] = "get_extinct_xx"
+        base_results["extinct$_{zz}$"] = "get_extinct_zz"
         return base_results
 
     def test_if_from(self, directory):
@@ -269,6 +273,50 @@ class Wien2kParser(DFTParser):
         reflect_zz = Wien2kParser._get_scalars_lst(reflectdata_dic["reflect_zz"])
 
         return Property(scalars=reflect_zz,
+                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+
+    def get_ref_ind_xx(self):
+
+        refractdata_dic = Wien2kParser._extract_file_data(self._directory, ".refraction")
+
+        # Get wavelengths and other scalar lists
+        wavelengths = Wien2kParser._get_wavelengths(refractdata_dic["energy"])
+        ref_ind_xx = Wien2kParser._get_scalars_lst(refractdata_dic["ref_ind_xx"])
+
+        return Property(scalars=ref_ind_xx,
+                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+
+    def get_ref_ind_zz(self):
+
+        refractdata_dic = Wien2kParser._extract_file_data(self._directory, ".refraction")
+
+        # Get wavelengths and other scalar lists
+        wavelengths = Wien2kParser._get_wavelengths(refractdata_dic["energy"])
+        ref_ind_zz = Wien2kParser._get_scalars_lst(refractdata_dic["ref_ind_zz"])
+
+        return Property(scalars=ref_ind_zz,
+                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+
+    def get_extinct_xx(self):
+
+        refractdata_dic = Wien2kParser._extract_file_data(self._directory, ".refraction")
+
+        # Get wavelengths and other scalar lists
+        wavelengths = Wien2kParser._get_wavelengths(refractdata_dic["energy"])
+        extinct_xx = Wien2kParser._get_scalars_lst(refractdata_dic["extinct_xx"])
+
+        return Property(scalars=extinct_xx,
+                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+
+    def get_extinct_zz(self):
+
+        refractdata_dic = Wien2kParser._extract_file_data(self._directory, ".refraction")
+
+        # Get wavelengths and other scalar lists
+        wavelengths = Wien2kParser._get_wavelengths(refractdata_dic["energy"])
+        extinct_zz = Wien2kParser._get_scalars_lst(refractdata_dic["extinct_zz"])
+
+        return Property(scalars=extinct_zz,
                         conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
 
     def uses_SOC(self):

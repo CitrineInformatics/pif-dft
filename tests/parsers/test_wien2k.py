@@ -120,6 +120,28 @@ class TestWien2kParser(unittest.TestCase):
         if cond_notfound:
             raise ValueError("Condition 'Wavelength' not found")
 
+        # .refraction
+        ref_ind_xx_prop = parser.get_ref_ind_xx()
+        self.assertIsInstance(ref_ind_xx_prop, Property)
+        self.assertEquals(len(ref_ind_xx_prop.scalars), 6)
+        self.assertEquals(ref_ind_xx_prop.scalars[0].value, 3.43388)
+
+        cond_notfound = True
+        for cond in ref_ind_xx_prop.conditions:
+            if cond.name == "Wavelength":
+                cond_notfound = False
+                self.assertEquals(cond.units, "nm")
+                self.assertEquals(len(cond.scalars), 6)
+                self.assertAlmostEqual(round(cond.scalars[0].value, 5), 0.00126)
+
+        extinct_zz_prop = parser.get_extinct_zz()
+        self.assertIsInstance(extinct_zz_prop, Property)
+        self.assertEquals(len(extinct_zz_prop.scalars), 6)
+        self.assertEquals(extinct_zz_prop.scalars[0].value, 0.0917969)
+
+        if cond_notfound:
+            raise ValueError("Condition 'Wavelength' not found")
+
         # Delete the data
         delete_example("SiO2opt")
 
