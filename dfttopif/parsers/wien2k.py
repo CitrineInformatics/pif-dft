@@ -24,7 +24,10 @@ class Wien2kParser(DFTParser):
         base_results["Absorption zz ($\\alpha_{zz}$)"] = "get_absorp_zz"
         base_results["eloss$_{xx}$"] = "get_eloss_xx"
         base_results["eloss$_{zz}$"] = "get_eloss_zz"
-        base_results["Re $\\varepsilon_{xx}$"] = "get_eloss_zz"
+        base_results["Re $\\varepsilon_{xx}$"] = "get_re_eps_xx"
+        base_results["Im $\\varepsilon_{xx}$"] = "get_im_eps_xx"
+        base_results["Re $\\varepsilon_{zz}$"] = "get_re_eps_zz"
+        base_results["Im $\\varepsilon_{zz}$"] = "get_im_eps_zz"
         return base_results
 
     def test_if_from(self, directory):
@@ -203,6 +206,39 @@ class Wien2kParser(DFTParser):
         re_eps_xx = Wien2kParser._get_scalars_lst(epsdata_dic["re_eps_xx"])
 
         return Property(scalars=re_eps_xx,
+                        conditions=[Value(name="Frequency", units="Hz", scalars=frequencies)])
+
+    def get_im_eps_xx(self):
+
+        epsdata_dic = Wien2kParser._extract_file_data(self._directory, ".epsilon")
+
+        # Get frequency and other scalar lists
+        frequencies = Wien2kParser._get_frequencies(epsdata_dic["energy"])
+        im_eps_xx = Wien2kParser._get_scalars_lst(epsdata_dic["im_eps_xx"])
+
+        return Property(scalars=im_eps_xx,
+                        conditions=[Value(name="Frequency", units="Hz", scalars=frequencies)])
+
+    def get_re_eps_zz(self):
+
+        epsdata_dic = Wien2kParser._extract_file_data(self._directory, ".epsilon")
+
+        # Get frequency and other scalar lists
+        frequencies = Wien2kParser._get_frequencies(epsdata_dic["energy"])
+        re_eps_zz = Wien2kParser._get_scalars_lst(epsdata_dic["re_eps_zz"])
+
+        return Property(scalars=re_eps_zz,
+                        conditions=[Value(name="Frequency", units="Hz", scalars=frequencies)])
+
+    def get_im_eps_zz(self):
+
+        epsdata_dic = Wien2kParser._extract_file_data(self._directory, ".epsilon")
+
+        # Get frequency and other scalar lists
+        frequencies = Wien2kParser._get_frequencies(epsdata_dic["energy"])
+        im_eps_zz = Wien2kParser._get_scalars_lst(epsdata_dic["im_eps_zz"])
+
+        return Property(scalars=im_eps_zz,
                         conditions=[Value(name="Frequency", units="Hz", scalars=frequencies)])
 
     def uses_SOC(self):
