@@ -5,6 +5,7 @@ from dftparse.util import *
 from dftparse.wien2k.scf_parser import ScfParser
 from dftparse.wien2k.scf2_parser import Scf2Parser
 from dftparse.wien2k.absorp_parser import AbsorpParser
+from dftparse.wien2k.eloss_parser import ElossParser
 
 
 class Wien2kParser(DFTParser):
@@ -20,6 +21,8 @@ class Wien2kParser(DFTParser):
         base_results["Optical conductivity zz (Re $\sigma_{zz}$)"] = "get_optical_conductivity_zz"
         base_results["Absorption xx ($\\alpha_{xx}$)"] = "get_absorp_xx"
         base_results["Absorption zz ($\\alpha_{zz}$)"] = "get_absorp_zz"
+        base_results["Eloss xx (eloss$_{xx}$)"] = "get_eloss_xx"
+        base_results["Eloss zz (eloss$_{zz}$)"] = "get_eloss_zz"
         return base_results
 
     def test_if_from(self, directory):
@@ -111,6 +114,27 @@ class Wien2kParser(DFTParser):
 
         return dic_of_lsts
 
+    @staticmethod
+    def _extract_eloss_data(directory):
+        # Get data from the .eloss file
+        for filename in os.listdir(directory):
+            if os.path.splitext(filename)[1] == ".eloss":
+                file_path = os.path.join(directory, filename)
+        if not file_path:
+            return None
+
+        parser = ElossParser()
+        with open(file_path, "r") as fp:
+            matches = [x for x in parser.parse(fp.readlines()) if "energy" in x]
+        if len(matches) == 0:
+            return None
+
+        # Convert list of dics returned by dftparse to dic of lists
+        non_empty_matches = remove_empty(matches)
+        dic_of_lsts = transpose_list(non_empty_matches)
+
+        return dic_of_lsts
+
     def get_optical_conductivity_xx(self):
 
         absorpdata_dic = Wien2kParser._extract_absorp_data(self._directory)
@@ -153,6 +177,30 @@ class Wien2kParser(DFTParser):
         re_sigma_xx = Wien2kParser._get_scalars_lst(absorpdata_dic["absorp_zz"])
 
         return Property(scalars=re_sigma_xx, units="10$^{4}$/cm",
+                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+
+    def get_eloss_xx(self):
+
+        elossdata_dic = Wien2kParser._extract_eloss_data(self._directory)
+
+        # Get wavelengths and other scalar lists
+        wavelengths = Wien2kParser._get_wavelengths(elossdata_dic["energy"])
+        eloss_xx = Wien2kParser._get_scalars_lst(elossdata_dic["eloss_xx"])
+
+        return Property(scalars=eloss_xx,
+                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+
+    def get_eloss_zz(self):
+
+        elossdata_dic = Wien2kParser._extract_eloss_data(self._directory)
+
+        print elossdata_dic
+
+        # Get wavelengths and other scalar lists
+        wavelengths = Wien2kParser._get_wavelengths(elossdata_dic["energy"])
+        eloss_zz = Wien2kParser._get_scalars_lst(elossdata_dic["eloss_zz"])
+
+        return Property(scalars=eloss_zz,
                         conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
 
     def uses_SOC(self):

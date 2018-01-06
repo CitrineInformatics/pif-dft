@@ -67,6 +67,22 @@ class TestWien2kParser(unittest.TestCase):
                 self.assertEquals(len(cond.scalars), 8)
                 self.assertAlmostEqual(round(cond.scalars[7].value, 6), 0.010566)
 
+        eloss_xx_prop = parser.get_eloss_xx()
+        self.assertIsInstance(eloss_xx_prop, Property)
+        self.assertEquals(len(eloss_xx_prop.scalars), 6)
+        self.assertEquals(eloss_xx_prop.scalars[0].value, 0.0672767)
+
+        cond_notfound = True
+        for cond in eloss_xx_prop.conditions:
+            if cond.name == "Wavelength":
+                cond_notfound = False
+                self.assertEquals(cond.units, "nm")
+                self.assertEquals(len(cond.scalars), 6)
+                self.assertAlmostEqual(round(cond.scalars[0].value, 4), 0.0024)
+
+        if cond_notfound:
+            raise ValueError("Condition 'Wavelength' not found")
+
         # Delete the data
         delete_example("SiO2opt")
 
