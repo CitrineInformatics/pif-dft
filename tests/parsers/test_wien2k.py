@@ -103,6 +103,23 @@ class TestWien2kParser(unittest.TestCase):
         self.assertEquals(len(re_eps_zz_prop.scalars), 6)
         self.assertEquals(re_eps_zz_prop.scalars[0].value, 8.01805)
 
+        # .reflectivity
+        reflect_xx_prop = parser.get_reflect_xx()
+        self.assertIsInstance(reflect_xx_prop, Property)
+        self.assertEquals(len(reflect_xx_prop.scalars), 6)
+        self.assertEquals(reflect_xx_prop.scalars[0].value, 0.270998)
+
+        cond_notfound = True
+        for cond in reflect_xx_prop.conditions:
+            if cond.name == "Wavelength":
+                cond_notfound = False
+                self.assertEquals(cond.units, "nm")
+                self.assertEquals(len(cond.scalars), 6)
+                self.assertAlmostEqual(round(cond.scalars[0].value, 6), 0.000757)
+
+        if cond_notfound:
+            raise ValueError("Condition 'Wavelength' not found")
+
         # Delete the data
         delete_example("SiO2opt")
 

@@ -7,6 +7,8 @@ from dftparse.wien2k.scf2_parser import Scf2Parser
 from dftparse.wien2k.absorp_parser import AbsorpParser
 from dftparse.wien2k.eloss_parser import ElossParser
 from dftparse.wien2k.epsilon_parser import EpsilonParser
+from dftparse.wien2k.reflectivity_parser import ReflectivityParser
+from dftparse.wien2k.refract_parser import RefractionParser
 
 
 class Wien2kParser(DFTParser):
@@ -28,6 +30,8 @@ class Wien2kParser(DFTParser):
         base_results["Im $\\varepsilon_{xx}$"] = "get_im_eps_xx"
         base_results["Re $\\varepsilon_{zz}$"] = "get_re_eps_zz"
         base_results["Im $\\varepsilon_{zz}$"] = "get_im_eps_zz"
+        base_results["reflect$_{xx}$"] = "get_reflect_xx"
+        base_results["reflect$_{zz}$"] = "get_reflect_zz"
         return base_results
 
     def test_if_from(self, directory):
@@ -117,6 +121,10 @@ class Wien2kParser(DFTParser):
             parser = ElossParser()
         elif ext == ".epsilon":
             parser = EpsilonParser()
+        elif ext == ".reflectivity":
+            parser = ReflectivityParser()
+        elif ext == ".refraction":
+            parser = RefractionParser()
         else:
             raise ValueError("Unrecognized extension: {}".format(ext))
 
@@ -240,6 +248,28 @@ class Wien2kParser(DFTParser):
 
         return Property(scalars=im_eps_zz,
                         conditions=[Value(name="Frequency", units="Hz", scalars=frequencies)])
+
+    def get_reflect_xx(self):
+
+        reflectdata_dic = Wien2kParser._extract_file_data(self._directory, ".reflectivity")
+
+        # Get wavelengths and other scalar lists
+        wavelengths = Wien2kParser._get_wavelengths(reflectdata_dic["energy"])
+        reflect_xx = Wien2kParser._get_scalars_lst(reflectdata_dic["reflect_xx"])
+
+        return Property(scalars=reflect_xx,
+                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+
+    def get_reflect_zz(self):
+
+        reflectdata_dic = Wien2kParser._extract_file_data(self._directory, ".reflectivity")
+
+        # Get wavelengths and other scalar lists
+        wavelengths = Wien2kParser._get_wavelengths(reflectdata_dic["energy"])
+        reflect_zz = Wien2kParser._get_scalars_lst(reflectdata_dic["reflect_zz"])
+
+        return Property(scalars=reflect_zz,
+                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
 
     def uses_SOC(self):
         return None
