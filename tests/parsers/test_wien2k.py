@@ -64,12 +64,6 @@ class TestWien2kParser(unittest.TestCase):
         self.assertEquals(absorp_zz_prop.scalars[7].value, 194.137)
         self.assertEquals(absorp_zz_prop.units, "10$^{4}$/cm")
 
-        for cond in re_sigma_xx_prop.conditions:
-            if cond.name == "Wavelength":
-                self.assertEquals(cond.units, "nm")
-                self.assertEquals(len(cond.scalars), 8)
-                self.assertAlmostEqual(round(cond.scalars[7].value, 6), 0.010566)
-
         # .eloss
         eloss_xx_prop = parser.get_eloss_xx()
         self.assertIsInstance(eloss_xx_prop, Property)
