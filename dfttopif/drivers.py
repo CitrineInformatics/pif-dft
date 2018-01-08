@@ -4,6 +4,7 @@ import tarfile
 import shutil
 from dfttopif.parsers import VaspParser
 from dfttopif.parsers import PwscfParser
+from dfttopif.parsers import Wien2kParser
 from pypif.obj import *
 import json
 
@@ -47,6 +48,7 @@ def _add_quality_report(directory, pif, inline=True):
             )
 
     return pif
+
 
 def tarfile_to_pif(filename, temp_root_dir='', verbose=0):
     """
@@ -94,7 +96,8 @@ def archive_to_pif(filename, verbose=0):
 
 
 def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
-    '''Given a directory that contains output from
+    """
+    Given a directory that contains output from
     a DFT calculation, parse the data and return
     a pif object
 
@@ -106,17 +109,18 @@ def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
     Output:
         pif - ChemicalSystem, Results and settings of
             the DFT calculation in pif format
-    '''
+    """
 
     # Look for the first parser compatible with the directory
     foundParser = False
-    for possible_parser in [VaspParser, PwscfParser]:
+    for possible_parser in [VaspParser, PwscfParser, Wien2kParser]:
         try:
             parser = possible_parser(directory)
             if parser.test_if_from(directory):
                 foundParser = True
                 break
-        except: pass
+        except:
+            pass
     if not foundParser:
         raise Exception('Directory is not in correct format for an existing parser')
     if verbose > 0:
@@ -128,11 +132,11 @@ def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
         
     # Get software information, to list as method
     software = Software(name=parser.get_name(),
-        version=parser.get_version_number())
+                        version=parser.get_version_number())
         
     # Define the DFT method object
     method = Method(name='Density Functional Theory',
-        software=[software])
+                    software=[software])
         
     # Get the settings (aka. "conditions") of the DFT calculations
     conditions = []
@@ -156,9 +160,10 @@ def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
     # Get the properties of the system
     chem.properties = []
     for name, func in parser.get_result_functions().items():
-        # Get the property
+
+        # Get list of props
         prop = getattr(parser, func)()
-        
+
         # If the property is None, skip it
         if prop is None:
             continue
@@ -168,8 +173,8 @@ def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
 
         # Add name and other data
         prop.name = name
-        prop.methods = [method,]
-        prop.data_type='COMPUTATIONAL'
+        prop.methods = [method, ]
+        prop.data_type = "COMPUTATIONAL"
         if verbose > 0 and isinstance(prop, Value):
             print(name)
         if prop.conditions is None:
@@ -183,10 +188,11 @@ def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
         chem.properties.append(prop)
 
     # Check to see if we should add the quality report
-    if quality_report and isinstance(parser, VaspParser) :
+    if quality_report and isinstance(parser, VaspParser):
         _add_quality_report(directory, chem)
 
     return chem
+
 
 def convert(files=[], **kwargs):
     """
@@ -199,7 +205,7 @@ def convert(files=[], **kwargs):
     if len(files) < 1:
         raise ValueError("Files needs to be a non-empty list")
 
-    if (len(files) == 1):
+    if len(files) == 1:
         return directory_to_pif(files[0], **kwargs)
     else:
         prefix = os.path.join(".", os.path.commonprefix(files))
