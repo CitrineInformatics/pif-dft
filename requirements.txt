@@ -5,4 +5,4 @@ flask
 flask-cors
 gunicorn
 pypif==2.0.1
-git+https://github.com/CitrineInformatics/dftparse.git@develop
+git+http://github.com/CitrineInformatics/dftparse.git@develop
