@@ -18,8 +18,6 @@ class Wien2kParser(DFTParser):
 
     def get_name(self): return "Wien2k"
 
-    def get_composition(self): return None
-
     def get_result_functions(self):
         base_results = super(Wien2kParser, self).get_result_functions()
         base_results["Optical conductivity xx (Re $\sigma_{xx}$)"] = "get_optical_conductivity_xx"
@@ -321,10 +319,22 @@ class Wien2kParser(DFTParser):
         return Property(scalars=extinct_zz,
                         conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
 
-    def uses_SOC(self):
+    def get_composition(self):
+        return None
+
+    def get_xc_functional(self):
         return None
 
     def is_relaxed(self):
+        return None
+
+    def get_cutoff_energy(self):
+        return None
+
+    def get_KPPRA(self):
+        return None
+
+    def uses_SOC(self):
         return None
 
     def get_U_settings(self):
@@ -333,11 +343,43 @@ class Wien2kParser(DFTParser):
     def get_vdW_settings(self):
         return None
 
+    def get_pp_name(self):
+        return None
+
+    def get_incar(self):
+        return None
+
+    def get_poscar(self):
+        return None
+
+    def is_converged(self):
+        return None
+
     def get_pressure(self):
+        return None
+
+    def get_dos(self):
+        return None
+
+    def get_positions(self):
+        return None
+
+    def get_forces(self):
+        return None
+
+    def get_total_force(self):
+        return None
+
+    def get_density(self):
+        return None
+
+    def get_outcar(self):
+        return None
+
+    def get_total_magnetization(self):
         return None
 
     def get_stresses(self):
         return None
 
-    def get_dos(self):
-        return None
+
