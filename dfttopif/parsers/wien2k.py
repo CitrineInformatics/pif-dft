@@ -18,6 +18,8 @@ class Wien2kParser(DFTParser):
 
     def get_name(self): return "Wien2k"
 
+    def get_composition(self): return None
+
     def get_result_functions(self):
         base_results = super(Wien2kParser, self).get_result_functions()
         base_results["Optical conductivity xx (Re $\sigma_{xx}$)"] = "get_optical_conductivity_xx"
