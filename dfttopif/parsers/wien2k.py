@@ -152,7 +152,7 @@ class Wien2kParser(DFTParser):
         re_sigma_xx = Wien2kParser._get_scalars_lst(absorpdata_dic["re_sigma_xx"])
 
         return Property(scalars=re_sigma_xx, units="1/(Ohm.cm)",
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+                        conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
 
     def get_optical_conductivity_zz(self):
 
@@ -163,7 +163,7 @@ class Wien2kParser(DFTParser):
         re_sigma_xx = Wien2kParser._get_scalars_lst(absorpdata_dic["re_sigma_zz"])
 
         return Property(scalars=re_sigma_xx, units="1/(Ohm.cm)",
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+                        conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
 
     def get_absorp_xx(self):
 
@@ -174,7 +174,7 @@ class Wien2kParser(DFTParser):
         re_sigma_xx = Wien2kParser._get_scalars_lst(absorpdata_dic["absorp_xx"])
 
         return Property(scalars=re_sigma_xx, units="10$^{4}$/cm",
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+                        conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
 
     def get_absorp_zz(self):
 
@@ -185,7 +185,7 @@ class Wien2kParser(DFTParser):
         re_sigma_xx = Wien2kParser._get_scalars_lst(absorpdata_dic["absorp_zz"])
 
         return Property(scalars=re_sigma_xx, units="10$^{4}$/cm",
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+                        conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
 
     def get_eloss_xx(self):
 
@@ -196,7 +196,7 @@ class Wien2kParser(DFTParser):
         eloss_xx = Wien2kParser._get_scalars_lst(elossdata_dic["eloss_xx"])
 
         return Property(scalars=eloss_xx,
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+                        conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
 
     def get_eloss_zz(self):
 
@@ -207,7 +207,7 @@ class Wien2kParser(DFTParser):
         eloss_zz = Wien2kParser._get_scalars_lst(elossdata_dic["eloss_zz"])
 
         return Property(scalars=eloss_zz,
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+                        conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
 
     def get_re_eps_xx(self):
 
@@ -262,7 +262,7 @@ class Wien2kParser(DFTParser):
         reflect_xx = Wien2kParser._get_scalars_lst(reflectdata_dic["reflect_xx"])
 
         return Property(scalars=reflect_xx,
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+                        conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
 
     def get_reflect_zz(self):
 
@@ -273,7 +273,7 @@ class Wien2kParser(DFTParser):
         reflect_zz = Wien2kParser._get_scalars_lst(reflectdata_dic["reflect_zz"])
 
         return Property(scalars=reflect_zz,
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+                        conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
 
     def get_ref_ind_xx(self):
 
@@ -284,7 +284,7 @@ class Wien2kParser(DFTParser):
         ref_ind_xx = Wien2kParser._get_scalars_lst(refractdata_dic["ref_ind_xx"])
 
         return Property(scalars=ref_ind_xx,
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+                        conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
 
     def get_ref_ind_zz(self):
 
@@ -295,7 +295,7 @@ class Wien2kParser(DFTParser):
         ref_ind_zz = Wien2kParser._get_scalars_lst(refractdata_dic["ref_ind_zz"])
 
         return Property(scalars=ref_ind_zz,
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+                        conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
 
     def get_extinct_xx(self):
 
@@ -306,7 +306,7 @@ class Wien2kParser(DFTParser):
         extinct_xx = Wien2kParser._get_scalars_lst(refractdata_dic["extinct_xx"])
 
         return Property(scalars=extinct_xx,
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+                        conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
 
     def get_extinct_zz(self):
 
@@ -317,7 +317,7 @@ class Wien2kParser(DFTParser):
         extinct_zz = Wien2kParser._get_scalars_lst(refractdata_dic["extinct_zz"])
 
         return Property(scalars=extinct_zz,
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+                        conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
 
     def get_composition(self):
         return None
