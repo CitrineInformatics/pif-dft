@@ -218,7 +218,7 @@ class Wien2kParser(DFTParser):
         re_eps_xx = Wien2kParser._get_scalars_lst(epsdata_dic["re_eps_xx"])
 
         return Property(scalars=re_eps_xx,
-                        conditions=[Value(name="Frequency", units="Hz", scalars=frequencies)])
+                        conditions=[Value(name="Frequency", units="/s", scalars=frequencies)])
 
     def get_im_eps_xx(self):
 
@@ -229,7 +229,7 @@ class Wien2kParser(DFTParser):
         im_eps_xx = Wien2kParser._get_scalars_lst(epsdata_dic["im_eps_xx"])
 
         return Property(scalars=im_eps_xx,
-                        conditions=[Value(name="Frequency", units="Hz", scalars=frequencies)])
+                        conditions=[Value(name="Frequency", units="/s", scalars=frequencies)])
 
     def get_re_eps_zz(self):
 
@@ -240,7 +240,7 @@ class Wien2kParser(DFTParser):
         re_eps_zz = Wien2kParser._get_scalars_lst(epsdata_dic["re_eps_zz"])
 
         return Property(scalars=re_eps_zz,
-                        conditions=[Value(name="Frequency", units="Hz", scalars=frequencies)])
+                        conditions=[Value(name="Frequency", units="/s", scalars=frequencies)])
 
     def get_im_eps_zz(self):
 
@@ -251,7 +251,7 @@ class Wien2kParser(DFTParser):
         im_eps_zz = Wien2kParser._get_scalars_lst(epsdata_dic["im_eps_zz"])
 
         return Property(scalars=im_eps_zz,
-                        conditions=[Value(name="Frequency", units="Hz", scalars=frequencies)])
+                        conditions=[Value(name="Frequency", units="/s", scalars=frequencies)])
 
     def get_reflect_xx(self):
 
