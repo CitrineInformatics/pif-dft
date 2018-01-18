@@ -1,9 +1,10 @@
 from pypif.obj import *
-from .base import DFTParser, Value_if_true
+from .base import DFTParser
 import os
 from dftparse.util import *
 from dftparse.wien2k.scf_parser import ScfParser
 from dftparse.wien2k.scf2_parser import Scf2Parser
+from dftparse.wien2k.sigmak_parser import SigmakParser
 from dftparse.wien2k.absorp_parser import AbsorpParser
 from dftparse.wien2k.eloss_parser import ElossParser
 from dftparse.wien2k.epsilon_parser import EpsilonParser
@@ -20,8 +21,8 @@ class Wien2kParser(DFTParser):
 
     def get_result_functions(self):
         base_results = super(Wien2kParser, self).get_result_functions()
-        base_results["Optical conductivity xx (Re $\sigma_{xx}$)"] = "get_optical_conductivity_xx"
-        base_results["Optical conductivity zz (Re $\sigma_{zz}$)"] = "get_optical_conductivity_zz"
+        base_results["Re Optical conductivity (Re $\sigma$)"] = "get_re_optical_conductivity"
+        base_results["Im Optical conductivity (Im $\sigma$)"] = "get_im_optical_conductivity"
         base_results["Absorption ($\\alpha$)"] = "get_absorp"
         base_results["eloss"] = "get_eloss"
         base_results["Re $\\varepsilon$"] = "get_re_eps"
@@ -114,6 +115,8 @@ class Wien2kParser(DFTParser):
 
         if ext == ".absorp":
             parser = AbsorpParser()
+        elif ext == ".sigmak":
+            parser = SigmakParser()
         elif ext == ".eloss":
             parser = ElossParser()
         elif ext == ".epsilon":
@@ -136,26 +139,32 @@ class Wien2kParser(DFTParser):
 
         return dic_of_lsts
 
-    def get_optical_conductivity_xx(self):
+    def get_re_optical_conductivity(self):
 
-        absorpdata_dic = Wien2kParser._extract_file_data(self._directory, ".absorp")
+        sigmakdata_dic = Wien2kParser._extract_file_data(self._directory, ".sigmak")
 
         # Get wavelengths and other scalar lists
-        wavelengths = Wien2kParser._get_wavelengths(absorpdata_dic["energy"])
-        re_sigma_xx = Wien2kParser._get_scalars_lst(absorpdata_dic["re_sigma_xx"])
+        wavelengths = Wien2kParser._get_wavelengths(sigmakdata_dic["energy"])
+        re_sigma_xx = sigmakdata_dic["re_sigma_xx"]
+        re_sigma_zz = sigmakdata_dic["re_sigma_zz"]
 
-        return Property(scalars=re_sigma_xx, units="1/(Ohm.cm)",
+        re_sigma = Wien2kParser._get_scalars_lst([(2*xx)/zz for xx in re_sigma_xx for zz in re_sigma_zz])
+
+        return Property(scalars=re_sigma, units="10$^{15}$/sec",
                         conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
 
-    def get_optical_conductivity_zz(self):
+    def get_im_optical_conductivity(self):
 
-        absorpdata_dic = Wien2kParser._extract_file_data(self._directory, ".absorp")
+        sigmakdata_dic = Wien2kParser._extract_file_data(self._directory, ".sigmak")
 
         # Get wavelengths and other scalar lists
-        wavelengths = Wien2kParser._get_wavelengths(absorpdata_dic["energy"])
-        re_sigma_xx = Wien2kParser._get_scalars_lst(absorpdata_dic["re_sigma_zz"])
+        wavelengths = Wien2kParser._get_wavelengths(sigmakdata_dic["energy"])
+        im_sigma_xx = sigmakdata_dic["im_sigma_xx"]
+        im_sigma_zz = sigmakdata_dic["im_sigma_zz"]
 
-        return Property(scalars=re_sigma_xx, units="1/(Ohm.cm)",
+        im_sigma = Wien2kParser._get_scalars_lst([(2 * xx) / zz for xx in im_sigma_xx for zz in im_sigma_zz])
+
+        return Property(scalars=im_sigma, units="10$^{15}$/sec",
                         conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
 
     def get_absorp(self):
