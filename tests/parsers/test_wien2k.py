@@ -21,8 +21,8 @@ class TestWien2kParser(unittest.TestCase):
         # Test the settings
         self.assertEquals("Wien2k", parser.get_name())
 
-        # Test that no composition is returned
-        self.assertEquals(None, parser.get_composition())
+        # Test that composition is parsed correctly
+        self.assertEquals("Bi2Se3", parser.get_composition())
 
         # total energy
         prop_energy = parser.get_total_energy()
