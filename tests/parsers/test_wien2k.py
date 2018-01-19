@@ -44,40 +44,34 @@ class TestWien2kParser(unittest.TestCase):
         self.assertEquals("eV", prop_bandgap.units)
 
         # .absorp
-        re_sigma_xx_prop = parser.get_optical_conductivity_xx()
-        self.assertIsInstance(re_sigma_xx_prop, Property)
-        self.assertEquals(len(re_sigma_xx_prop.scalars), 8)
-        self.assertEquals(re_sigma_xx_prop.scalars[0].value, 11.508)
-        self.assertEquals(re_sigma_xx_prop.units, "1/(Ohm.cm)")
+        absorp_prop = parser.get_absorp()
+        self.assertIsInstance(absorp_prop, Property)
+        self.assertEquals(len(absorp_prop.scalars), 8)
+        self.assertAlmostEqual(round(absorp_prop.scalars[0].value, 8), 0.13105967)
+        self.assertEquals(absorp_prop.units, "10$^{4}$/cm")
 
         cond_notfound = True
-        for cond in re_sigma_xx_prop.conditions:
+        for cond in absorp_prop.conditions:
             if cond.name == "Wavelength":
                 cond_notfound = False
-                self.assertEquals(cond.units, "nm")
+                self.assertEquals(cond.units, "/nm")
                 self.assertEquals(len(cond.scalars), 8)
                 self.assertAlmostEqual(cond.scalars[0].value, 0.00044986)
 
         if cond_notfound:
             raise ValueError("Condition 'Wavelength' not found")
 
-        absorp_zz_prop = parser.get_absorp_zz()
-        self.assertIsInstance(absorp_zz_prop, Property)
-        self.assertEquals(len(absorp_zz_prop.scalars), 8)
-        self.assertEquals(absorp_zz_prop.scalars[7].value, 194.137)
-        self.assertEquals(absorp_zz_prop.units, "10$^{4}$/cm")
-
         # .eloss
-        eloss_xx_prop = parser.get_eloss_xx()
-        self.assertIsInstance(eloss_xx_prop, Property)
-        self.assertEquals(len(eloss_xx_prop.scalars), 6)
-        self.assertEquals(eloss_xx_prop.scalars[0].value, 0.0672767)
+        eloss_prop = parser.get_eloss()
+        self.assertIsInstance(eloss_prop, Property)
+        self.assertEquals(len(eloss_prop.scalars), 6)
+        self.assertEquals(round(eloss_prop.scalars[0].value, 3), 0.069)
 
         cond_notfound = True
-        for cond in eloss_xx_prop.conditions:
+        for cond in eloss_prop.conditions:
             if cond.name == "Wavelength":
                 cond_notfound = False
-                self.assertEquals(cond.units, "nm")
+                self.assertEquals(cond.units, "/nm")
                 self.assertEquals(len(cond.scalars), 6)
                 self.assertAlmostEqual(round(cond.scalars[0].value, 4), 0.0024)
 
@@ -85,38 +79,33 @@ class TestWien2kParser(unittest.TestCase):
             raise ValueError("Condition 'Wavelength' not found")
 
         # .epsilon
-        im_eps_xx_prop = parser.get_im_eps_xx()
-        self.assertIsInstance(im_eps_xx_prop, Property)
-        self.assertEquals(len(im_eps_xx_prop.scalars), 6)
-        self.assertEquals(im_eps_xx_prop.scalars[0].value, 0.149891)
+        im_eps_prop = parser.get_im_eps()
+        self.assertIsInstance(im_eps_prop, Property)
+        self.assertEquals(len(im_eps_prop.scalars), 6)
+        self.assertEquals(round(im_eps_prop.scalars[0].value, 3), 0.137)
 
         cond_notfound = True
-        for cond in im_eps_xx_prop.conditions:
+        for cond in im_eps_prop.conditions:
             if cond.name == "Frequency":
                 cond_notfound = False
-                self.assertEquals(cond.units, "Hz")
+                self.assertEquals(cond.units, "/s")
                 self.assertEquals(len(cond.scalars), 6)
                 self.assertAlmostEqual(round(cond.scalars[0].value, 4), 128303916000000.0)
 
         if cond_notfound:
             raise ValueError("Condition 'Frequency' not found")
 
-        re_eps_zz_prop = parser.get_re_eps_zz()
-        self.assertIsInstance(re_eps_zz_prop, Property)
-        self.assertEquals(len(re_eps_zz_prop.scalars), 6)
-        self.assertEquals(re_eps_zz_prop.scalars[0].value, 8.01805)
-
         # .reflectivity
-        reflect_xx_prop = parser.get_reflect_xx()
-        self.assertIsInstance(reflect_xx_prop, Property)
-        self.assertEquals(len(reflect_xx_prop.scalars), 6)
-        self.assertEquals(reflect_xx_prop.scalars[0].value, 0.270998)
+        reflect_prop = parser.get_reflect()
+        self.assertIsInstance(reflect_prop, Property)
+        self.assertEquals(len(reflect_prop.scalars), 6)
+        self.assertEquals(round(reflect_prop.scalars[0].value, 3), 0.259)
 
         cond_notfound = True
-        for cond in reflect_xx_prop.conditions:
+        for cond in reflect_prop.conditions:
             if cond.name == "Wavelength":
                 cond_notfound = False
-                self.assertEquals(cond.units, "nm")
+                self.assertEquals(cond.units, "/nm")
                 self.assertEquals(len(cond.scalars), 6)
                 self.assertAlmostEqual(round(cond.scalars[0].value, 6), 0.000757)
 
@@ -124,23 +113,18 @@ class TestWien2kParser(unittest.TestCase):
             raise ValueError("Condition 'Wavelength' not found")
 
         # .refraction
-        ref_ind_xx_prop = parser.get_ref_ind_xx()
-        self.assertIsInstance(ref_ind_xx_prop, Property)
-        self.assertEquals(len(ref_ind_xx_prop.scalars), 6)
-        self.assertEquals(ref_ind_xx_prop.scalars[0].value, 3.43388)
+        ref_ind_prop = parser.get_ref_ind()
+        self.assertIsInstance(ref_ind_prop, Property)
+        self.assertEquals(len(ref_ind_prop.scalars), 6)
+        self.assertEquals(round(ref_ind_prop.scalars[0].value, 4), 3.3195)
 
         cond_notfound = True
-        for cond in ref_ind_xx_prop.conditions:
+        for cond in ref_ind_prop.conditions:
             if cond.name == "Wavelength":
                 cond_notfound = False
-                self.assertEquals(cond.units, "nm")
+                self.assertEquals(cond.units, "/nm")
                 self.assertEquals(len(cond.scalars), 6)
                 self.assertAlmostEqual(round(cond.scalars[0].value, 5), 0.00126)
-
-        extinct_zz_prop = parser.get_extinct_zz()
-        self.assertIsInstance(extinct_zz_prop, Property)
-        self.assertEquals(len(extinct_zz_prop.scalars), 6)
-        self.assertEquals(extinct_zz_prop.scalars[0].value, 0.0917969)
 
         if cond_notfound:
             raise ValueError("Condition 'Wavelength' not found")
