@@ -10,6 +10,7 @@ from dftparse.wien2k.eloss_parser import ElossParser
 from dftparse.wien2k.epsilon_parser import EpsilonParser
 from dftparse.wien2k.reflectivity_parser import ReflectivityParser
 from dftparse.wien2k.refract_parser import RefractionParser
+from ase.io.wien2k import read_struct
 
 
 class Wien2kParser(DFTParser):
@@ -106,7 +107,7 @@ class Wien2kParser(DFTParser):
 
     @staticmethod
     def _extract_file_data(directory, ext):
-        # Get data from the .eloss file
+        # Get data from the file
         for filename in os.listdir(directory):
             if os.path.splitext(filename)[1] == ext:
                 file_path = os.path.join(directory, filename)
@@ -265,7 +266,13 @@ class Wien2kParser(DFTParser):
         return Property(scalars=extinct, conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
 
     def get_composition(self):
-        return None
+        file_path = None
+        for filename in os.listdir(self._directory):
+            if os.path.splitext(filename)[1] == ".struct":
+                file_path = os.path.join(self._directory, filename)
+
+        atom_obj = read_struct(file_path)
+        return atom_obj.get_chemical_formula()
 
     def get_xc_functional(self):
         return None
