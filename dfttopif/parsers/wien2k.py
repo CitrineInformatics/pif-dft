@@ -1,14 +1,16 @@
 from pypif.obj import *
-from .base import DFTParser, Value_if_true
+from .base import DFTParser
 import os
 from dftparse.util import *
 from dftparse.wien2k.scf_parser import ScfParser
 from dftparse.wien2k.scf2_parser import Scf2Parser
+from dftparse.wien2k.sigmak_parser import SigmakParser
 from dftparse.wien2k.absorp_parser import AbsorpParser
 from dftparse.wien2k.eloss_parser import ElossParser
 from dftparse.wien2k.epsilon_parser import EpsilonParser
 from dftparse.wien2k.reflectivity_parser import ReflectivityParser
 from dftparse.wien2k.refract_parser import RefractionParser
+from ase.io.wien2k import read_struct
 
 
 class Wien2kParser(DFTParser):
@@ -20,22 +22,15 @@ class Wien2kParser(DFTParser):
 
     def get_result_functions(self):
         base_results = super(Wien2kParser, self).get_result_functions()
-        base_results["Optical conductivity xx (Re $\sigma_{xx}$)"] = "get_optical_conductivity_xx"
-        base_results["Optical conductivity zz (Re $\sigma_{zz}$)"] = "get_optical_conductivity_zz"
-        base_results["Absorption xx ($\\alpha_{xx}$)"] = "get_absorp_xx"
-        base_results["Absorption zz ($\\alpha_{zz}$)"] = "get_absorp_zz"
-        base_results["eloss$_{xx}$"] = "get_eloss_xx"
-        base_results["eloss$_{zz}$"] = "get_eloss_zz"
-        base_results["Re $\\varepsilon_{xx}$"] = "get_re_eps_xx"
-        base_results["Im $\\varepsilon_{xx}$"] = "get_im_eps_xx"
-        base_results["Re $\\varepsilon_{zz}$"] = "get_re_eps_zz"
-        base_results["Im $\\varepsilon_{zz}$"] = "get_im_eps_zz"
-        base_results["reflect$_{xx}$"] = "get_reflect_xx"
-        base_results["reflect$_{zz}$"] = "get_reflect_zz"
-        base_results["ref_ind$_{xx}$"] = "get_ref_ind_xx"
-        base_results["ref_ind$_{zz}$"] = "get_ref_ind_zz"
-        base_results["extinct$_{xx}$"] = "get_extinct_xx"
-        base_results["extinct$_{zz}$"] = "get_extinct_zz"
+        base_results["Re Optical conductivity (Re $\sigma$)"] = "get_re_optical_conductivity"
+        base_results["Im Optical conductivity (Im $\sigma$)"] = "get_im_optical_conductivity"
+        base_results["Absorption ($\\alpha$)"] = "get_absorp"
+        base_results["eloss"] = "get_eloss"
+        base_results["Re $\\varepsilon$"] = "get_re_eps"
+        base_results["Im $\\varepsilon$"] = "get_im_eps"
+        base_results["reflect"] = "get_reflect"
+        base_results["ref_ind"] = "get_ref_ind"
+        base_results["extinct"] = "get_extinct"
         return base_results
 
     def test_if_from(self, directory):
@@ -112,7 +107,7 @@ class Wien2kParser(DFTParser):
 
     @staticmethod
     def _extract_file_data(directory, ext):
-        # Get data from the .eloss file
+        # Get data from the file
         for filename in os.listdir(directory):
             if os.path.splitext(filename)[1] == ext:
                 file_path = os.path.join(directory, filename)
@@ -121,6 +116,8 @@ class Wien2kParser(DFTParser):
 
         if ext == ".absorp":
             parser = AbsorpParser()
+        elif ext == ".sigmak":
+            parser = SigmakParser()
         elif ext == ".eloss":
             parser = ElossParser()
         elif ext == ".epsilon":
@@ -143,184 +140,139 @@ class Wien2kParser(DFTParser):
 
         return dic_of_lsts
 
-    def get_optical_conductivity_xx(self):
+    def get_re_optical_conductivity(self):
+
+        sigmakdata_dic = Wien2kParser._extract_file_data(self._directory, ".sigmak")
+
+        # Get wavelengths and other scalar lists
+        wavelengths = Wien2kParser._get_wavelengths(sigmakdata_dic["energy"])
+        re_sigma_xx = sigmakdata_dic["re_sigma_xx"]
+        re_sigma_zz = sigmakdata_dic["re_sigma_zz"]
+
+        re_sigma = Wien2kParser._get_scalars_lst([((2 * re_sigma_xx[i]) + re_sigma_zz[i])/3
+                                                  for i in range(len(re_sigma_xx))])
+
+        return Property(scalars=re_sigma, units="10$^{15}$/sec",
+                        conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
+
+    def get_im_optical_conductivity(self):
+
+        sigmakdata_dic = Wien2kParser._extract_file_data(self._directory, ".sigmak")
+
+        # Get wavelengths and other scalar lists
+        wavelengths = Wien2kParser._get_wavelengths(sigmakdata_dic["energy"])
+        im_sigma_xx = sigmakdata_dic["im_sigma_xx"]
+        im_sigma_zz = sigmakdata_dic["im_sigma_zz"]
+
+        im_sigma = Wien2kParser._get_scalars_lst([((2 * im_sigma_xx[i]) + im_sigma_zz[i])/3
+                                                  for i in range(len(im_sigma_xx))])
+
+        return Property(scalars=im_sigma, units="10$^{15}$/sec",
+                        conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
+
+    def get_absorp(self):
 
         absorpdata_dic = Wien2kParser._extract_file_data(self._directory, ".absorp")
 
         # Get wavelengths and other scalar lists
         wavelengths = Wien2kParser._get_wavelengths(absorpdata_dic["energy"])
-        re_sigma_xx = Wien2kParser._get_scalars_lst(absorpdata_dic["re_sigma_xx"])
+        absorp_xx = absorpdata_dic["absorp_xx"]
+        absorp_zz = absorpdata_dic["absorp_zz"]
 
-        return Property(scalars=re_sigma_xx, units="1/(Ohm.cm)",
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+        absorp = Wien2kParser._get_scalars_lst([((2 * absorp_xx[i]) + absorp_zz[i])/3 for i in range(len(absorp_xx))])
 
-    def get_optical_conductivity_zz(self):
+        return Property(scalars=absorp, units="10$^{4}$/cm",
+                        conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
 
-        absorpdata_dic = Wien2kParser._extract_file_data(self._directory, ".absorp")
-
-        # Get wavelengths and other scalar lists
-        wavelengths = Wien2kParser._get_wavelengths(absorpdata_dic["energy"])
-        re_sigma_xx = Wien2kParser._get_scalars_lst(absorpdata_dic["re_sigma_zz"])
-
-        return Property(scalars=re_sigma_xx, units="1/(Ohm.cm)",
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
-
-    def get_absorp_xx(self):
-
-        absorpdata_dic = Wien2kParser._extract_file_data(self._directory, ".absorp")
-
-        # Get wavelengths and other scalar lists
-        wavelengths = Wien2kParser._get_wavelengths(absorpdata_dic["energy"])
-        re_sigma_xx = Wien2kParser._get_scalars_lst(absorpdata_dic["absorp_xx"])
-
-        return Property(scalars=re_sigma_xx, units="10$^{4}$/cm",
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
-
-    def get_absorp_zz(self):
-
-        absorpdata_dic = Wien2kParser._extract_file_data(self._directory, ".absorp")
-
-        # Get wavelengths and other scalar lists
-        wavelengths = Wien2kParser._get_wavelengths(absorpdata_dic["energy"])
-        re_sigma_xx = Wien2kParser._get_scalars_lst(absorpdata_dic["absorp_zz"])
-
-        return Property(scalars=re_sigma_xx, units="10$^{4}$/cm",
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
-
-    def get_eloss_xx(self):
+    def get_eloss(self):
 
         elossdata_dic = Wien2kParser._extract_file_data(self._directory, ".eloss")
 
         # Get wavelengths and other scalar lists
         wavelengths = Wien2kParser._get_wavelengths(elossdata_dic["energy"])
-        eloss_xx = Wien2kParser._get_scalars_lst(elossdata_dic["eloss_xx"])
+        eloss_xx = elossdata_dic["eloss_xx"]
+        eloss_zz = elossdata_dic["eloss_zz"]
 
-        return Property(scalars=eloss_xx,
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+        eloss = Wien2kParser._get_scalars_lst([((2 * eloss_xx[i]) + eloss_zz[i])/3 for i in range(len(eloss_xx))])
 
-    def get_eloss_zz(self):
+        return Property(scalars=eloss, conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
 
-        elossdata_dic = Wien2kParser._extract_file_data(self._directory, ".eloss")
-
-        # Get wavelengths and other scalar lists
-        wavelengths = Wien2kParser._get_wavelengths(elossdata_dic["energy"])
-        eloss_zz = Wien2kParser._get_scalars_lst(elossdata_dic["eloss_zz"])
-
-        return Property(scalars=eloss_zz,
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
-
-    def get_re_eps_xx(self):
+    def get_re_eps(self):
 
         epsdata_dic = Wien2kParser._extract_file_data(self._directory, ".epsilon")
 
         # Get frequency and other scalar lists
         frequencies = Wien2kParser._get_frequencies(epsdata_dic["energy"])
-        re_eps_xx = Wien2kParser._get_scalars_lst(epsdata_dic["re_eps_xx"])
+        re_eps_xx = epsdata_dic["re_eps_xx"]
+        re_eps_zz = epsdata_dic["re_eps_zz"]
 
-        return Property(scalars=re_eps_xx,
-                        conditions=[Value(name="Frequency", units="Hz", scalars=frequencies)])
+        re_eps = Wien2kParser._get_scalars_lst([((2 * re_eps_xx[i]) + re_eps_zz[i])/3 for i in range(len(re_eps_xx))])
 
-    def get_im_eps_xx(self):
+        return Property(scalars=re_eps, conditions=[Value(name="Frequency", units="/s", scalars=frequencies)])
 
-        epsdata_dic = Wien2kParser._extract_file_data(self._directory, ".epsilon")
-
-        # Get frequency and other scalar lists
-        frequencies = Wien2kParser._get_frequencies(epsdata_dic["energy"])
-        im_eps_xx = Wien2kParser._get_scalars_lst(epsdata_dic["im_eps_xx"])
-
-        return Property(scalars=im_eps_xx,
-                        conditions=[Value(name="Frequency", units="Hz", scalars=frequencies)])
-
-    def get_re_eps_zz(self):
+    def get_im_eps(self):
 
         epsdata_dic = Wien2kParser._extract_file_data(self._directory, ".epsilon")
 
         # Get frequency and other scalar lists
         frequencies = Wien2kParser._get_frequencies(epsdata_dic["energy"])
-        re_eps_zz = Wien2kParser._get_scalars_lst(epsdata_dic["re_eps_zz"])
+        im_eps_xx = epsdata_dic["im_eps_xx"]
+        im_eps_zz = epsdata_dic["im_eps_zz"]
 
-        return Property(scalars=re_eps_zz,
-                        conditions=[Value(name="Frequency", units="Hz", scalars=frequencies)])
+        im_eps = Wien2kParser._get_scalars_lst([((2 * im_eps_xx[i]) + im_eps_zz[i])/3 for i in range(len(im_eps_xx))])
 
-    def get_im_eps_zz(self):
+        return Property(scalars=im_eps, conditions=[Value(name="Frequency", units="/s", scalars=frequencies)])
 
-        epsdata_dic = Wien2kParser._extract_file_data(self._directory, ".epsilon")
-
-        # Get frequency and other scalar lists
-        frequencies = Wien2kParser._get_frequencies(epsdata_dic["energy"])
-        im_eps_zz = Wien2kParser._get_scalars_lst(epsdata_dic["im_eps_zz"])
-
-        return Property(scalars=im_eps_zz,
-                        conditions=[Value(name="Frequency", units="Hz", scalars=frequencies)])
-
-    def get_reflect_xx(self):
+    def get_reflect(self):
 
         reflectdata_dic = Wien2kParser._extract_file_data(self._directory, ".reflectivity")
 
         # Get wavelengths and other scalar lists
         wavelengths = Wien2kParser._get_wavelengths(reflectdata_dic["energy"])
-        reflect_xx = Wien2kParser._get_scalars_lst(reflectdata_dic["reflect_xx"])
+        reflect_xx = reflectdata_dic["reflect_xx"]
+        reflect_zz = reflectdata_dic["reflect_zz"]
 
-        return Property(scalars=reflect_xx,
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+        reflect = Wien2kParser._get_scalars_lst([((2 * reflect_xx[i]) + reflect_zz[i])/3
+                                                 for i in range(len(reflect_xx))])
 
-    def get_reflect_zz(self):
+        return Property(scalars=reflect, conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
 
-        reflectdata_dic = Wien2kParser._extract_file_data(self._directory, ".reflectivity")
-
-        # Get wavelengths and other scalar lists
-        wavelengths = Wien2kParser._get_wavelengths(reflectdata_dic["energy"])
-        reflect_zz = Wien2kParser._get_scalars_lst(reflectdata_dic["reflect_zz"])
-
-        return Property(scalars=reflect_zz,
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
-
-    def get_ref_ind_xx(self):
+    def get_ref_ind(self):
 
         refractdata_dic = Wien2kParser._extract_file_data(self._directory, ".refraction")
 
         # Get wavelengths and other scalar lists
         wavelengths = Wien2kParser._get_wavelengths(refractdata_dic["energy"])
-        ref_ind_xx = Wien2kParser._get_scalars_lst(refractdata_dic["ref_ind_xx"])
+        ref_ind_xx = refractdata_dic["ref_ind_xx"]
+        ref_ind_zz = refractdata_dic["ref_ind_zz"]
 
-        return Property(scalars=ref_ind_xx,
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+        ref_ind = Wien2kParser._get_scalars_lst([((2 * ref_ind_xx[i]) + ref_ind_zz[i])/3
+                                                 for i in range(len(ref_ind_xx))])
 
-    def get_ref_ind_zz(self):
+        return Property(scalars=ref_ind, conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
 
-        refractdata_dic = Wien2kParser._extract_file_data(self._directory, ".refraction")
-
-        # Get wavelengths and other scalar lists
-        wavelengths = Wien2kParser._get_wavelengths(refractdata_dic["energy"])
-        ref_ind_zz = Wien2kParser._get_scalars_lst(refractdata_dic["ref_ind_zz"])
-
-        return Property(scalars=ref_ind_zz,
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
-
-    def get_extinct_xx(self):
+    def get_extinct(self):
 
         refractdata_dic = Wien2kParser._extract_file_data(self._directory, ".refraction")
 
         # Get wavelengths and other scalar lists
         wavelengths = Wien2kParser._get_wavelengths(refractdata_dic["energy"])
-        extinct_xx = Wien2kParser._get_scalars_lst(refractdata_dic["extinct_xx"])
+        extinct_xx = refractdata_dic["extinct_xx"]
+        extinct_zz = refractdata_dic["extinct_zz"]
 
-        return Property(scalars=extinct_xx,
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+        extinct = Wien2kParser._get_scalars_lst([((2 * extinct_xx[i]) + extinct_zz[i])/3
+                                                 for i in range(len(extinct_xx))])
 
-    def get_extinct_zz(self):
-
-        refractdata_dic = Wien2kParser._extract_file_data(self._directory, ".refraction")
-
-        # Get wavelengths and other scalar lists
-        wavelengths = Wien2kParser._get_wavelengths(refractdata_dic["energy"])
-        extinct_zz = Wien2kParser._get_scalars_lst(refractdata_dic["extinct_zz"])
-
-        return Property(scalars=extinct_zz,
-                        conditions=[Value(name="Wavelength", units="nm", scalars=wavelengths)])
+        return Property(scalars=extinct, conditions=[Value(name="Wavelength", units="/nm", scalars=wavelengths)])
 
     def get_composition(self):
-        return None
+        file_path = None
+        for filename in os.listdir(self._directory):
+            if os.path.splitext(filename)[1] == ".struct":
+                file_path = os.path.join(self._directory, filename)
+
+        atom_obj = read_struct(file_path)
+        return atom_obj.get_chemical_formula()
 
     def get_xc_functional(self):
         return None
