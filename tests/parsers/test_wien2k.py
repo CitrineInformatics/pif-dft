@@ -54,9 +54,9 @@ class TestWien2kParser(unittest.TestCase):
         for cond in absorp_prop.conditions:
             if cond.name == "Wavelength":
                 cond_notfound = False
-                self.assertEquals(cond.units, "/nm")
+                self.assertEquals(cond.units, "nm")
                 self.assertEquals(len(cond.scalars), 8)
-                self.assertAlmostEqual(cond.scalars[0].value, 0.00044986)
+                self.assertAlmostEqual(round(cond.scalars[0].value, 3), 2222.899)
 
         if cond_notfound:
             raise ValueError("Condition 'Wavelength' not found")
@@ -71,9 +71,9 @@ class TestWien2kParser(unittest.TestCase):
         for cond in eloss_prop.conditions:
             if cond.name == "Wavelength":
                 cond_notfound = False
-                self.assertEquals(cond.units, "/nm")
+                self.assertEquals(cond.units, "nm")
                 self.assertEquals(len(cond.scalars), 6)
-                self.assertAlmostEqual(round(cond.scalars[0].value, 4), 0.0024)
+                self.assertAlmostEqual(round(cond.scalars[0].value, 4), 416.1563)
 
         if cond_notfound:
             raise ValueError("Condition 'Wavelength' not found")
@@ -105,9 +105,9 @@ class TestWien2kParser(unittest.TestCase):
         for cond in reflect_prop.conditions:
             if cond.name == "Wavelength":
                 cond_notfound = False
-                self.assertEquals(cond.units, "/nm")
+                self.assertEquals(cond.units, "nm")
                 self.assertEquals(len(cond.scalars), 6)
-                self.assertAlmostEqual(round(cond.scalars[0].value, 6), 0.000757)
+                self.assertAlmostEqual(round(cond.scalars[0].value, 6), 1320.849178)
 
         if cond_notfound:
             raise ValueError("Condition 'Wavelength' not found")
@@ -122,9 +122,9 @@ class TestWien2kParser(unittest.TestCase):
         for cond in ref_ind_prop.conditions:
             if cond.name == "Wavelength":
                 cond_notfound = False
-                self.assertEquals(cond.units, "/nm")
+                self.assertEquals(cond.units, "nm")
                 self.assertEquals(len(cond.scalars), 6)
-                self.assertAlmostEqual(round(cond.scalars[0].value, 5), 0.00126)
+                self.assertAlmostEqual(round(cond.scalars[0].value, 5), 792.50444)
 
         if cond_notfound:
             raise ValueError("Condition 'Wavelength' not found")
