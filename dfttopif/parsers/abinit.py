@@ -9,22 +9,24 @@ class AbinitParser(DFTParser):
     Parser for ABINIT calculations
     '''
     _label = None
-    
-    def get_name(self): return "ABINIT"
-    
-    def test_if_from(self, directory):
+
+    def __init__(self, directory):
         # Check whether any file has as name ABINIT in the file in the first two lines
         files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
+        is_abinit = False
         for f in files:
             try:
                 with open(os.path.join(directory, f), 'r') as fp:
                     for line in [fp.readline(), fp.readline()]:
                         if "ABINIT" in line:
-                            return True
+                            is_abinit = True
             except:
                 continue
-        return False
-        
+        if not is_abinit:
+            raise Exception('No Abinit files found')
+    
+    def get_name(self): return "ABINIT"
+
     def _get_label(self):
         '''Find the label for the output files 
          for this calculation

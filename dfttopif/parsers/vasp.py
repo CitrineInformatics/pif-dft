@@ -14,11 +14,13 @@ class VaspParser(DFTParser):
     Parser for VASP calculations
     '''
 
+    def __init__(self, directory):
+        super(VaspParser, self).__init__(directory)
+
+        if not 'OUTCAR' in os.listdir(self._directory):
+            raise Exception('OUTCAR not found')
+
     def get_name(self): return "VASP"
-    
-    def test_if_from(self, directory):
-        # Check whether it has an INCAR file
-        return os.path.isfile(os.path.join(directory, 'OUTCAR'))
         
     def get_output_structure(self):
         self.atoms = read_vasp_out(os.path.join(self._directory, 'OUTCAR'))

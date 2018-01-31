@@ -15,6 +15,21 @@ class PwscfParser(DFTParser):
         super(PwscfParser, self).__init__(directory)
         self.settings = {}
         parser = PwscfStdOutputParser()
+
+        # Look for appropriate files
+        self.inputf = self.outputf = None
+        files = [f for f in os.listdir(self._directory) if os.path.isfile(os.path.join(directory, f))]
+        for f in files:
+            if self._get_line('Program PWSCF', f, basedir=self._directory, return_string=False):
+                self.outputf = f
+            elif self._get_line('&control', f, basedir=self._directory, return_string=False, case_sens=False):
+                self.inputf = f
+        if self.inputf is None:
+            raise Exception('Failed to find input file')
+        if self.outputf is None:
+            raise Exception('Failed to find output file')
+
+        # Read in the settings
         with open(os.path.join(directory, self.outputf), "r") as f:
             for line in parser.parse(f.readlines()):
                 self.settings.update(line)
@@ -58,18 +73,6 @@ class PwscfParser(DFTParser):
                     raise Exception('%s not found in %s'%(' & '.join(search_string),os.path.join(basedir, search_file)))
                 else: return False
         else: raise Exception('%s file does not exist'%os.path.join(basedir, search_file))
-    
-    def test_if_from(self, directory):
-        '''Look for PWSCF input and output files'''
-        self.inputf = self.outputf = ''
-        files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
-        for f in files:
-            if self._get_line('Program PWSCF', f, basedir=directory, return_string=False):
-                self.outputf = f
-            elif self._get_line('&control', f, basedir=directory, return_string=False, case_sens=False):
-                self.inputf = f
-            if self.inputf and self.outputf: return True
-        return False
 
     def get_version_number(self):
         '''Determine the version number from the output'''

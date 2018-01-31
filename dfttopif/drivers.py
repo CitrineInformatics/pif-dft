@@ -109,15 +109,15 @@ def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
     '''
 
     # Look for the first parser compatible with the directory
-    foundParser = False
+    found_parser = False
     for possible_parser in [VaspParser, PwscfParser]:
         try:
             parser = possible_parser(directory)
-            if parser.test_if_from(directory):
-                foundParser = True
-                break
-        except: pass
-    if not foundParser:
+            found_parser = True
+        except Exception:
+            # Constructors fail when they cannot find appropriate files
+            pass
+    if not found_parser:
         raise Exception('Directory is not in correct format for an existing parser')
     if verbose > 0:
         print("Found a %s directory", parser.get_name())
