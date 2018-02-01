@@ -1,4 +1,4 @@
-from .base import DFTParser
+from .base import DFTParser, InvalidIngesterException
 import os
 import glob
 from ase.calculators.abinit import Abinit
@@ -25,7 +25,7 @@ class AbinitParser(DFTParser):
             except:
                 continue
         if not is_abinit:
-            raise Exception('No Abinit files found')
+            raise InvalidIngesterException('No Abinit files found')
     
     def get_name(self): return "ABINIT"
 

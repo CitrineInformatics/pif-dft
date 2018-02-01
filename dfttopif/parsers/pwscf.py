@@ -1,10 +1,11 @@
 from pypif.obj.common import Property, Scalar
 
-from .base import DFTParser, Value_if_true
+from .base import DFTParser, Value_if_true, InvalidIngesterException
 import os
 from pypif.obj.common.value import Value
 from dftparse.pwscf.stdout_parser import PwscfStdOutputParser
 from ase import Atoms
+
 
 class PwscfParser(DFTParser):
     '''
@@ -17,17 +18,21 @@ class PwscfParser(DFTParser):
         parser = PwscfStdOutputParser()
 
         # Look for appropriate files
-        self.inputf = self.outputf = None
-        files = [f for f in os.listdir(self._directory) if os.path.isfile(os.path.join(directory, f))]
-        for f in files:
-            if self._get_line('Program PWSCF', f, basedir=self._directory, return_string=False):
-                self.outputf = f
-            elif self._get_line('&control', f, basedir=self._directory, return_string=False, case_sens=False):
-                self.inputf = f
+        try:
+            self.inputf = self.outputf = None
+            files = [f for f in os.listdir(self._directory) if os.path.isfile(os.path.join(directory, f))]
+            for f in files:
+                if self._get_line('Program PWSCF', f, basedir=self._directory, return_string=False):
+                    self.outputf = f
+                elif self._get_line('&control', f, basedir=self._directory, return_string=False, case_sens=False):
+                    self.inputf = f
+        except Exception as e:
+            raise InvalidIngesterException('Parser failed due to: ' + str(e))
+        print(self.inputf, self.outputf)
         if self.inputf is None:
-            raise Exception('Failed to find input file')
+            raise InvalidIngesterException('Failed to find input file')
         if self.outputf is None:
-            raise Exception('Failed to find output file')
+            raise InvalidIngesterException('Failed to find output file')
 
         # Read in the settings
         with open(os.path.join(directory, self.outputf), "r") as f:

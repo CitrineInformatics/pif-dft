@@ -1,6 +1,6 @@
 from pypif.obj import Property, Scalar
 
-from .base import DFTParser, Value_if_true
+from .base import DFTParser, Value_if_true, InvalidIngesterException
 import os
 from ase.calculators.vasp import Vasp
 from ase.io.vasp import read_vasp, read_vasp_out
@@ -29,7 +29,7 @@ class VaspParser(DFTParser):
             return None
         self.outcar = _find_file('OUTCAR')
         if self.outcar is None:
-            raise Exception('OUTCAR not found!')
+            raise InvalidIngesterException('OUTCAR not found!')
 
         # Find the DOSCAR, EIGENVAL, and INCAR files
         #   None of these are required so we do not throw exceptions
