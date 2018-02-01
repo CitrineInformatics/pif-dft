@@ -132,7 +132,7 @@ def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
     if not found_parser:
         raise Exception('Directory is not in correct format for an existing parser')
     if verbose > 0:
-        print("Found a %s directory" % parser.get_name())
+        print("Found a {} directory".format(parser.get_name()))
         
     # Get information about the chemical system
     chem = ChemicalSystem()
