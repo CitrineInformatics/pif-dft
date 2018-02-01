@@ -24,7 +24,7 @@ class VaspParser(DFTParser):
         def _find_file(name):
             """Find a filename that contains a certain string"""
             for f in files:
-                if name in f.upper():
+                if f.upper().startswith(name):
                     return os.path.join(directory, f)
             return None
         self.outcar = _find_file('OUTCAR')
