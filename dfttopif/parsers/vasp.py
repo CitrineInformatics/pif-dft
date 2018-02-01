@@ -17,17 +17,41 @@ class VaspParser(DFTParser):
     def __init__(self, directory):
         super(VaspParser, self).__init__(directory)
 
-        if not 'OUTCAR' in os.listdir(self._directory):
-            raise InvalidIngesterException('OUTCAR not found')
+        # Get the list of files in this directory
+        files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
+
+        # Find the outcar file
+        def _find_file(name):
+            """Find a filename that contains a certain string"""
+            name = name.upper()
+
+            my_file = None
+            for f in files:
+                if f.upper().startswith(name):
+                    if my_file is not None:
+                        raise InvalidIngesterException('More than one calculation in this directory')
+                    my_file = os.path.join(directory, f)
+            return my_file
+        self.outcar = _find_file('OUTCAR')
+        if self.outcar is None:
+            raise InvalidIngesterException('OUTCAR not found!')
+
+        # Find the DOSCAR, EIGENVAL, and INCAR files
+        #   None of these are required so we do not throw exceptions
+        self.incar = _find_file('INCAR')
+        self.poscar = _find_file('POSCAR')
+        self.doscar = _find_file('DOSCAR')
+        self.eignval = _find_file('EIGNVAL')
+
 
     def get_name(self): return "VASP"
         
     def get_output_structure(self):
-        self.atoms = read_vasp_out(os.path.join(self._directory, 'OUTCAR'))
+        self.atoms = read_vasp_out(self.outcar)
         return self.atoms
 
     def get_outcar(self):
-        raw_path = os.path.join(self._directory, 'OUTCAR')
+        raw_path = self.outcar
         if raw_path[0:2] == "./":
             raw_path = raw_path[2:]
         return Property(files=[FileReference(
@@ -35,7 +59,7 @@ class VaspParser(DFTParser):
         )])
 
     def get_incar(self):
-        raw_path = os.path.join(self._directory, 'INCAR')
+        raw_path = self.incar
         if raw_path[0:2] == "./":
             raw_path = raw_path[2:]
         return Value(files=[FileReference(
@@ -43,7 +67,7 @@ class VaspParser(DFTParser):
         )])
 
     def get_poscar(self):
-        raw_path = os.path.join(self._directory, 'POSCAR')
+        raw_path = self.poscar
         if raw_path[0:2] == "./":
             raw_path = raw_path[2:]
         return Value(files=[FileReference(
@@ -52,7 +76,7 @@ class VaspParser(DFTParser):
 
     def get_cutoff_energy(self):
         # Open up the OUTCAR
-        with open(os.path.join(self._directory, 'OUTCAR'), 'r') as fp:
+        with open(self.outcar, 'r') as fp:
          # Look for ENCUT
             for line in fp:
                 if "ENCUT" in line:
@@ -65,7 +89,7 @@ class VaspParser(DFTParser):
     @Value_if_true
     def uses_SOC(self):
         # Open up the OUTCAR
-        with open(os.path.join(self._directory, 'OUTCAR')) as fp:
+        with open(self.outcar) as fp:
         
             #look for LSORBIT
             for line in fp:
@@ -79,7 +103,7 @@ class VaspParser(DFTParser):
     @Value_if_true
     def is_relaxed(self):
         # Open up the OUTCAR
-        with open(os.path.join(self._directory, 'OUTCAR')) as fp:
+        with open(self.outcar) as fp:
         
             #  Look for NSW
             for line in fp:
@@ -92,7 +116,7 @@ class VaspParser(DFTParser):
         
     def get_xc_functional(self):
         # Open up the OUTCAR
-        with open(os.path.join(self._directory, 'OUTCAR')) as fp:
+        with open(self.outcar) as fp:
         
             # Look for TITEL
             for line in fp:
@@ -103,7 +127,7 @@ class VaspParser(DFTParser):
             
     def get_pp_name(self):
         # Open up the OUTCAR
-        with open(os.path.join(self._directory, 'OUTCAR')) as fp:
+        with open(self.outcar) as fp:
         
             #initialize empty list to store pseudopotentials
             pp = []
@@ -119,7 +143,7 @@ class VaspParser(DFTParser):
         
     def get_KPPRA(self):
         # Open up the OUTCAR
-        with open(os.path.join(self._directory, 'OUTCAR')) as fp:
+        with open(self.outcar) as fp:
             #store the number of atoms and number of irreducible K-points
             for line in fp:
                 if "NIONS" in line:
@@ -129,7 +153,7 @@ class VaspParser(DFTParser):
                     words = line.split()
                     NIRK = float(words[3])
             #check if the number of k-points was reduced by VASP if so, sum all the k-points weight
-            if "irreducible" in open(os.path.join(self._directory, 'OUTCAR')).read():
+            if "irreducible" in open(self.outcar).read():
                 fp.seek(0)
                 for line in fp:
                     #sum all the k-points weight
@@ -157,7 +181,7 @@ class VaspParser(DFTParser):
 
     def get_version_number(self):
         # Open up the OUTCAR
-        with open(os.path.join(self._directory, 'OUTCAR')) as fp:
+        with open(self.outcar) as fp:
         
             #look for vasp
             for line in fp:
@@ -171,9 +195,9 @@ class VaspParser(DFTParser):
         
     def get_U_settings(self):
         #Open up the OUTCAR
-        with open(os.path.join(self._directory, 'OUTCAR')) as fp:
+        with open(self.outcar) as fp:
             #Check if U is used
-            if "LDAU" in open(os.path.join(self._directory, 'OUTCAR')).read():
+            if "LDAU" in open(self.outcar).read():
                 U_param = {}
                 atoms = []
                 #get the list of pseupotential used
@@ -212,9 +236,9 @@ class VaspParser(DFTParser):
         #define the name of the vdW methods in function of their keyword
         vdW_dict = {'BO':'optPBE-vdW', 'MK':'optB88-vdW', 'ML':'optB86b-vdW','RE':'vdW-DF','OR':'Klimes-Bowler-Michaelides'}
         #Open up the OUTCAR
-        with open(os.path.join(self._directory, 'OUTCAR')) as fp:
+        with open(self.outcar) as fp:
             #Check if vdW is used
-            if "LUSE_VDW" in open(os.path.join(self._directory, 'OUTCAR')).read():
+            if "LUSE_VDW" in open(self.outcar).read():
                 #if vdW is used, get its keyword             
                 for line in fp:
                     if "GGA     =" in line:
@@ -228,13 +252,13 @@ class VaspParser(DFTParser):
         #define pressure dictionnary because since when is kB = kbar? Come on VASP people
         pressure_dict = {'kB':'kbar'}
         #Check if ISIF = 0 is used
-        if "ISIF   =      0" in open(os.path.join(self._directory, 'OUTCAR')).read():
+        if "ISIF   =      0" in open(self.outcar).read():
             #if ISIF = 0 is used, print this crap
             return None
         #if ISIF is not 0 then extract pressure and units
         else:
             #scan file in reverse to have the final pressure
-            for line in reversed(open(os.path.join(self._directory, 'OUTCAR')).readlines()):
+            for line in reversed(open(self.outcar).readlines()):
                 if "external pressure" in line:
                     words = line.split()
                     return Property(scalars=[Scalar(value=float(words[3]))], units=pressure_dict[words[4]])
@@ -242,14 +266,14 @@ class VaspParser(DFTParser):
     
     def get_stresses(self):
         #Check if ISIF = 0 is used
-        if "ISIF   =      0" in open(os.path.join(self._directory, 'OUTCAR')).read():
+        if "ISIF   =      0" in open(self.outcar).read():
             return None
         #Check if ISIF = 1 is used
-        elif "ISIF   =      1" in open(os.path.join(self._directory, 'OUTCAR')).read():
+        elif "ISIF   =      1" in open(self.outcar).read():
             return None
         else:
             #scan file in reverse to have the final pressure
-            for line in open(os.path.join(self._directory, 'OUTCAR')).readlines():
+            for line in open(self.outcar).readlines():
                 if "in kB" in line:
                     words = line.split()
                     XX = float(words[2]); YY = float(words[3]); ZZ = float(words[4]); XY= float(words[5]); YZ = float(words[6]); ZX = float(words[7])
@@ -261,7 +285,7 @@ class VaspParser(DFTParser):
         raise Exception('in kB not found')
 
     def get_forces(self):
-        self.atoms = read_vasp_out(os.path.join(self._directory, 'OUTCAR'))
+        self.atoms = read_vasp_out(self.outcar)
         forces_raw = self.atoms.get_calculator().results['forces'].tolist()
         forces_wrapped = [[Scalar(value=x) for x in y] for y in forces_raw]
         positions_raw = self.atoms.positions.tolist()
@@ -325,24 +349,19 @@ class VaspParser(DFTParser):
 
     def get_band_gap(self):
         """Get the bandgap, either from the EIGENVAL or DOSCAR files"""
-        doscar_path = os.path.join(self._directory, 'DOSCAR')
-        outcar_path = os.path.join(self._directory, 'OUTCAR')
-        eigenval_path = os.path.join(self._directory, 'EIGENVAL')
-
-        if os.path.isfile(outcar_path) and os.path.isfile(eigenval_path):
-            bandgap = VaspParser._get_bandgap_eigenval(eigenval_path, outcar_path)
-        elif os.path.isfile(doscar_path):
-            bandgap = VaspParser._get_bandgap_doscar(doscar_path)
+        if self.outcar is not None and self.eignval is not None:
+            bandgap = VaspParser._get_bandgap_eigenval(self.eignval, self.outcar)
+        elif self.doscar is not None:
+            bandgap = VaspParser._get_bandgap_doscar(self.doscar)
         else:
             return None
         return Property(scalars=[Scalar(value=round(bandgap, 3))], units='eV')
                 
     def get_dos(self):
-        file_path = os.path.join(self._directory, 'DOSCAR')
-        if not os.path.isfile(file_path):
+        if self.doscar is None:
             return None
         #open DOSCAR
-        with open(os.path.join(self._directory, 'DOSCAR')) as fp:
+        with open(self.doscar) as fp:
             for i in range(6):
                 l = fp.readline()
             n_step = int(l.split()[2])
@@ -361,11 +380,10 @@ class VaspParser(DFTParser):
                             conditions=Value(name='energy', scalars=energy, units='eV'))
 
     def get_total_magnetization(self):
-        file_path = os.path.join(self._directory, "OUTCAR")
-        if not os.path.isfile(file_path):
+        if self.outcar is None:
             return None
         parser = OutcarParser()
-        with open(file_path, "r") as fp:
+        with open(self.outcar, "r") as fp:
             matches = list(filter(lambda x: "total magnetization" in x, parser.parse(fp.readlines())))
         if len(matches) == 0:
             return None
