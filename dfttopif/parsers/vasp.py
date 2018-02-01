@@ -23,10 +23,15 @@ class VaspParser(DFTParser):
         # Find the outcar file
         def _find_file(name):
             """Find a filename that contains a certain string"""
+            name = name.upper()
+
+            my_file = None
             for f in files:
                 if f.upper().startswith(name):
-                    return os.path.join(directory, f)
-            return None
+                    if my_file is not None:
+                        raise InvalidIngesterException('More than one calculation in this directory')
+                    my_file = os.path.join(directory, f)
+            return my_file
         self.outcar = _find_file('OUTCAR')
         if self.outcar is None:
             raise InvalidIngesterException('OUTCAR not found!')
