@@ -9,7 +9,7 @@ class TestVASPParser(unittest.TestCase):
         
     def get_parser(self,name):
         '''Get a VaspParser for a certain test'''
-        unpack_example(os.path.join('examples','vasp',name+'.tar.gz'))
+        unpack_example(os.path.join('examples', 'vasp', name+'.tar.gz'))
         return VaspParser(name)
 
     def test_perov(self):
@@ -214,6 +214,19 @@ class TestVASPParser(unittest.TestCase):
 
         # Delete the data
         delete_example('vdW')
+
+    def test_filename_robustness(self):
+        """Make sure that parser can handle OUTCARs having other extensions"""
+
+        # Unpack an example and rename the OUTCAR file
+        unpack_example(os.path.join('examples', 'vasp', 'perov_relax_U.tar.gz'))
+        shutil.move(os.path.join('perov_relax_U', 'OUTCAR'), os.path.join('perov_relax_U', 'OUTCAR_newname'))
+
+        # Make the perser
+        parser = VaspParser('perov_relax_U')
+        self.assertEquals(parser.get_name(), 'VASP')
+
+        delete_example('perov_relax_U')
         
 if __name__ == '__main__':
     unittest.main()
