@@ -199,8 +199,11 @@ def convert(files=[], **kwargs):
     if len(files) < 1:
         raise ValueError("Files needs to be a non-empty list")
 
-    if (len(files) == 1):
-        return directory_to_pif(files[0], **kwargs)
+    if len(files) == 1:
+        if os.path.isfile(files[0]):
+            return directory_to_pif(os.path.dirname(files[0]), **kwargs)
+        else:
+            return directory_to_pif(files[0], **kwargs)
     else:
         prefix = os.path.join(".", os.path.commonprefix(files))
         print("Trying to use prefix {} from {}".format(prefix, os.getcwd()))

@@ -1,9 +1,8 @@
 import unittest
-from dfttopif import directory_to_pif
+from dfttopif import directory_to_pif, convert
 import tarfile
 import os
 import shutil
-from pypif import pif
 import glob
 
 def delete_example(name):
@@ -57,6 +56,18 @@ class TestPifGenerator(unittest.TestCase):
             
             # Delete files
             delete_example(name)
+
+        # Test if we only have a single OUTCAR
+        unpack_example(os.path.join('examples', 'vasp', 'AlNi_static_LDA.tar.gz'))
+
+        #  Remove all files but OUTCAR
+        for f in os.listdir('AlNi_static_LDA'):
+            if f != 'OUTCAR':
+                os.unlink(os.path.join('AlNi_static_LDA', f))
+
+        convert([os.path.join('AlNi_static_LDA', 'OUTCAR')], quality_report=False)
+
+        delete_example('AlNi_static_LDA')
 
     def test_PWSCF(self):
         '''
