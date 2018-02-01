@@ -4,6 +4,7 @@ import glob
 from ase.calculators.abinit import Abinit
 from pypif.obj.common import Value, Property, Scalar
 
+
 class AbinitParser(DFTParser):
     '''
     Parser for ABINIT calculations
@@ -12,6 +13,7 @@ class AbinitParser(DFTParser):
 
     def __init__(self, directory):
         # Check whether any file has as name ABINIT in the file in the first two lines
+        super(AbinitParser, self).__init__(directory)
         files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
         is_abinit = False
         for f in files:
