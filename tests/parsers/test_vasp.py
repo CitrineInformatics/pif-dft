@@ -1,5 +1,6 @@
 import unittest
 from dfttopif.parsers import VaspParser
+from dfttopif.parsers.base import InvalidIngesterException
 from ..test_pif import unpack_example, delete_example
 from pypif.obj.common.value import Value
 import os
@@ -222,9 +223,20 @@ class TestVASPParser(unittest.TestCase):
         unpack_example(os.path.join('examples', 'vasp', 'perov_relax_U.tar.gz'))
         shutil.move(os.path.join('perov_relax_U', 'OUTCAR'), os.path.join('perov_relax_U', 'OUTCAR_newname'))
 
-        # Make the perser
+        # Make the parser
         parser = VaspParser('perov_relax_U')
         self.assertEquals(parser.get_name(), 'VASP')
+
+        delete_example('perov_relax_U')
+
+    def test_fail_with_multiple_files(self):
+        # Unpack an example and duplicate the OUTCAR file
+        unpack_example(os.path.join('examples', 'vasp', 'perov_relax_U.tar.gz'))
+        shutil.copy(os.path.join('perov_relax_U', 'OUTCAR'), os.path.join('perov_relax_U', 'OUTCAR_newname'))
+
+        # Make the parser
+        with self.assertRaises(InvalidIngesterException) as context:
+            VaspParser('perov_relax_U')
 
         delete_example('perov_relax_U')
         
