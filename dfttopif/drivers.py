@@ -11,6 +11,16 @@ import json
 
 def _add_quality_report(directory, pif, inline=True):
     import tarfile
+
+    # Use VaspParser to identify OUTCAR and POSCAR files
+    parser = VaspParser(directory)
+
+    # If we do not have an INCAR, we cannot run the quality report
+    if parser.incar is None:
+        print("Unable to generate quality report; directory lacks an INCAR file")
+        return
+
+    # Create the tar file
     tar = tarfile.open("tmp.tar", "w")
     tar.add(os.path.join(directory, "OUTCAR"))
     tar.add(os.path.join(directory, "INCAR"))
