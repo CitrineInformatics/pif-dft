@@ -26,7 +26,7 @@ class PwscfParser(DFTParser):
                     self.outputf = f
                 elif self._get_line('&control', f, basedir=self._directory, return_string=False, case_sens=False):
                     self.inputf = f
-            except Exception as e:
+            except UnicodeDecodeError as e:
                 pass
 
         if self.inputf is None:
