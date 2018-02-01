@@ -65,7 +65,7 @@ class TestPifGenerator(unittest.TestCase):
             if f != 'OUTCAR':
                 os.unlink(os.path.join('AlNi_static_LDA', f))
 
-        convert([os.path.join('AlNi_static_LDA', 'OUTCAR')], quality_report=False)
+        convert([os.path.join('AlNi_static_LDA', 'OUTCAR')])
 
         delete_example('AlNi_static_LDA')
 
