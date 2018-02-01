@@ -18,17 +18,17 @@ class PwscfParser(DFTParser):
         parser = PwscfStdOutputParser()
 
         # Look for appropriate files
-        try:
-            self.inputf = self.outputf = None
-            files = [f for f in os.listdir(self._directory) if os.path.isfile(os.path.join(directory, f))]
-            for f in files:
+        self.inputf = self.outputf = None
+        files = [f for f in os.listdir(self._directory) if os.path.isfile(os.path.join(directory, f))]
+        for f in files:
+            try:
                 if self._get_line('Program PWSCF', f, basedir=self._directory, return_string=False):
                     self.outputf = f
                 elif self._get_line('&control', f, basedir=self._directory, return_string=False, case_sens=False):
                     self.inputf = f
-        except Exception as e:
-            raise InvalidIngesterException('Parser failed due to: ' + str(e))
-        print(self.inputf, self.outputf)
+            except UnicodeDecodeError as e:
+                pass
+
         if self.inputf is None:
             raise InvalidIngesterException('Failed to find input file')
         if self.outputf is None:
