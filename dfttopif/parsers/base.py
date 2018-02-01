@@ -9,6 +9,10 @@ def Value_if_true(func):
     return lambda x: Value() if func(x) == True else None
 
 
+class InvalidIngesterException(ValueError):
+    pass
+
+
 class DFTParser(object):
     '''Base class for all tools to parse a directory of output files from a DFT Calculation
     
@@ -48,7 +52,7 @@ class DFTParser(object):
         Input:
             directory - String, path to a directory of output files
         Raises:
-            Exception - If parser cannot find needed files
+            Par - If parser cannot find needed files
         '''
 
         self._directory = directory
