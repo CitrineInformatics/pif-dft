@@ -4,6 +4,7 @@ import tarfile
 import shutil
 from dfttopif.parsers import VaspParser
 from dfttopif.parsers import PwscfParser
+from dfttopif.parsers.base import InvalidIngesterException
 from pypif.obj import *
 import json
 
@@ -109,18 +110,19 @@ def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
     '''
 
     # Look for the first parser compatible with the directory
-    foundParser = False
-    for possible_parser in [VaspParser, PwscfParser]:
+    found_parser = False
+    for possible_parser in [PwscfParser, VaspParser]:
         try:
             parser = possible_parser(directory)
-            if parser.test_if_from(directory):
-                foundParser = True
-                break
-        except: pass
-    if not foundParser:
+            found_parser = True
+            break
+        except InvalidIngesterException:
+            # Constructors fail when they cannot find appropriate files
+            pass
+    if not found_parser:
         raise Exception('Directory is not in correct format for an existing parser')
     if verbose > 0:
-        print("Found a %s directory", parser.get_name())
+        print("Found a {} directory".format(parser.get_name()))
         
     # Get information about the chemical system
     chem = ChemicalSystem()

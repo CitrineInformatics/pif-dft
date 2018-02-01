@@ -9,6 +9,10 @@ def Value_if_true(func):
     return lambda x: Value() if func(x) == True else None
 
 
+class InvalidIngesterException(ValueError):
+    pass
+
+
 class DFTParser(object):
     '''Base class for all tools to parse a directory of output files from a DFT Calculation
     
@@ -47,26 +51,11 @@ class DFTParser(object):
         
         Input:
             directory - String, path to a directory of output files
+        Raises:
+            Par - If parser cannot find needed files
         '''
-        
-        # Sanity check: Make sure the format is correct
-        if not self.test_if_from(directory):
-            raise Exception('Files in directory inconsistent with this format')
-            
+
         self._directory = directory
-      
-    @classmethod
-    def test_if_from(self, directory):
-        '''Test whether a directory of output files
-        seems like it is from this DFT code.
-        
-        Input:
-            directory - String, path to a directory of output files
-        Returns: 
-            boolean, whether directory was created by this code
-        '''
-        
-        raise NotImplementedError
         
     def get_setting_functions(self):
         '''Get a dictionary containing the names of methods

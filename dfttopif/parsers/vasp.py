@@ -1,6 +1,6 @@
 from pypif.obj import Property, Scalar
 
-from .base import DFTParser, Value_if_true
+from .base import DFTParser, Value_if_true, InvalidIngesterException
 import os
 from ase.calculators.vasp import Vasp
 from ase.io.vasp import read_vasp, read_vasp_out
@@ -14,11 +14,13 @@ class VaspParser(DFTParser):
     Parser for VASP calculations
     '''
 
+    def __init__(self, directory):
+        super(VaspParser, self).__init__(directory)
+
+        if not 'OUTCAR' in os.listdir(self._directory):
+            raise InvalidIngesterException('OUTCAR not found')
+
     def get_name(self): return "VASP"
-    
-    def test_if_from(self, directory):
-        # Check whether it has an INCAR file
-        return os.path.isfile(os.path.join(directory, 'OUTCAR'))
         
     def get_output_structure(self):
         self.atoms = read_vasp_out(os.path.join(self._directory, 'OUTCAR'))
