@@ -132,6 +132,19 @@ class TestWien2kParser(unittest.TestCase):
         # Delete the data
         delete_example("SiO2opt")
 
+    def test_Ba2S3(self):
+        # Parse the results
+        parser = self.get_parser(name="MnO")
+
+        # Test the settings
+        self.assertEquals("Wien2k", parser.get_name())
+
+        # Test that composition is parsed correctly
+        self.assertEquals("MnO", parser.get_composition())
+
+        # Delete the data
+        delete_example("MnO")
+
 
 if __name__ == '__main__':
     unittest.main()
