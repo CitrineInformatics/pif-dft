@@ -36,7 +36,7 @@ class Wien2kParser(DFTParser):
     def test_if_from(self, directory):
         # Check whether it has a .scf file (analogous to an OUTCAR file)
         for filename in os.listdir(directory):
-            if os.path.splitext(filename)[1] == ".scf":
+            if os.path.splitext(filename)[1] == ".scf" and filename[:2] != "._":
                 with open(os.path.join(directory, filename)) as fp:
                     for line in fp:
                         if "using WIEN2k" in line or ":ITE001:  1. ITERATION" in line:
@@ -46,23 +46,20 @@ class Wien2kParser(DFTParser):
     def get_version_number(self):
         # Get version number from the .scf file
         for filename in os.listdir(self._directory):
-            if os.path.splitext(filename)[1] == ".scf":
-
+            if os.path.splitext(filename)[1] == ".scf" and filename[:2] != "._":
                 with open(os.path.join(self._directory, filename)) as fp:
-
                     # look for line with ":LABEL3:"
                     for line in fp:
                         if ":LABEL3:" in line:
                             words = line.split()
                             return words[2].strip("WIEN2k_")
-
                 # Error handling: version not found
                 raise ValueError("Wien2k version not found")
 
     def get_total_energy(self):
         # Get data the .scf file
         for filename in os.listdir(self._directory):
-            if os.path.splitext(filename)[1] == ".scf":
+            if os.path.splitext(filename)[1] == ".scf" and filename[:2] != "._":
                 file_path = os.path.join(self._directory, filename)
         if not file_path:
             return None
@@ -79,7 +76,7 @@ class Wien2kParser(DFTParser):
     def get_band_gap(self):
         # Get data the .scf2 file
         for filename in os.listdir(self._directory):
-            if os.path.splitext(filename)[1] == ".scf2":
+            if os.path.splitext(filename)[1] == ".scf2" and filename[:2] != "._":
                 file_path = os.path.join(self._directory, filename)
         if not file_path:
             return None
@@ -109,7 +106,7 @@ class Wien2kParser(DFTParser):
     def _extract_file_data(directory, ext):
         # Get data from the file
         for filename in os.listdir(directory):
-            if os.path.splitext(filename)[1] == ext:
+            if os.path.splitext(filename)[1] == ext and filename[:2] != "._":
                 file_path = os.path.join(directory, filename)
         if not file_path:
             return None
@@ -268,7 +265,7 @@ class Wien2kParser(DFTParser):
     def get_composition(self):
         file_path = None
         for filename in os.listdir(self._directory):
-            if os.path.splitext(filename)[1] == ".struct":
+            if os.path.splitext(filename)[1] == ".struct" and filename[:2] != "._":
                 file_path = os.path.join(self._directory, filename)
 
         atom_obj = read_struct(file_path)
