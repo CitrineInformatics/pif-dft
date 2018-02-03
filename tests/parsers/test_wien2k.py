@@ -132,15 +132,21 @@ class TestWien2kParser(unittest.TestCase):
         # Delete the data
         delete_example("SiO2opt")
 
-    def test_Ba2S3(self):
+    def test_get_file(self):
         # Parse the results
         parser = self.get_parser(name="MnO")
+
+        # Test that composition is parsed correctly
+        self.assertEquals("MnO", parser.get_composition())
 
         # Test the settings
         self.assertEquals("Wien2k", parser.get_name())
 
-        # Test that composition is parsed correctly
-        self.assertEquals("MnO", parser.get_composition())
+        # make sure files beginning with "._" are being ignored
+        for filename in os.listdir(parser._directory):
+            if filename[:2] == "._":
+                extension = os.path.splitext(filename)[1]
+                self.assertEquals("._" + parser._get_file(parser._directory, extension), filename)
 
         # Delete the data
         delete_example("MnO")
