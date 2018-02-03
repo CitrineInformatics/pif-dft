@@ -43,15 +43,16 @@ class Wien2kParser(DFTParser):
                             return True
         return False
 
-    def _get_file(self, ext):
+    @staticmethod
+    def _get_file(directory, ext):
         # Get appropriate file, that does not being with "._"
-        for filename in os.listdir(self._directory):
+        for filename in os.listdir(directory):
             if os.path.splitext(filename)[1] == ext and filename[:2] != "._":
                 return filename
 
     def get_version_number(self):
         # Get version number from the .scf file
-        filename = Wien2kParser(self._directory)._get_file(".scf")
+        filename = Wien2kParser._get_file(self._directory, ".scf")
         with open(os.path.join(self._directory, filename)) as fp:
             # look for line with ":LABEL3:"
             for line in fp:
@@ -63,7 +64,7 @@ class Wien2kParser(DFTParser):
 
     def get_total_energy(self):
         # Get data the .scf file
-        filename = Wien2kParser(self._directory)._get_file(".scf")
+        filename = Wien2kParser._get_file(self._directory, ".scf")
         file_path = os.path.join(self._directory, filename)
         if not file_path:
             return None
@@ -79,7 +80,7 @@ class Wien2kParser(DFTParser):
 
     def get_band_gap(self):
         # Get data the .scf2 file
-        filename = Wien2kParser(self._directory)._get_file(".scf2")
+        filename = Wien2kParser._get_file(self._directory, ".scf2")
         file_path = os.path.join(self._directory, filename)
         if not file_path:
             return None
@@ -105,10 +106,11 @@ class Wien2kParser(DFTParser):
     def _get_scalars_lst(floats_lst):
         return [Scalar(value=num) for num in floats_lst]
 
-    def _extract_file_data(self, ext):
+    @staticmethod
+    def _extract_file_data(directory, ext):
         # Get data from the file
-        filename = Wien2kParser(self._directory)._get_file(ext)
-        file_path = os.path.join(self._directory, filename)
+        filename = Wien2kParser._get_file(directory, ext)
+        file_path = os.path.join(directory, filename)
         if not file_path:
             return None
 
@@ -170,7 +172,7 @@ class Wien2kParser(DFTParser):
 
     def get_absorp(self):
 
-        absorpdata_dic = Wien2kParser(self._directory)._extract_file_data(".absorp")
+        absorpdata_dic = Wien2kParser._extract_file_data(self._directory, ".absorp")
 
         # Get wavelengths and other scalar lists
         wavelengths = Wien2kParser._get_wavelengths(absorpdata_dic["energy"])
@@ -184,7 +186,7 @@ class Wien2kParser(DFTParser):
 
     def get_eloss(self):
 
-        elossdata_dic = Wien2kParser(self._directory)._extract_file_data(".eloss")
+        elossdata_dic = Wien2kParser._extract_file_data(self._directory, ".eloss")
 
         # Get wavelengths and other scalar lists
         wavelengths = Wien2kParser._get_wavelengths(elossdata_dic["energy"])
@@ -210,7 +212,7 @@ class Wien2kParser(DFTParser):
 
     def get_im_eps(self):
 
-        epsdata_dic = Wien2kParser(self._directory)._extract_file_data(".epsilon")
+        epsdata_dic = Wien2kParser._extract_file_data(self._directory, ".epsilon")
 
         # Get frequency and other scalar lists
         frequencies = Wien2kParser._get_frequencies(epsdata_dic["energy"])
@@ -223,7 +225,7 @@ class Wien2kParser(DFTParser):
 
     def get_reflect(self):
 
-        reflectdata_dic = Wien2kParser(self._directory)._extract_file_data(".reflectivity")
+        reflectdata_dic = Wien2kParser._extract_file_data(self._directory, ".reflectivity")
 
         # Get wavelengths and other scalar lists
         wavelengths = Wien2kParser._get_wavelengths(reflectdata_dic["energy"])
@@ -237,7 +239,7 @@ class Wien2kParser(DFTParser):
 
     def get_ref_ind(self):
 
-        refractdata_dic = Wien2kParser(self._directory)._extract_file_data(".refraction")
+        refractdata_dic = Wien2kParser._extract_file_data(self._directory, ".refraction")
 
         # Get wavelengths and other scalar lists
         wavelengths = Wien2kParser._get_wavelengths(refractdata_dic["energy"])
@@ -251,7 +253,7 @@ class Wien2kParser(DFTParser):
 
     def get_extinct(self):
 
-        refractdata_dic = Wien2kParser(self._directory)._extract_file_data(".refraction")
+        refractdata_dic = Wien2kParser._extract_file_data(self._directory, ".refraction")
 
         # Get wavelengths and other scalar lists
         wavelengths = Wien2kParser._get_wavelengths(refractdata_dic["energy"])
@@ -265,7 +267,7 @@ class Wien2kParser(DFTParser):
 
     def get_composition(self):
         file_path = None
-        filename = Wien2kParser(self._directory)._get_file(".struct")
+        filename = Wien2kParser._get_file(self._directory, ".struct")
         file_path = os.path.join(self._directory, filename)
 
         atom_obj = read_struct(file_path)
