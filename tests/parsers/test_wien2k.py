@@ -137,6 +137,8 @@ class TestWien2kParserGetFile(unittest.TestCase):
 
     def test_get_file(self):
         # Parse the results
+        # Acknowledge Prof.Michael Widom at CMU(https: // www.cmu.edu / physics / people / faculty / widom.html) for
+        # providing the example Wien2k calculation file used here.
         unpack_example(os.path.join("examples", "wien2k", "MnO.tar.gz"))
 
         # make sure files beginning with "._" are being ignored
