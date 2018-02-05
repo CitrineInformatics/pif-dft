@@ -68,8 +68,15 @@ class TestPifGenerator(unittest.TestCase):
 
         #   Run the conversion, check that it returns some data
         result = convert([os.path.join('AlNi_static_LDA', 'OUTCAR')])
-        self.assertEqual("Converged", result.properties[0].name)
-        self.assertEqual(True, result.properties[0].scalars[0].value)
+
+        found = False
+        for conv_value, prop in enumerate(result.properties):
+            if prop.name == "Converged":
+                found = True
+                break
+
+        self.assertTrue(found)
+        self.assertEqual(True, result.properties[conv_value].scalars[0].value)
 
         delete_example('AlNi_static_LDA')
 
