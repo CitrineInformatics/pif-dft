@@ -38,6 +38,11 @@ class DFTParser(object):
      name of the function. This design was chosen because there is a single function for defining the human names of the
      results, which are what serve as the tags in the pif file. In this way, the same property will be ensured to
      have the same name in the pif.
+
+    Users are allowed to specify which files a parser is allowed to access via the `files` parameter of the constructor.
+    This parameter was included to allow for parsing files when multiple copies of a certain type output file are
+    available in a single directory: a user can specify which outputs/input files belong together. There is no mechanism
+    to enforce you obey the users command, but please do.
     '''
     
     _directory = None
@@ -46,16 +51,38 @@ class DFTParser(object):
     _converged = None
     ''' Whether this calculation has converged '''
     
-    def __init__(self, directory):
-        '''Initialize a parser.
+    def __init__(self, directory, files=None):
+        '''Initialize a parser by defining the root directory of the calculation,
+            and a list of files the parser is allowed to access.
         
         Input:
-            directory - String, path to a directory of output files
+            directory - str, path to a directory of output files
+            files - [str], list of files usable by this parser. Each entry should be the complete path
+             to a file. If `None`, parser is allowed to read any files in `directory`
         Raises:
-            Par - If parser cannot find needed files
+            InvalidIngesterException - If parser cannot find needed files
         '''
 
         self._directory = directory
+        if files is None:
+            self._files = [os.path.join(self._directory, f) for f in os.listdir(self._directory)
+                           if os.path.isfile(os.path.join(self._directory, f))]
+        else:
+            self._files = files
+
+    @property
+    def directory(self):
+        return self._directory
+
+    @classmethod
+    def generate_parser(cls, directory, files=None):
+        """Create a parser by defining which input files it will read from.
+
+        Input:
+            directory - str, directory to read from
+            files - str, list of files from which to search.
+            """
+        pass
         
     def get_setting_functions(self):
         '''Get a dictionary containing the names of methods

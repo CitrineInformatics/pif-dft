@@ -14,11 +14,8 @@ class VaspParser(DFTParser):
     Parser for VASP calculations
     '''
 
-    def __init__(self, directory):
-        super(VaspParser, self).__init__(directory)
-
-        # Get the list of files in this directory
-        files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
+    def __init__(self, directory, files):
+        super(VaspParser, self).__init__(directory, files)
 
         # Find the outcar file
         def _find_file(name):
@@ -26,11 +23,11 @@ class VaspParser(DFTParser):
             name = name.upper()
 
             my_file = None
-            for f in files:
-                if f.upper().startswith(name):
+            for f in self._files:
+                if os.path.basename(f).upper().startswith(name):
                     if my_file is not None:
-                        raise InvalidIngesterException('More than one calculation in this directory')
-                    my_file = os.path.join(directory, f)
+                        raise InvalidIngesterException('Found more than one %s file')
+                    my_file = f
             return my_file
         self.outcar = _find_file('OUTCAR')
         if self.outcar is None:
@@ -282,9 +279,6 @@ class VaspParser(DFTParser):
             matrix = [[XX,XY,ZX],[XY,YY,YZ],[ZX,YZ,ZZ]]
             wrapped = [[Scalar(value=x) for x in y] for y in matrix]
             return Property(matrices=[wrapped], units='kbar')
-            
-         # Error handling: "in kB" not found
-        raise Exception('in kB not found')
 
     def get_forces(self):
         self.atoms = read_vasp_out(self.outcar)

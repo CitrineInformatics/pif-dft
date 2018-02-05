@@ -10,7 +10,7 @@ class TestPWSCFParser(unittest.TestCase):
     def get_parser(self,name):
         '''Get a PwscfParser for a certain test'''
         unpack_example(os.path.join('examples', 'pwscf', name+'.tar.gz'))
-        return PwscfParser(name)
+        return PwscfParser(name, files=None)
 
     def test_Au_nscf(self):
         """Test that a NSCF calculation is even parseable"""

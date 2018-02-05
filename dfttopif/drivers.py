@@ -9,21 +9,17 @@ from pypif.obj import *
 import json
 
 
-def _add_quality_report(directory, pif, inline=True):
+def _add_quality_report(parser, pif, inline=True):
     import tarfile
 
-    # Use VaspParser to identify OUTCAR and POSCAR files
-    parser = VaspParser(directory)
-
-    # If we do not have an INCAR, we cannot run the quality report
+    # if the parser lacks an INCAR, return None
     if parser.incar is None:
-        print("Unable to generate quality report; directory lacks an INCAR file")
-        return
+        return None
 
     # Create the tar file
     tar = tarfile.open("tmp.tar", "w")
-    tar.add(os.path.join(directory, "OUTCAR"))
-    tar.add(os.path.join(directory, "INCAR"))
+    tar.add(parser.outcar, arcname="OUTCAR")
+    tar.add(parser.incar, arcname="INCAR")
     tar.close()
 
     import requests
@@ -44,7 +40,7 @@ def _add_quality_report(directory, pif, inline=True):
     if inline:
         setattr(pif, "quality_report", report)
     else:
-        report_file = os.path.join(directory, "quality_report.txt")
+        report_file = os.path.join(parser.directory, "quality_report.txt")
         with open(report_file, "w") as f:
             f.write(report)
         if report_file[0:2] == "./":
@@ -104,14 +100,16 @@ def archive_to_pif(filename, verbose=0):
     raise Exception('Cannot process file type')
 
 
-def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
+def directory_to_pif(directory, files=None, verbose=0, quality_report=True, inline=True):
     '''Given a directory that contains output from
     a DFT calculation, parse the data and return
     a pif object
 
     Input:
-        directory - String, path to directory containing
+        directory - str, path to directory containing
             DFT results
+        files - [str] list of files from which the parser is allowed to
+            read. If `None` parser can read any file in `directory`
         verbose - int, How much status messages to print
 
     Output:
@@ -123,7 +121,7 @@ def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
     found_parser = False
     for possible_parser in [PwscfParser, VaspParser]:
         try:
-            parser = possible_parser(directory)
+            parser = possible_parser(directory, files)
             found_parser = True
             break
         except InvalidIngesterException:
@@ -195,10 +193,11 @@ def directory_to_pif(directory, verbose=0, quality_report=True, inline=True):
         chem.properties.append(prop)
 
     # Check to see if we should add the quality report
-    if quality_report and isinstance(parser, VaspParser) :
-        _add_quality_report(directory, chem)
+    if quality_report and isinstance(parser, VaspParser):
+        _add_quality_report(parser, chem)
 
     return chem
+
 
 def convert(files=[], **kwargs):
     """
@@ -213,10 +212,10 @@ def convert(files=[], **kwargs):
 
     if len(files) == 1:
         if os.path.isfile(files[0]):
-            return directory_to_pif(os.path.dirname(files[0]), **kwargs)
+            return directory_to_pif(os.path.dirname(files[0]), files=files, **kwargs)
         else:
             return directory_to_pif(files[0], **kwargs)
     else:
         prefix = os.path.join(".", os.path.commonprefix(files))
         print("Trying to use prefix {} from {}".format(prefix, os.getcwd()))
-        return directory_to_pif(prefix, **kwargs)
+        return directory_to_pif(prefix, files=files, **kwargs)
