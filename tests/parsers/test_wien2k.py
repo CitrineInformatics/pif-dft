@@ -144,8 +144,6 @@ class TestWien2kParser(unittest.TestCase):
 
         # make sure files beginning with "._" are being ignored
         filenames = [f for f in os.listdir(parser._directory)]
-        assert "._MnO.scf" in filenames
-        assert "._MnO.scf2" in filenames
         assert "._MnO.struct" in filenames
 
         for filename in os.listdir(parser._directory):
