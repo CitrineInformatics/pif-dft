@@ -227,6 +227,11 @@ class TestVASPParser(unittest.TestCase):
         parser = VaspParser('perov_relax_U')
         self.assertEquals(parser.get_name(), 'VASP')
 
+        # Test the cutoff energy
+        res = parser.get_cutoff_energy()
+        self.assertEquals(400, res.scalars[0].value)
+        self.assertEquals('eV', res.units)
+
         delete_example('perov_relax_U')
 
     def test_fail_with_multiple_files(self):

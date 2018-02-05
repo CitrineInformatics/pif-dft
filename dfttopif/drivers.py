@@ -11,6 +11,16 @@ import json
 
 def _add_quality_report(directory, pif, inline=True):
     import tarfile
+
+    # Use VaspParser to identify OUTCAR and POSCAR files
+    parser = VaspParser(directory)
+
+    # If we do not have an INCAR, we cannot run the quality report
+    if parser.incar is None:
+        print("Unable to generate quality report; directory lacks an INCAR file")
+        return
+
+    # Create the tar file
     tar = tarfile.open("tmp.tar", "w")
     tar.add(os.path.join(directory, "OUTCAR"))
     tar.add(os.path.join(directory, "INCAR"))
@@ -201,8 +211,11 @@ def convert(files=[], **kwargs):
     if len(files) < 1:
         raise ValueError("Files needs to be a non-empty list")
 
-    if (len(files) == 1):
-        return directory_to_pif(files[0], **kwargs)
+    if len(files) == 1:
+        if os.path.isfile(files[0]):
+            return directory_to_pif(os.path.dirname(files[0]), **kwargs)
+        else:
+            return directory_to_pif(files[0], **kwargs)
     else:
         prefix = os.path.join(".", os.path.commonprefix(files))
         print("Trying to use prefix {} from {}".format(prefix, os.getcwd()))

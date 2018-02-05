@@ -59,6 +59,7 @@ class VaspParser(DFTParser):
         )])
 
     def get_incar(self):
+        if self.incar is None: return None
         raw_path = self.incar
         if raw_path[0:2] == "./":
             raw_path = raw_path[2:]
@@ -67,6 +68,7 @@ class VaspParser(DFTParser):
         )])
 
     def get_poscar(self):
+        if self.poscar is None: return None
         raw_path = self.poscar
         if raw_path[0:2] == "./":
             raw_path = raw_path[2:]
