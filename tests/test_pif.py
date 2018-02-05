@@ -5,6 +5,7 @@ import os
 import shutil
 import glob
 
+
 def delete_example(name):
     '''Delete example files that were unpacked
     using the `unpack_example(path)` function
@@ -65,7 +66,10 @@ class TestPifGenerator(unittest.TestCase):
             if f != 'OUTCAR':
                 os.unlink(os.path.join('AlNi_static_LDA', f))
 
-        convert([os.path.join('AlNi_static_LDA', 'OUTCAR')])
+        #   Run the conversion, check that it returns some data
+        result = convert([os.path.join('AlNi_static_LDA', 'OUTCAR')])
+        self.assertEqual("Converged", result.properties[0].name)
+        self.assertEqual(True, result.properties[0].scalars[0].value)
 
         delete_example('AlNi_static_LDA')
 
