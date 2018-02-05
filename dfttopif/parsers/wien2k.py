@@ -35,12 +35,12 @@ class Wien2kParser(DFTParser):
 
     def test_if_from(self, directory):
         # Check whether it has a .scf file (analogous to an OUTCAR file)
-        for filename in os.listdir(directory):
-            if os.path.splitext(filename)[1] == ".scf" and filename[:2] != "._":
-                with open(os.path.join(directory, filename)) as fp:
-                    for line in fp:
-                        if "using WIEN2k" in line or ":ITE001:  1. ITERATION" in line:
-                            return True
+        filename = Wien2kParser._get_file(directory, ".scf")
+        if filename:
+            with open(os.path.join(directory, filename)) as fp:
+                for line in fp:
+                    if "using WIEN2k" in line or ":ITE001:  1. ITERATION" in line:
+                        return True
         return False
 
     @staticmethod
