@@ -141,12 +141,13 @@ class TestWien2kParserGetFile(unittest.TestCase):
 
         # make sure files beginning with "._" are being ignored
         filenames = [f for f in os.listdir("MnO")]
+        assert "._MnO.scf" in filenames
+        assert "._MnO.scf2" in filenames
         assert "._MnO.struct" in filenames
 
-        for filename in os.listdir("MnO"):
-            if filename[:2] == "._":
-                extension = os.path.splitext(filename)[1]
-                assert "._" + Wien2kParser._get_file("MnO", extension) == filename
+        assert Wien2kParser._get_file("MnO", ".scf") == "MnO.scf"
+        assert Wien2kParser._get_file("MnO", ".scf2") == "MnO.scf2"
+        assert Wien2kParser._get_file("MnO", ".struct") == "MnO.struct"
 
         # Delete the data
         delete_example("MnO")
