@@ -148,10 +148,10 @@ class VaspParser(DFTParser):
         with open(self.outcar) as fp:
             #store the number of atoms and number of irreducible K-points
             for line in fp:
-                if "NIONS" in line:
+                if "number of ions     NIONS =" in line:
                     words = line.split()
                     NI = int(words[11])
-                elif "NKPTS" in line:
+                elif "k-points           NKPTS =" in line:
                     words = line.split()
                     NIRK = float(words[3])
             #check if the number of k-points was reduced by VASP if so, sum all the k-points weight
