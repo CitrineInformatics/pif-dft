@@ -133,5 +133,27 @@ class TestWien2kParser(unittest.TestCase):
         delete_example("SiO2opt")
 
 
+class TestWien2kParserGetFile(unittest.TestCase):
+
+    def test_get_file(self):
+        # Parse the results
+        # Acknowledge Prof.Michael Widom at CMU(https: // www.cmu.edu / physics / people / faculty / widom.html) for
+        # providing the example Wien2k calculation file used here.
+        unpack_example(os.path.join("examples", "wien2k", "MnO.tar.gz"))
+
+        # make sure files beginning with "._" are being ignored
+        filenames = [f for f in os.listdir("MnO")]
+        assert "._MnO.scf" in filenames
+        assert "._MnO.scf2" in filenames
+        assert "._MnO.struct" in filenames
+
+        assert Wien2kParser._get_file("MnO", ".scf") == "MnO.scf"
+        assert Wien2kParser._get_file("MnO", ".scf2") == "MnO.scf2"
+        assert Wien2kParser._get_file("MnO", ".struct") == "MnO.struct"
+
+        # Delete the data
+        delete_example("MnO")
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -35,35 +35,37 @@ class Wien2kParser(DFTParser):
 
     def test_if_from(self, directory):
         # Check whether it has a .scf file (analogous to an OUTCAR file)
-        for filename in os.listdir(directory):
-            if os.path.splitext(filename)[1] == ".scf":
-                with open(os.path.join(directory, filename)) as fp:
-                    for line in fp:
-                        if "using WIEN2k" in line or ":ITE001:  1. ITERATION" in line:
-                            return True
+        filename = Wien2kParser._get_file(directory, ".scf")
+        if filename:
+            with open(os.path.join(directory, filename)) as fp:
+                for line in fp:
+                    if "using WIEN2k" in line or ":ITE001:  1. ITERATION" in line:
+                        return True
         return False
+
+    @staticmethod
+    def _get_file(directory, ext):
+        # Get appropriate file, that does not being with "._"
+        for filename in os.listdir(directory):
+            if os.path.splitext(filename)[1] == ext and filename[:2] != "._":
+                return filename
 
     def get_version_number(self):
         # Get version number from the .scf file
-        for filename in os.listdir(self._directory):
-            if os.path.splitext(filename)[1] == ".scf":
-
-                with open(os.path.join(self._directory, filename)) as fp:
-
-                    # look for line with ":LABEL3:"
-                    for line in fp:
-                        if ":LABEL3:" in line:
-                            words = line.split()
-                            return words[2].strip("WIEN2k_")
-
-                # Error handling: version not found
-                raise ValueError("Wien2k version not found")
+        filename = Wien2kParser._get_file(self._directory, ".scf")
+        with open(os.path.join(self._directory, filename)) as fp:
+            # look for line with ":LABEL3:"
+            for line in fp:
+                if ":LABEL3:" in line:
+                    words = line.split()
+                    return words[2].strip("WIEN2k_")
+        # Error handling: version not found
+        raise ValueError("Wien2k version not found")
 
     def get_total_energy(self):
         # Get data the .scf file
-        for filename in os.listdir(self._directory):
-            if os.path.splitext(filename)[1] == ".scf":
-                file_path = os.path.join(self._directory, filename)
+        filename = Wien2kParser._get_file(self._directory, ".scf")
+        file_path = os.path.join(self._directory, filename)
         if not file_path:
             return None
 
@@ -78,9 +80,8 @@ class Wien2kParser(DFTParser):
 
     def get_band_gap(self):
         # Get data the .scf2 file
-        for filename in os.listdir(self._directory):
-            if os.path.splitext(filename)[1] == ".scf2":
-                file_path = os.path.join(self._directory, filename)
+        filename = Wien2kParser._get_file(self._directory, ".scf2")
+        file_path = os.path.join(self._directory, filename)
         if not file_path:
             return None
 
@@ -108,9 +109,8 @@ class Wien2kParser(DFTParser):
     @staticmethod
     def _extract_file_data(directory, ext):
         # Get data from the file
-        for filename in os.listdir(directory):
-            if os.path.splitext(filename)[1] == ext:
-                file_path = os.path.join(directory, filename)
+        filename = Wien2kParser._get_file(directory, ext)
+        file_path = os.path.join(directory, filename)
         if not file_path:
             return None
 
@@ -267,9 +267,8 @@ class Wien2kParser(DFTParser):
 
     def get_composition(self):
         file_path = None
-        for filename in os.listdir(self._directory):
-            if os.path.splitext(filename)[1] == ".struct":
-                file_path = os.path.join(self._directory, filename)
+        filename = Wien2kParser._get_file(self._directory, ".struct")
+        file_path = os.path.join(self._directory, filename)
 
         atom_obj = read_struct(file_path)
         return atom_obj.get_chemical_formula()

@@ -43,3 +43,8 @@ This project follows [gitflow workflow](https://www.atlassian.com/git/tutorials/
 so please make PRs to the `develop` branch.
 
 API documentation is maintained in the source code and hosted on [github pages](http://citrineinformatics.github.io/pif-dft/).
+
+Acknowledgements
+----------------
+
+(i) Prof. Michael Widom at CMU (https://www.cmu.edu/physics/people/faculty/widom.html) for providing several example Wien2k calculation files used in testing the `Wien2k` parser code.   
