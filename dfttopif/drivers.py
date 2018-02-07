@@ -40,7 +40,7 @@ def _add_quality_report(parser, pif, inline=True):
     if inline:
         setattr(pif, "quality_report", report)
     else:
-        report_file = os.path.join(parser.directory, "quality_report.txt")
+        report_file = os.path.join(os.path.dirname(parser.outcar), "quality_report.txt")
         with open(report_file, "w") as f:
             f.write(report)
         if report_file[0:2] == "./":
@@ -201,8 +201,8 @@ def directory_to_pif(directory, **kwargs):
     """
     Convert a directory to a pif
     :param directory: Directory to convert to a pif
-    :param kwargs: any additional keyword arguments
-    :return:
+    :param kwargs: any additional keyword arguments. (See `files_to_pif`)
+    :return: the created pif
     """
 
     # Get the files

@@ -26,7 +26,7 @@ class VaspParser(DFTParser):
             for f in self._files:
                 if os.path.basename(f).upper().startswith(name):
                     if my_file is not None:
-                        raise InvalidIngesterException('Found more than one %s file')
+                        raise InvalidIngesterException('Found more than one %s file'.format(name))
                     my_file = f
             return my_file
         self.outcar = _find_file('OUTCAR')
@@ -39,7 +39,6 @@ class VaspParser(DFTParser):
         self.poscar = _find_file('POSCAR')
         self.doscar = _find_file('DOSCAR')
         self.eignval = _find_file('EIGNVAL')
-
 
     def get_name(self): return "VASP"
         

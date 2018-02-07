@@ -1,5 +1,6 @@
 import unittest
 from dfttopif import directory_to_pif, convert
+from pypif_sdk.accessor import get_propety_by_name
 import tarfile
 import os
 import shutil
@@ -52,8 +53,8 @@ class TestPifGenerator(unittest.TestCase):
             result = directory_to_pif(name, quality_report=test_quality_report)
             # Only hit the quality report endpoint once to avoid load spikes in automated tests
             test_quality_report=False
-            assert result.chemical_formula is not None
-            assert result.properties is not None
+            self.assertIsNotNone(result.chemical_formula)
+            self.assertIsNotNone(result.properties)
             # print(pif.dumps(result, indent=4))
             
             # Delete files
@@ -63,15 +64,9 @@ class TestPifGenerator(unittest.TestCase):
         unpack_example(os.path.join('examples', 'vasp', 'AlNi_static_LDA.tar.gz'))
 
         #  First, try to constrain what the parser is allowed to read
-        def _find_prop(result, name):
-            """Find the 'converged' property"""
-            for conv_value, prop in enumerate(result.properties):
-                if prop.name == name:
-                    return prop
-            return None
         result = convert([os.path.join('AlNi_static_LDA', 'OUTCAR')])
-        self.assertTrue(_find_prop(result, "Converged").scalars[0].value)
-        self.assertIsNone(_find_prop(result, "Band Gap Energy"))  # No access to DOSCAR
+        self.assertTrue(get_propety_by_name(result, "Converged").scalars[0].value)
+        self.assertIsNone(get_propety_by_name(result, "Band Gap Energy"))  # No access to DOSCAR
 
         #  Remove all files but OUTCAR
         for f in os.listdir('AlNi_static_LDA'):
@@ -80,14 +75,14 @@ class TestPifGenerator(unittest.TestCase):
 
         #   Run the conversion, check that it returns some data
         result = convert([os.path.join('AlNi_static_LDA', 'OUTCAR')])
-        self.assertTrue(_find_prop(result, "Converged").scalars[0].value)
+        self.assertTrue(get_propety_by_name(result, "Converged").scalars[0].value)
 
         # Try parsing if we have two OUTCARs
         shutil.copy(os.path.join('AlNi_static_LDA', 'OUTCAR'), os.path.join('AlNi_static_LDA', 'OUTCAR.2'))
 
         #   Make sure it only parsers the first
         result = convert([os.path.join('AlNi_static_LDA', 'OUTCAR')])
-        self.assertTrue(_find_prop(result, "Converged").scalars[0].value)
+        self.assertTrue(get_propety_by_name(result, "Converged").scalars[0].value)
 
         delete_example('AlNi_static_LDA')
 
