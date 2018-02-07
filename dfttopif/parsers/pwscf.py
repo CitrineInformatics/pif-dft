@@ -12,8 +12,8 @@ class PwscfParser(DFTParser):
     Parser for PWSCF calculations
     '''
 
-    def __init__(self, directory, files):
-        super(PwscfParser, self).__init__(directory, files)
+    def __init__(self, files):
+        super(PwscfParser, self).__init__(files)
         self.settings = {}
         parser = PwscfStdOutputParser()
 
@@ -314,17 +314,17 @@ class PwscfParser(DFTParser):
         '''Find the total DOS shifted by the Fermi energy'''
         # find the dos file
         fildos = ''
-        files = [f for f in os.listdir(self._directory) if os.path.isfile(os.path.join(self._directory, f))]
-        for f in files:
-            fp = open(os.path.join(self._directory, f), 'r')
-            first_line = next(fp)
-            if "E (eV)" in first_line and "Int dos(E)" in first_line:
-                fildos = f
-                ndoscol = len(next(fp).split())-2 # number of spin channels
+        for f in self._files:
+            with open(f, 'r') as fp:
+                first_line = next(fp)
+                if "E (eV)" in first_line and "Int dos(E)" in first_line:
+                    fildos = f
+                    ndoscol = len(next(fp).split())-2 # number of spin channels
+                    fp.close()
+                    break
                 fp.close()
-                break
-            fp.close()
-        if not fildos: return None # cannot find DOS
+        if not fildos:
+            return None # cannot find DOS
 
         # get the Fermi energy
         line = self._get_line('the Fermi energy is', self.outputf)
@@ -332,7 +332,7 @@ class PwscfParser(DFTParser):
 
         # grab the DOS
         energy = [] ; dos = []
-        fp = open(os.path.join(self._directory, fildos), 'r')
+        fp = open(fildos, 'r')
         next(fp) # comment line
         for line in fp:
             ls = line.split()

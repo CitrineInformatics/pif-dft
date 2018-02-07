@@ -6,12 +6,13 @@ from pypif.obj.common.value import Value
 import os
 import shutil
 
+
 class TestVASPParser(unittest.TestCase):
         
     def get_parser(self,name):
         '''Get a VaspParser for a certain test'''
         unpack_example(os.path.join('examples', 'vasp', name+'.tar.gz'))
-        return VaspParser(name, files=None)
+        return VaspParser.generate_parser(name)
 
     def test_perov(self):
         # Parse the results
@@ -224,15 +225,16 @@ class TestVASPParser(unittest.TestCase):
         shutil.move(os.path.join('perov_relax_U', 'OUTCAR'), os.path.join('perov_relax_U', 'OUTCAR_newname'))
 
         # Make the parser
-        parser = VaspParser('perov_relax_U', None)
-        self.assertEquals(parser.get_name(), 'VASP')
+        try:
+            parser = VaspParser.generate_parser("perov_relax_U")
+            self.assertEquals(parser.get_name(), 'VASP')
 
-        # Test the cutoff energy
-        res = parser.get_cutoff_energy()
-        self.assertEquals(400, res.scalars[0].value)
-        self.assertEquals('eV', res.units)
-
-        delete_example('perov_relax_U')
+            # Test the cutoff energy
+            res = parser.get_cutoff_energy()
+            self.assertEquals(400, res.scalars[0].value)
+            self.assertEquals('eV', res.units)
+        finally:
+            delete_example('perov_relax_U')
 
     def test_fail_with_multiple_files(self):
         # Unpack an example and duplicate the OUTCAR file
@@ -241,7 +243,7 @@ class TestVASPParser(unittest.TestCase):
 
         # Make the parser
         with self.assertRaises(InvalidIngesterException) as context:
-            VaspParser('perov_relax_U', None)
+            VaspParser.generate_parser('perov_relax_U')
 
         # Make the parser, but setting `files` to not include `OUTCAR_newname`
         acceptable_files = [f for f in os.listdir('perov_relax_U')]
@@ -249,7 +251,7 @@ class TestVASPParser(unittest.TestCase):
         acceptable_files = [os.path.join('perov_relax_U', f) for f in acceptable_files]
 
         try:
-            VaspParser('perov_relax_U', acceptable_files)
+            VaspParser(acceptable_files)
         finally:
             delete_example('perov_relax_U')
 

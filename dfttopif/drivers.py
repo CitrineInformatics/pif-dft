@@ -55,6 +55,7 @@ def _add_quality_report(parser, pif, inline=True):
 
     return pif
 
+
 def tarfile_to_pif(filename, temp_root_dir='', verbose=0):
     """
     Process a tar file that contains DFT data.
@@ -77,8 +78,8 @@ def tarfile_to_pif(filename, temp_root_dir='', verbose=0):
         for i in os.listdir(temp_dir):
             cur_dir = temp_dir + '/' + i
             if os.path.isdir(cur_dir):
-                return directory_to_pif(cur_dir, verbose)
-        return directory_to_pif(temp_dir, verbose)
+                return directory_to_pif(cur_dir, verbose=verbose)
+        return directory_to_pif(temp_dir, verbose=verbose)
     finally:
         shutil.rmtree(temp_dir)
 
@@ -100,16 +101,13 @@ def archive_to_pif(filename, verbose=0):
     raise Exception('Cannot process file type')
 
 
-def directory_to_pif(directory, files=None, verbose=0, quality_report=True, inline=True):
+def files_to_pif(files, verbose=0, quality_report=True, inline=True):
     '''Given a directory that contains output from
     a DFT calculation, parse the data and return
     a pif object
 
     Input:
-        directory - str, path to directory containing
-            DFT results
-        files - [str] list of files from which the parser is allowed to
-            read. If `None` parser can read any file in `directory`
+        files - [str] list of files from which the parser is allowed to read.
         verbose - int, How much status messages to print
 
     Output:
@@ -121,7 +119,7 @@ def directory_to_pif(directory, files=None, verbose=0, quality_report=True, inli
     found_parser = False
     for possible_parser in [PwscfParser, VaspParser]:
         try:
-            parser = possible_parser(directory, files)
+            parser = possible_parser(files)
             found_parser = True
             break
         except InvalidIngesterException:
@@ -199,7 +197,22 @@ def directory_to_pif(directory, files=None, verbose=0, quality_report=True, inli
     return chem
 
 
-def convert(files=[], **kwargs):
+def directory_to_pif(directory, **kwargs):
+    """
+    Convert a directory to a pif
+    :param directory: Directory to convert to a pif
+    :param kwargs: any additional keyword arguments
+    :return:
+    """
+
+    # Get the files
+    files = [os.path.join(directory, f) for f in os.listdir(directory)]
+
+    # Run the pif
+    return files_to_pif([f for f in files if os.path.isfile(f)], **kwargs)
+
+
+def convert(files, **kwargs):
     """
     Wrap directory to pif as a dice extension
     :param files: a list of files, which must be non-empty
@@ -212,10 +225,8 @@ def convert(files=[], **kwargs):
 
     if len(files) == 1:
         if os.path.isfile(files[0]):
-            return directory_to_pif(os.path.dirname(files[0]), files=files, **kwargs)
+            return files_to_pif(files, **kwargs)
         else:
-            return directory_to_pif(files[0], **kwargs)
+            raise ValueError('You need to pass at least one file!')
     else:
-        prefix = os.path.join(".", os.path.commonprefix(files))
-        print("Trying to use prefix {} from {}".format(prefix, os.getcwd()))
-        return directory_to_pif(prefix, files=files, **kwargs)
+        return files_to_pif(files, **kwargs)

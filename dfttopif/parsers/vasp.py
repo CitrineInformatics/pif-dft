@@ -14,8 +14,8 @@ class VaspParser(DFTParser):
     Parser for VASP calculations
     '''
 
-    def __init__(self, directory, files):
-        super(VaspParser, self).__init__(directory, files)
+    def __init__(self, files):
+        super(VaspParser, self).__init__(files)
 
         # Find the outcar file
         def _find_file(name):
@@ -173,10 +173,10 @@ class VaspParser(DFTParser):
         raise Exception('NIONS, irredicuble or Coordinates not found')
 
     def _is_converged(self):
-        return self._call_ase(Vasp().read_convergence)
+        return self._call_ase(Vasp().read_convergence, os.path.dirname(self.outcar))
 
     def get_total_energy(self):
-        return Property(scalars=[Scalar(value=self._call_ase(Vasp().read_energy)[0])], units='eV')
+        return Property(scalars=[Scalar(value=self._call_ase(Vasp().read_energy, os.path.dirname(self.outcar))[0])], units='eV')
 
     def get_version_number(self):
         # Open up the OUTCAR

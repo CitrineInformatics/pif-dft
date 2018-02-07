@@ -15,6 +15,7 @@ def delete_example(name):
     '''
     shutil.rmtree(name)
 
+
 def unpack_example(path):
     '''Unpack a test case to a temporary directory
     
@@ -68,7 +69,7 @@ class TestPifGenerator(unittest.TestCase):
                 if prop.name == name:
                     return prop
             return None
-        result = convert(files=[os.path.join('AlNi_static_LDA', 'OUTCAR')])
+        result = convert([os.path.join('AlNi_static_LDA', 'OUTCAR')])
         self.assertTrue(_find_prop(result, "Converged").scalars[0].value)
         self.assertIsNone(_find_prop(result, "Band Gap Energy"))  # No access to DOSCAR
 
