@@ -54,15 +54,16 @@ class DFTParser(object):
         self._files = files
 
     @classmethod
-    def generate_parser(cls, directory):
+    def generate_from_directory(cls, directory):
         """Create a parser by defining which input files it will read from.
 
         Input:
             directory - str, directory to read from
             files - str, list of files from which to search.
             """
-        files = [os.path.join(directory, f) for f in os.listdir(directory)]
-        return cls([x for x in files if os.path.isfile(x)])
+        files = [os.path.join(directory, f) for f in os.listdir(directory)
+                 if os.path.isfile(os.path.join(directory, f))]
+        return cls(files)
         
     def get_setting_functions(self):
         '''Get a dictionary containing the names of methods

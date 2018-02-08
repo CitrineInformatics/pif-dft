@@ -206,10 +206,11 @@ def directory_to_pif(directory, **kwargs):
     """
 
     # Get the files
-    files = [os.path.join(directory, f) for f in os.listdir(directory)]
+    files = [os.path.join(directory, f) for f in os.listdir(directory)
+             if os.path.isfile(os.path.join(directory, f))]
 
     # Run the pif
-    return files_to_pif([f for f in files if os.path.isfile(f)], **kwargs)
+    return files_to_pif(files, **kwargs)
 
 
 def convert(files, **kwargs):
@@ -227,6 +228,6 @@ def convert(files, **kwargs):
         if os.path.isfile(files[0]):
             return files_to_pif(files, **kwargs)
         else:
-            raise ValueError('You need to pass at least one file!')
+            return directory_to_pif(files[0], **kwargs)
     else:
         return files_to_pif(files, **kwargs)

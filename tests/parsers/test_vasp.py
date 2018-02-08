@@ -12,7 +12,7 @@ class TestVASPParser(unittest.TestCase):
     def get_parser(self,name):
         '''Get a VaspParser for a certain test'''
         unpack_example(os.path.join('examples', 'vasp', name+'.tar.gz'))
-        return VaspParser.generate_parser(name)
+        return VaspParser.generate_from_directory(name)
 
     def test_perov(self):
         # Parse the results
@@ -226,7 +226,7 @@ class TestVASPParser(unittest.TestCase):
 
         # Make the parser
         try:
-            parser = VaspParser.generate_parser("perov_relax_U")
+            parser = VaspParser.generate_from_directory("perov_relax_U")
             self.assertEquals(parser.get_name(), 'VASP')
 
             # Test the cutoff energy
@@ -243,7 +243,7 @@ class TestVASPParser(unittest.TestCase):
 
         # Make the parser
         with self.assertRaises(InvalidIngesterException) as context:
-            VaspParser.generate_parser('perov_relax_U')
+            VaspParser.generate_from_directory('perov_relax_U')
 
         # Make the parser, but setting `files` to not include `OUTCAR_newname`
         acceptable_files = [f for f in os.listdir('perov_relax_U')]
