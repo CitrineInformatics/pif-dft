@@ -109,31 +109,6 @@ class DFTParser(object):
             'Stresses': 'get_stresses'
         }
         
-    def _call_ase(self, func, directory):
-        '''Make a call to an ASE function.
-
-        Note: I'm about to kill this function, once I'm done with the overhaul
-        ASE assumes filenames, which we do not want
-        
-        Handles changing directories
-        
-        Returns: Result of ASE function
-        '''
-        # Change directories
-        old_path = os.getcwd()
-        os.chdir(directory)
-        
-        # Call function
-        try:
-            res = func()
-        except:
-            os.chdir(old_path)
-            raise
-        
-        # Change back
-        os.chdir(old_path)
-        return res
-        
     def get_name(self):
         '''Get the name of this program'''
         raise NotImplementedError
