@@ -2,8 +2,8 @@ from pypif.obj import Property, Scalar
 
 from .base import DFTParser, Value_if_true, InvalidIngesterException
 import os
-from ase.calculators.vasp import Vasp
-from ase.io.vasp import read_vasp, read_vasp_out
+import re
+from ase.io.vasp import read_vasp_out
 from pypif.obj import Value, FileReference
 from dftparse.vasp.outcar_parser import OutcarParser
 from dftparse.vasp.eigenval_parser import EigenvalParser
@@ -26,7 +26,7 @@ class VaspParser(DFTParser):
             for f in self._files:
                 if os.path.basename(f).upper().startswith(name):
                     if my_file is not None:
-                        raise InvalidIngesterException('Found more than one %s file'.format(name))
+                        raise InvalidIngesterException('Found more than one {} file'.format(name))
                     my_file = f
             return my_file
         self.outcar = _find_file('OUTCAR')
@@ -121,7 +121,6 @@ class VaspParser(DFTParser):
                 if "TITEL" in line:
                     words = line.split()
                     return Value(scalars=[Scalar(value=words[2])])
-                    break
             
     def get_pp_name(self):
         # Open up the OUTCAR
@@ -135,10 +134,7 @@ class VaspParser(DFTParser):
                     words = line.split()
                     pp.append(words[3])
             return Value(vectors=[[Scalar(value=x) for x in pp]])
-                
-        # Error handling: TITEL not found
-        raise Exception('TITEL not found')
-        
+
     def get_KPPRA(self):
         # Open up the OUTCAR
         with open(self.outcar) as fp:
@@ -167,15 +163,46 @@ class VaspParser(DFTParser):
             else:
                 return Value(scalars=[Scalar(value=NI*NIRK)])
 
-                
-        # Error handling: NKPTS or NIONS not found
-        raise Exception('NIONS, irredicuble or Coordinates not found')
-
     def _is_converged(self):
-        return self._call_ase(Vasp().read_convergence, os.path.dirname(self.outcar))
+        # Follows the procedure used by qmpy, but without reading the whole file into memory
+        #   Source: https://github.com/wolverton-research-group/qmpy/blob/master/qmpy/analysis/vasp/calculation.py
+
+        with open(self.outcar) as fp:
+            # Part 1: Determine the NELM
+            nelm = None
+            for line in fp:
+                if line.startswith("   NELM   ="):
+                    nelm = int(line.split()[2][:-1])
+                    break
+
+            # If we don't find it, tell the user
+            if nelm is None:
+                raise Exception('NELM not found. Cannot tell if this result is converged')
+
+            # Now, loop through the file. What we want to know is whether the last ionic
+            #   step of this file terminates because it converges or because we hit NELM
+            re_iter = re.compile('([0-9]+)\( *([0-9]+)\)')
+            converged = False
+            for line in fp:
+                # Count the ionic steps
+                if 'Iteration' in line:
+                    ionic, electronic = map(int, re_iter.findall(line)[0])
+
+                # If the loop is finished, mark the number of electronic steps
+                if 'aborting loop' in line:
+                    converged = electronic < nelm
+
+            return converged
 
     def get_total_energy(self):
-        return Property(scalars=[Scalar(value=self._call_ase(Vasp().read_energy, os.path.dirname(self.outcar))[0])], units='eV')
+        with open(self.outcar) as fp:
+            last_energy = None
+            for line in fp:
+                if line.startswith('  free  energy   TOTEN'):
+                    last_energy = float(line.split()[4])
+        if last_energy is None:
+            return None
+        return Property(scalars=[Scalar(value=last_energy)], units='eV')
 
     def get_version_number(self):
         # Open up the OUTCAR
