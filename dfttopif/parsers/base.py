@@ -40,22 +40,30 @@ class DFTParser(object):
      have the same name in the pif.
     '''
     
-    _directory = None
-    '''Path to directory containing calculation files'''
-    
     _converged = None
     ''' Whether this calculation has converged '''
     
-    def __init__(self, directory):
-        '''Initialize a parser.
+    def __init__(self, files):
+        '''Initialize a parser by defining the list of files that the parser can read from.
         
         Input:
-            directory - String, path to a directory of output files
+            files - [str], list of files usable by this parser.
         Raises:
-            Par - If parser cannot find needed files
+            InvalidIngesterException - If parser cannot find needed files
         '''
+        self._files = files
 
-        self._directory = directory
+    @classmethod
+    def generate_from_directory(cls, directory):
+        """Create a parser by defining which input files it will read from.
+
+        Input:
+            directory - str, directory to read from
+            files - str, list of files from which to search.
+            """
+        files = [os.path.join(directory, f) for f in os.listdir(directory)
+                 if os.path.isfile(os.path.join(directory, f))]
+        return cls(files)
         
     def get_setting_functions(self):
         '''Get a dictionary containing the names of methods
@@ -101,8 +109,11 @@ class DFTParser(object):
             'Stresses': 'get_stresses'
         }
         
-    def _call_ase(self, func):
+    def _call_ase(self, func, directory):
         '''Make a call to an ASE function.
+
+        Note: I'm about to kill this function, once I'm done with the overhaul
+        ASE assumes filenames, which we do not want
         
         Handles changing directories
         
@@ -110,7 +121,7 @@ class DFTParser(object):
         '''
         # Change directories
         old_path = os.getcwd()
-        os.chdir(self._directory)
+        os.chdir(directory)
         
         # Call function
         try:

@@ -12,19 +12,22 @@ class PwscfParser(DFTParser):
     Parser for PWSCF calculations
     '''
 
-    def __init__(self, directory):
-        super(PwscfParser, self).__init__(directory)
+    def __init__(self, files):
+        super(PwscfParser, self).__init__(files)
         self.settings = {}
         parser = PwscfStdOutputParser()
 
         # Look for appropriate files
         self.inputf = self.outputf = None
-        files = [f for f in os.listdir(self._directory) if os.path.isfile(os.path.join(directory, f))]
-        for f in files:
+        for f in self._files:
             try:
-                if self._get_line('Program PWSCF', f, basedir=self._directory, return_string=False):
+                if self._get_line('Program PWSCF', f, return_string=False):
+                    if self.outputf is not None:
+                        raise InvalidIngesterException('More than one output file!')
                     self.outputf = f
-                elif self._get_line('&control', f, basedir=self._directory, return_string=False, case_sens=False):
+                elif self._get_line('&control', f, return_string=False, case_sens=False):
+                    if self.inputf is not None:
+                        raise InvalidIngesterException('More than one input file')
                     self.inputf = f
             except UnicodeDecodeError as e:
                 pass
@@ -35,7 +38,7 @@ class PwscfParser(DFTParser):
             raise InvalidIngesterException('Failed to find output file')
 
         # Read in the settings
-        with open(os.path.join(directory, self.outputf), "r") as f:
+        with open(self.outputf, "r") as f:
             for line in parser.parse(f.readlines()):
                 self.settings.update(line)
 
@@ -54,7 +57,7 @@ class PwscfParser(DFTParser):
             return None
         return Property(scalars=[Scalar(value=self.settings[key])], units=self.settings["{} units".format(key)])
 
-    def _get_line(self, search_string, search_file, basedir=None, return_string=True, case_sens=True):
+    def _get_line(self, search_string, search_file, return_string=True, case_sens=True):
         '''Return the first line containing a set of strings in a file.
 
         If return_string is False, we just return whether such a line
@@ -62,22 +65,21 @@ class PwscfParser(DFTParser):
         insensitive.
 
         '''
-        if basedir == None: basedir = self._directory # default
-        if os.path.isfile(os.path.join(basedir, search_file)):
+        if os.path.isfile(search_file):
             # if single search string
             if type(search_string) == type(''): search_string = [search_string]
             # if case insensitive, convert everything to lowercase
             if not case_sens: search_string = [i.lower() for i in search_string]
-            with open(os.path.join(basedir, search_file)) as fp:
+            with open(search_file) as fp:
                 # search for the strings line by line
                 for line in fp:
                     query_line = line if case_sens else line.lower()
                     if all([i in query_line for i in search_string]):
                         return line if return_string else True
                 if return_string:
-                    raise Exception('%s not found in %s'%(' & '.join(search_string),os.path.join(basedir, search_file)))
+                    raise Exception('%s not found in %s'%(' & '.join(search_string), search_file))
                 else: return False
-        else: raise Exception('%s file does not exist'%os.path.join(basedir, search_file))
+        else: raise Exception('%s file does not exist'%search_file)
 
     def get_version_number(self):
         '''Determine the version number from the output'''
@@ -117,7 +119,7 @@ class PwscfParser(DFTParser):
         '''Determine the no. of k-points in the BZ (from the input) times the
         no. of atoms (from the output)'''
         # Find the no. of k-points
-        fp = open(os.path.join(self._directory, self.inputf)).readlines()
+        fp = open(self.inputf).readlines()
         for l,ll in enumerate(fp):
             if "K_POINTS" in ll:
                 # determine the type of input
@@ -153,7 +155,7 @@ class PwscfParser(DFTParser):
                 natoms = int(self._get_line('number of atoms/cell', self.outputf).split()[4])
                 return Value(scalars=[Scalar(value=nk*natoms)])
         fp.close()
-        raise Exception('%s not found in %s'%('KPOINTS',os.path.join(self._directory, self.inputf)))
+        raise Exception('%s not found in %s'%('KPOINTS',self.inputf))
 
     @Value_if_true
     def uses_SOC(self):
@@ -166,7 +168,7 @@ class PwscfParser(DFTParser):
         # Find the number of atom types
         natomtypes = int(self._get_line('number of atomic types', self.outputf).split()[5])
         # Find the pseudopotential names
-        with open(os.path.join(self._directory, self.outputf)) as fp:
+        with open(self.outputf) as fp:
             for line in fp:
                 if "PseudoPot. #" in line:
                     ppnames.append(Scalar(value=next(fp).split('/')[-1].rstrip()))
@@ -176,7 +178,7 @@ class PwscfParser(DFTParser):
 
     def get_U_settings(self):
         '''Determine the DFT+U type and parameters from the output'''
-        with open(os.path.join(self._directory, self.outputf)) as fp:
+        with open(self.outputf) as fp:
             for line in fp:
                 if "LDA+U calculation" in line:
                     U_param = {}
@@ -238,7 +240,7 @@ class PwscfParser(DFTParser):
 
         # find the initial unit cell
         unit_cell = []
-        with open(os.path.join(self._directory, self.outputf), 'r') as fp:
+        with open(self.outputf, 'r') as fp:
             for line in fp:
                 if "crystal axes:" in line:
                     for i in range(3):
@@ -248,7 +250,7 @@ class PwscfParser(DFTParser):
 
         # find the initial atomic coordinates
         coords = [] ; atom_symbols = []
-        with open(os.path.join(self._directory, self.outputf), 'r') as fp:
+        with open(self.outputf, 'r') as fp:
             for line in fp:
                 if "site n." in line and "atom" in line and "positions" in line and "alat units" in line:
                     for i in range(natoms):
@@ -266,7 +268,7 @@ class PwscfParser(DFTParser):
             return structure
         else:
             # relaxation run: update with the final structure
-            with open(os.path.join(self._directory, self.outputf)) as fp:
+            with open(self.outputf) as fp:
                 for line in fp:
                     if "Begin final coordinates" in line:
                         if 'new unit-cell volume' in next(fp):
@@ -312,17 +314,17 @@ class PwscfParser(DFTParser):
         '''Find the total DOS shifted by the Fermi energy'''
         # find the dos file
         fildos = ''
-        files = [f for f in os.listdir(self._directory) if os.path.isfile(os.path.join(self._directory, f))]
-        for f in files:
-            fp = open(os.path.join(self._directory, f), 'r')
-            first_line = next(fp)
-            if "E (eV)" in first_line and "Int dos(E)" in first_line:
-                fildos = f
-                ndoscol = len(next(fp).split())-2 # number of spin channels
+        for f in self._files:
+            with open(f, 'r') as fp:
+                first_line = next(fp)
+                if "E (eV)" in first_line and "Int dos(E)" in first_line:
+                    fildos = f
+                    ndoscol = len(next(fp).split())-2 # number of spin channels
+                    fp.close()
+                    break
                 fp.close()
-                break
-            fp.close()
-        if not fildos: return None # cannot find DOS
+        if not fildos:
+            return None # cannot find DOS
 
         # get the Fermi energy
         line = self._get_line('the Fermi energy is', self.outputf)
@@ -330,7 +332,7 @@ class PwscfParser(DFTParser):
 
         # grab the DOS
         energy = [] ; dos = []
-        fp = open(os.path.join(self._directory, fildos), 'r')
+        fp = open(fildos, 'r')
         next(fp) # comment line
         for line in fp:
             ls = line.split()

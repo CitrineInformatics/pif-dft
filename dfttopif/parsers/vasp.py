@@ -14,11 +14,8 @@ class VaspParser(DFTParser):
     Parser for VASP calculations
     '''
 
-    def __init__(self, directory):
-        super(VaspParser, self).__init__(directory)
-
-        # Get the list of files in this directory
-        files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
+    def __init__(self, files):
+        super(VaspParser, self).__init__(files)
 
         # Find the outcar file
         def _find_file(name):
@@ -26,11 +23,11 @@ class VaspParser(DFTParser):
             name = name.upper()
 
             my_file = None
-            for f in files:
-                if f.upper().startswith(name):
+            for f in self._files:
+                if os.path.basename(f).upper().startswith(name):
                     if my_file is not None:
-                        raise InvalidIngesterException('More than one calculation in this directory')
-                    my_file = os.path.join(directory, f)
+                        raise InvalidIngesterException('Found more than one %s file'.format(name))
+                    my_file = f
             return my_file
         self.outcar = _find_file('OUTCAR')
         if self.outcar is None:
@@ -42,7 +39,6 @@ class VaspParser(DFTParser):
         self.poscar = _find_file('POSCAR')
         self.doscar = _find_file('DOSCAR')
         self.eignval = _find_file('EIGNVAL')
-
 
     def get_name(self): return "VASP"
         
@@ -176,10 +172,10 @@ class VaspParser(DFTParser):
         raise Exception('NIONS, irredicuble or Coordinates not found')
 
     def _is_converged(self):
-        return self._call_ase(Vasp().read_convergence)
+        return self._call_ase(Vasp().read_convergence, os.path.dirname(self.outcar))
 
     def get_total_energy(self):
-        return Property(scalars=[Scalar(value=self._call_ase(Vasp().read_energy)[0])], units='eV')
+        return Property(scalars=[Scalar(value=self._call_ase(Vasp().read_energy, os.path.dirname(self.outcar))[0])], units='eV')
 
     def get_version_number(self):
         # Open up the OUTCAR
@@ -282,9 +278,6 @@ class VaspParser(DFTParser):
             matrix = [[XX,XY,ZX],[XY,YY,YZ],[ZX,YZ,ZZ]]
             wrapped = [[Scalar(value=x) for x in y] for y in matrix]
             return Property(matrices=[wrapped], units='kbar')
-            
-         # Error handling: "in kB" not found
-        raise Exception('in kB not found')
 
     def get_forces(self):
         self.atoms = read_vasp_out(self.outcar)
