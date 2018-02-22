@@ -1,60 +1,60 @@
-from .base import DFTParser
+from .base import DFTParser, InvalidIngesterException
 import os
 import glob
 from ase.calculators.abinit import Abinit
 from pypif.obj.common import Value, Property, Scalar
+
 
 class AbinitParser(DFTParser):
     '''
     Parser for ABINIT calculations
     '''
     _label = None
-    
-    def get_name(self): return "ABINIT"
-    
-    def test_if_from(self, directory):
+
+    def __init__(self, files):
         # Check whether any file has as name ABINIT in the file in the first two lines
-        files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
+        super(AbinitParser, self).__init__(files)
         for f in files:
             try:
-                with open(os.path.join(directory, f), 'r') as fp:
+                with open(f, 'r') as fp:
                     for line in [fp.readline(), fp.readline()]:
                         if "ABINIT" in line:
-                            return True
+                            is_abinit = True
             except:
                 continue
-        return False
-        
+        if not is_abinit:
+            raise InvalidIngesterException('No Abinit files found')
+    
+    def get_name(self): return "ABINIT"
+
     def _get_label(self):
         '''Find the label for the output files 
          for this calculation
         '''
         if self._label is None:
-            files = [f for f in os.listdir(self._directory) if os.path.isfile(os.path.join(self._directory, f))] 
             foundfiles = False
-            print(files)
-            for f in files:
+            for f in self._files:
                 if ".files" in f: 
                     foundfiles = True
                     self._label = f.split(".")[0]
-                    fp = open(os.path.join(self._directory, self._label + '.files'), 'r')
-                    line = fp.readline().split()[0]
-                    if line != self._label + ".in":
-                       fp.close()
-                       raise Exception('first line must be label.in') 
-                    line = fp.readline().split()[0]
-                    if line != self._label + ".txt":
-                       fp.close()
-                       raise Exception('second line must be label.txt') 
-                    line = fp.readline().split()[0]
-                    if line != self._label + "i":
-                       fp.close()
-                       raise Exception('third line must be labeli') 
-                    line = fp.readline().split()[0]
-                    if line != self._label + "o":
-                       fp.close()
-                       raise Exception('fourth line must be labelo') 
-                    fp.close()
+                    with open(self._label + '.files', 'r') as fp:
+                        line = fp.readline().split()[0]
+                        if line != self._label + ".in":
+                           fp.close()
+                           raise Exception('first line must be label.in')
+                        line = fp.readline().split()[0]
+                        if line != self._label + ".txt":
+                           fp.close()
+                           raise Exception('second line must be label.txt')
+                        line = fp.readline().split()[0]
+                        if line != self._label + "i":
+                           fp.close()
+                           raise Exception('third line must be labeli')
+                        line = fp.readline().split()[0]
+                        if line != self._label + "o":
+                           fp.close()
+                           raise Exception('fourth line must be labelo')
+                        fp.close()
             if foundfiles:
                 return self._label
             else:

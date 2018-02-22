@@ -1,10 +1,11 @@
 import unittest
-from dfttopif import directory_to_pif
+from dfttopif import convert
+from pypif_sdk.accessor import get_propety_by_name
 import tarfile
 import os
 import shutil
-from pypif import pif
 import glob
+
 
 def delete_example(name):
     '''Delete example files that were unpacked
@@ -14,6 +15,7 @@ def delete_example(name):
         name - Name of example file
     '''
     shutil.rmtree(name)
+
 
 def unpack_example(path):
     '''Unpack a test case to a temporary directory
@@ -48,15 +50,41 @@ class TestPifGenerator(unittest.TestCase):
             
             # Make the pif file
             # print("\tpif for example:", name)
-            result = directory_to_pif(name, quality_report=test_quality_report)
+            result = convert([name], quality_report=test_quality_report)
             # Only hit the quality report endpoint once to avoid load spikes in automated tests
             test_quality_report=False
-            assert result.chemical_formula is not None
-            assert result.properties is not None
+            self.assertIsNotNone(result.chemical_formula)
+            self.assertIsNotNone(result.properties)
             # print(pif.dumps(result, indent=4))
             
             # Delete files
             delete_example(name)
+
+        # Test if we only have a single OUTCAR
+        unpack_example(os.path.join('examples', 'vasp', 'AlNi_static_LDA.tar.gz'))
+
+        #  First, try to constrain what the parser is allowed to read
+        result = convert([os.path.join('AlNi_static_LDA', 'OUTCAR')])
+        self.assertTrue(get_propety_by_name(result, "Converged").scalars[0].value)
+        self.assertIsNone(get_propety_by_name(result, "Band Gap Energy"))  # No access to DOSCAR
+
+        #  Remove all files but OUTCAR
+        for f in os.listdir('AlNi_static_LDA'):
+            if f != 'OUTCAR':
+                os.unlink(os.path.join('AlNi_static_LDA', f))
+
+        #   Run the conversion, check that it returns some data
+        result = convert([os.path.join('AlNi_static_LDA', 'OUTCAR')])
+        self.assertTrue(get_propety_by_name(result, "Converged").scalars[0].value)
+
+        # Try parsing if we have two OUTCARs
+        shutil.copy(os.path.join('AlNi_static_LDA', 'OUTCAR'), os.path.join('AlNi_static_LDA', 'OUTCAR.2'))
+
+        #   Make sure it only parsers the first
+        result = convert([os.path.join('AlNi_static_LDA', 'OUTCAR')])
+        self.assertTrue(get_propety_by_name(result, "Converged").scalars[0].value)
+
+        delete_example('AlNi_static_LDA')
 
     def test_PWSCF(self):
         '''
@@ -67,10 +95,15 @@ class TestPifGenerator(unittest.TestCase):
             # Get the example files
             unpack_example(file)
             name = ".".join(os.path.basename(file).split(".")[:-2])
+            files = [os.path.join(name, x) for x in os.listdir(name)] + [name]
             
             # Make the pif file
             # print("\tpif for example:", name)
-            result = directory_to_pif(name)
+            try:
+                result = convert(files=files) 
+            except Exception as e:
+                print('Failure for {}'.format(name))
+                raise e
             assert result.chemical_formula is not None
             assert result.properties is not None
             # print(pif.dumps(result, indent=4))

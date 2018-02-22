@@ -9,6 +9,10 @@ def Value_if_true(func):
     return lambda x: Value() if func(x) == True else None
 
 
+class InvalidIngesterException(ValueError):
+    pass
+
+
 class DFTParser(object):
     '''Base class for all tools to parse a directory of output files from a DFT Calculation
     
@@ -36,37 +40,30 @@ class DFTParser(object):
      have the same name in the pif.
     '''
     
-    _directory = None
-    '''Path to directory containing calculation files'''
-    
     _converged = None
     ''' Whether this calculation has converged '''
     
-    def __init__(self, directory):
-        '''Initialize a parser.
+    def __init__(self, files):
+        '''Initialize a parser by defining the list of files that the parser can read from.
         
         Input:
-            directory - String, path to a directory of output files
+            files - [str], list of files usable by this parser.
+        Raises:
+            InvalidIngesterException - If parser cannot find needed files
         '''
-        
-        # Sanity check: Make sure the format is correct
-        if not self.test_if_from(directory):
-            raise Exception('Files in directory inconsistent with this format')
-            
-        self._directory = directory
-      
+        self._files = files
+
     @classmethod
-    def test_if_from(self, directory):
-        '''Test whether a directory of output files
-        seems like it is from this DFT code.
-        
+    def generate_from_directory(cls, directory):
+        """Create a parser by defining which input files it will read from.
+
         Input:
-            directory - String, path to a directory of output files
-        Returns: 
-            boolean, whether directory was created by this code
-        '''
-        
-        raise NotImplementedError
+            directory - str, directory to read from
+            files - str, list of files from which to search.
+            """
+        files = [os.path.join(directory, f) for f in os.listdir(directory)
+                 if os.path.isfile(os.path.join(directory, f))]
+        return cls(files)
         
     def get_setting_functions(self):
         '''Get a dictionary containing the names of methods
@@ -108,29 +105,9 @@ class DFTParser(object):
             'Total force': 'get_total_force',
             'Density': 'get_density',
             'OUTCAR': 'get_outcar',
+            'Total magnetization': 'get_total_magnetization',
+            'Stresses': 'get_stresses'
         }
-        
-    def _call_ase(self, func):
-        '''Make a call to an ASE function.
-        
-        Handles changing directories
-        
-        Returns: Result of ASE function
-        '''
-        # Change directories
-        old_path = os.getcwd()
-        os.chdir(self._directory)
-        
-        # Call function
-        try:
-            res = func()
-        except:
-            os.chdir(old_path)
-            raise
-        
-        # Change back
-        os.chdir(old_path)
-        return res
         
     def get_name(self):
         '''Get the name of this program'''
@@ -308,4 +285,7 @@ class DFTParser(object):
        raise NotImplementedError
 
     def get_total_force(self):
+       return None
+
+    def get_total_magnetization(self):
        return None
