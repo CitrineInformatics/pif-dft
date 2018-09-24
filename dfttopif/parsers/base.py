@@ -95,18 +95,18 @@ class DFTParser(object):
                 and the value is the name of the function
         '''
         return {
-            'Converged':'is_converged',
-            'Total Energy':'get_total_energy',
-            'Band Gap Energy':'get_band_gap',
-            'Pressure':'get_pressure',
-            'Density of States':'get_dos',
+            'Converged': 'is_converged',
+            'Total Energy': 'get_total_energy',
+            'Band Gap Energy': 'get_band_gap',
+            'Pressure': 'get_pressure',
+            'Density of States': 'get_dos',
             'Positions': 'get_positions',
             'Forces': 'get_forces',
             'Total force': 'get_total_force',
             'Density': 'get_density',
             'OUTCAR': 'get_outcar',
             'Total magnetization': 'get_total_magnetization',
-            'Stresses': 'get_stresses'
+            'Stresses': 'get_stresses',
         }
         
     def get_name(self):
@@ -278,14 +278,14 @@ class DFTParser(object):
         raise NotImplementedError
 
     def get_stresses(self):
-       '''Get the stress tensor
+        '''Get the stress tensor
 
-       Returns: Property where stresses is a 2d matrix'''
+        Returns: Property where stresses is a 2d matrix'''
 
-       raise NotImplementedError
+        raise NotImplementedError
 
     def get_total_force(self):
-       return None
+        return None
 
     def get_total_magnetization(self):
-       return None
+        return None
