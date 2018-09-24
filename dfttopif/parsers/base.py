@@ -107,6 +107,9 @@ class DFTParser(object):
             'OUTCAR': 'get_outcar',
             'Total magnetization': 'get_total_magnetization',
             'Stresses': 'get_stresses',
+            'Number of atoms': 'get_number_of_atoms',
+            'Initial volume': 'get_initial_volume',
+            'Final volume': 'get_final_volume'
         }
         
     def get_name(self):
@@ -289,3 +292,26 @@ class DFTParser(object):
 
     def get_total_magnetization(self):
         return None
+
+    def get_number_of_atoms(self):
+        """Get the number of atoms in the calculated structure.
+
+        Returns: Property, where number of atoms is a scalar.
+        """
+        raise NotImplementedError
+
+    def get_initial_volume(self):
+        """Get the volume of the initial input structure.
+
+        Returns: Property, where volume is a scalar.
+        """
+        raise NotImplementedError
+
+    def get_final_volume(self):
+        """Get the volume of the calculated structure at the end of the
+        calculation. If the calculation did not involve structural relaxation,
+        the final volume is identical to the initial volume.
+
+        Returns: Property, where volume is a scalar.
+        """
+        raise NotImplementedError
