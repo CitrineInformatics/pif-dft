@@ -389,6 +389,40 @@ class PwscfParser(DFTParser):
                 bandgap = float(top-bot)
                 return Property(scalars=[Scalar(value=round(bandgap,3))], units='eV')
 
+    @staticmethod
+    def _convert_to_cubic_ang(vol, units):
+        """Convert volume to cubic Angstrom units. If units are not recognized,
+        return as is.
+        """
+        # from https://physics.nist.gov/cgi-bin/cuu/Value?bohrrada0
+        bohr_to_ang = 0.52917721067
+        if units == '(a.u.)^3':
+            return (vol*bohr_to_ang**3, 'Angstrom^3/cell')
+        else:
+            return (vol, units)
+
+    def get_volumes(self):
+        parser = PwscfStdOutputParser()
+        with open(self.outputf, 'r') as fr:
+            volumes = list(filter(lambda x: "unit-cell volume" in x, parser.parse(fr.readlines())))
+        return volumes
+
+    def get_initial_volume(self):
+        volumes = self.get_volumes()
+        if not volumes:
+            return None
+        volume, units = self._convert_to_cubic_ang(volumes[0]['unit-cell volume'],
+                                                   volumes[0]['unit-cell volume units'])
+        return Property(scalars=[Scalar(value=volume)], units=units)
+
+    def get_final_volume(self):
+        volumes = self.get_volumes()
+        if not volumes:
+            return None
+        volume, units = self._convert_to_cubic_ang(volumes[-1]['unit-cell volume'],
+                                                   volumes[-1]['unit-cell volume units'])
+        return Property(scalars=[Scalar(value=volume)], units=units)
+
     def get_one_electron_energy_contribution(self):
         return self._get_key_with_units("one-electron energy contribution")
 
