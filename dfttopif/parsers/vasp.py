@@ -411,3 +411,25 @@ class VaspParser(DFTParser):
             return None
         total_magnetization = matches[-1]["total magnetization"]
         return Property(scalars=[Scalar(value=total_magnetization)], units="Bohr")
+
+    def get_cell_volumes(self):
+        if self.outcar is None:
+            return None
+        parser = OutcarParser()
+        with open(self.outcar, "r") as fr:
+            volumes = list(filter(lambda x: "volume of cell" in x, parser.parse(fr.readlines())))
+        return volumes
+
+    def get_final_volume(self):
+        volumes = self.get_cell_volumes()
+        if not volumes:
+            return None
+        final_volume = volumes[-1]["volume of cell"]
+        return Property(scalars=[Scalar(value=final_volume)], units="Angstrom^3/cell")
+
+    def get_initial_volume(self):
+        volumes = self.get_cell_volumes()
+        if not volumes:
+            return None
+        initial_volume = volumes[0]["volume of cell"]
+        return Property(scalars=[Scalar(value=initial_volume)], units="Angstrom^3/cell")
