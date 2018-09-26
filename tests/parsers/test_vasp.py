@@ -67,6 +67,7 @@ class TestVASPParser(unittest.TestCase):
         # test number of atoms
         natoms = parser.get_number_of_atoms()
         self.assertEqual(natoms.scalars[0].value, 5)
+        self.assertEqual(natoms.units, '/unit cell')
 
         # test volumes
         initial_volume = parser.get_initial_volume()
@@ -137,6 +138,7 @@ class TestVASPParser(unittest.TestCase):
         # test number of atoms
         natoms = parser.get_number_of_atoms()
         self.assertEqual(natoms.scalars[0].value, 2)
+        self.assertEqual(natoms.units, '/unit cell')
 
         # test volumes
         initial_volume = parser.get_initial_volume()
@@ -201,6 +203,7 @@ class TestVASPParser(unittest.TestCase):
         # test number of atoms
         natoms = parser.get_number_of_atoms()
         self.assertEqual(natoms.scalars[0].value, 4)
+        self.assertEqual(natoms.units, '/unit cell')
 
         # test volumes
         initial_volume = parser.get_initial_volume()
@@ -252,6 +255,7 @@ class TestVASPParser(unittest.TestCase):
         # test number of atoms
         natoms = parser.get_number_of_atoms()
         self.assertEqual(natoms.scalars[0].value, 142)
+        self.assertEqual(natoms.units, '/unit cell')
 
         # test volumes
         initial_volume = parser.get_initial_volume()
