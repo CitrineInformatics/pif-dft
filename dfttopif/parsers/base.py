@@ -74,16 +74,16 @@ class DFTParser(object):
                 and the value is function name of this parser
         '''
         return {
-            'XC Functional':'get_xc_functional',
-            'Relaxed':'is_relaxed',
-            'Cutoff Energy':'get_cutoff_energy',
-            'k-Points per Reciprocal Atom':'get_KPPRA',
-            'Spin-Orbit Coupling':'uses_SOC',
-            'DFT+U':'get_U_settings',
-            'vdW Interactions':'get_vdW_settings',
-            'Pseudopotentials':'get_pp_name',
-            'INCAR':'get_incar',
-            'POSCAR':'get_poscar',
+            'XC Functional': 'get_xc_functional',
+            'Relaxed': 'is_relaxed',
+            'Cutoff Energy': 'get_cutoff_energy',
+            'k-Points per Reciprocal Atom': 'get_KPPRA',
+            'Spin-Orbit Coupling': 'uses_SOC',
+            'DFT+U': 'get_U_settings',
+            'vdW Interactions': 'get_vdW_settings',
+            'Pseudopotentials': 'get_pp_name',
+            'INCAR': 'get_incar',
+            'POSCAR': 'get_poscar',
         }
         
     def get_result_functions(self):
@@ -298,7 +298,10 @@ class DFTParser(object):
 
         Returns: Property, where number of atoms is a scalar.
         """
-        raise NotImplementedError
+        strc = self.get_output_structure()
+        if not strc:
+            return None
+        return Property(scalars=[Scalar(value=len(strc))], units="/unit cell")
 
     def get_initial_volume(self):
         """Get the volume of the initial input structure.
