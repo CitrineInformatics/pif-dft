@@ -15,6 +15,7 @@ class PwscfParser(DFTParser):
     def __init__(self, files):
         super(PwscfParser, self).__init__(files)
         self.settings = {}
+        self.settings_w_context = {}
         parser = PwscfStdOutputParser()
 
         # Look for appropriate files
@@ -41,6 +42,11 @@ class PwscfParser(DFTParser):
         with open(self.outputf, "r") as f:
             for line in parser.parse(f.readlines()):
                 self.settings.update(line)
+                for k, v in line.items():
+                    if k in self.settings_w_context:
+                        self.settings_w_context[k].append(v)
+                    else:
+                        self.settings_w_context[k] = [v]
 
     def get_result_functions(self):
         base_results = super(PwscfParser, self).get_result_functions()
@@ -396,31 +402,23 @@ class PwscfParser(DFTParser):
         """
         # from https://physics.nist.gov/cgi-bin/cuu/Value?bohrrada0
         bohr_to_ang = 0.52917721067
-        if units == '(a.u.)^3':
+        if units in ['(a.u.)^3', 'a.u.^3']:
             return (vol*bohr_to_ang**3, 'Angstrom^3/cell')
         else:
             return (vol, units)
 
-    def get_volumes(self):
-        parser = PwscfStdOutputParser()
-        with open(self.outputf, 'r') as fr:
-            volumes = list(filter(lambda x: "unit-cell volume" in x, parser.parse(fr.readlines())))
-        return volumes
-
     def get_initial_volume(self):
-        volumes = self.get_volumes()
-        if not volumes:
+        vs, us = list(filter(lambda x: 'unit-cell volume' in x[0], self.settings_w_context.items()))
+        if not vs:
             return None
-        volume, units = self._convert_to_cubic_ang(volumes[0]['unit-cell volume'],
-                                                   volumes[0]['unit-cell volume units'])
+        volume, units = self._convert_to_cubic_ang(vs[1][0], us[1][0])
         return Property(scalars=[Scalar(value=volume)], units=units)
 
     def get_final_volume(self):
-        volumes = self.get_volumes()
-        if not volumes:
+        vs, us = list(filter(lambda x: 'unit-cell volume' in x[0], self.settings_w_context.items()))
+        if not vs:
             return None
-        volume, units = self._convert_to_cubic_ang(volumes[-1]['unit-cell volume'],
-                                                   volumes[-1]['unit-cell volume units'])
+        volume, units = self._convert_to_cubic_ang(vs[1][-1], us[1][-1])
         return Property(scalars=[Scalar(value=volume)], units=units)
 
     def get_one_electron_energy_contribution(self):
