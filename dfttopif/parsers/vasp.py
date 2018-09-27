@@ -16,6 +16,8 @@ class VaspParser(DFTParser):
 
     def __init__(self, files):
         super(VaspParser, self).__init__(files)
+        self.settings = {}
+        parser = OutcarParser()
 
         # Find the outcar file
         def _find_file(name):
@@ -32,6 +34,14 @@ class VaspParser(DFTParser):
         self.outcar = _find_file('OUTCAR')
         if self.outcar is None:
             raise InvalidIngesterException('OUTCAR not found!')
+
+        with open(self.outcar, "r") as fr:
+            for parsed_line in parser.parse(fr.readlines()):
+                for k, v in parsed_line.items():
+                    if k in self.settings:
+                        self.settings[k].append(v)
+                    else:
+                        self.settings[k] = [v]
 
         # Find the DOSCAR, EIGENVAL, and INCAR files
         #   None of these are required so we do not throw exceptions
@@ -402,34 +412,19 @@ class VaspParser(DFTParser):
                             conditions=Value(name='energy', scalars=energy, units='eV'))
 
     def get_total_magnetization(self):
-        if self.outcar is None:
+        if "total magnetization" not in self.settings:
             return None
-        parser = OutcarParser()
-        with open(self.outcar, "r") as fp:
-            matches = list(filter(lambda x: "total magnetization" in x, parser.parse(fp.readlines())))
-        if len(matches) == 0:
-            return None
-        total_magnetization = matches[-1]["total magnetization"]
+        total_magnetization = self.settings["total magnetization"][-1]
         return Property(scalars=[Scalar(value=total_magnetization)], units="Bohr")
 
-    def get_cell_volumes(self):
-        if self.outcar is None:
-            return None
-        parser = OutcarParser()
-        with open(self.outcar, "r") as fr:
-            volumes = list(filter(lambda x: "volume of cell" in x, parser.parse(fr.readlines())))
-        return volumes
-
     def get_final_volume(self):
-        volumes = self.get_cell_volumes()
-        if not volumes:
+        if "volume of cell" not in self.settings:
             return None
-        final_volume = volumes[-1]["volume of cell"]
+        final_volume = self.settings["volume of cell"][-1]
         return Property(scalars=[Scalar(value=final_volume)], units="Angstrom^3/cell")
 
     def get_initial_volume(self):
-        volumes = self.get_cell_volumes()
-        if not volumes:
+        if "volume of cell" not in self.settings:
             return None
-        initial_volume = volumes[0]["volume of cell"]
+        initial_volume = self.settings["volume of cell"][0]
         return Property(scalars=[Scalar(value=initial_volume)], units="Angstrom^3/cell")
