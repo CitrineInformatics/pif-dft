@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='dfttopif',
-    version='0.3.1',
+    version='1.0.0',
     description='Library for parsing Density Functional Theory calculations',
     url='https://github.com/CitrineInformatics/pif-dft',
     install_requires=[
