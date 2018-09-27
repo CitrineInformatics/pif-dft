@@ -230,4 +230,4 @@ def convert(files, **kwargs):
         else:
             return directory_to_pif(files[0], **kwargs)
     else:
-        return files_to_pif(files, **kwargs)
+        return files_to_pif([x for x in files if os.path.isfile(x)], **kwargs)
