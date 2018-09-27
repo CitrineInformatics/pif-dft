@@ -1,5 +1,5 @@
 import unittest
-from dfttopif import directory_to_pif, convert
+from dfttopif import convert
 from pypif_sdk.accessor import get_propety_by_name
 import tarfile
 import os
@@ -50,7 +50,7 @@ class TestPifGenerator(unittest.TestCase):
             
             # Make the pif file
             # print("\tpif for example:", name)
-            result = directory_to_pif(name, quality_report=test_quality_report)
+            result = convert([name], quality_report=test_quality_report)
             # Only hit the quality report endpoint once to avoid load spikes in automated tests
             test_quality_report=False
             self.assertIsNotNone(result.chemical_formula)
@@ -95,11 +95,12 @@ class TestPifGenerator(unittest.TestCase):
             # Get the example files
             unpack_example(file)
             name = ".".join(os.path.basename(file).split(".")[:-2])
+            files = [os.path.join(name, x) for x in os.listdir(name)] + [name]
             
             # Make the pif file
             # print("\tpif for example:", name)
             try:
-                result = directory_to_pif(name)
+                result = convert(files=files) 
             except Exception as e:
                 print('Failure for {}'.format(name))
                 raise e
