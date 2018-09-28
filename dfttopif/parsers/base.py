@@ -74,16 +74,16 @@ class DFTParser(object):
                 and the value is function name of this parser
         '''
         return {
-            'XC Functional':'get_xc_functional',
-            'Relaxed':'is_relaxed',
-            'Cutoff Energy':'get_cutoff_energy',
-            'k-Points per Reciprocal Atom':'get_KPPRA',
-            'Spin-Orbit Coupling':'uses_SOC',
-            'DFT+U':'get_U_settings',
-            'vdW Interactions':'get_vdW_settings',
-            'Pseudopotentials':'get_pp_name',
-            'INCAR':'get_incar',
-            'POSCAR':'get_poscar',
+            'XC Functional': 'get_xc_functional',
+            'Relaxed': 'is_relaxed',
+            'Cutoff Energy': 'get_cutoff_energy',
+            'k-Points per Reciprocal Atom': 'get_KPPRA',
+            'Spin-Orbit Coupling': 'uses_SOC',
+            'DFT+U': 'get_U_settings',
+            'vdW Interactions': 'get_vdW_settings',
+            'Pseudopotentials': 'get_pp_name',
+            'INCAR': 'get_incar',
+            'POSCAR': 'get_poscar',
         }
         
     def get_result_functions(self):
@@ -95,18 +95,21 @@ class DFTParser(object):
                 and the value is the name of the function
         '''
         return {
-            'Converged':'is_converged',
-            'Total Energy':'get_total_energy',
-            'Band Gap Energy':'get_band_gap',
-            'Pressure':'get_pressure',
-            'Density of States':'get_dos',
+            'Converged': 'is_converged',
+            'Total Energy': 'get_total_energy',
+            'Band Gap Energy': 'get_band_gap',
+            'Pressure': 'get_pressure',
+            'Density of States': 'get_dos',
             'Positions': 'get_positions',
             'Forces': 'get_forces',
             'Total force': 'get_total_force',
             'Density': 'get_density',
             'OUTCAR': 'get_outcar',
             'Total magnetization': 'get_total_magnetization',
-            'Stresses': 'get_stresses'
+            'Stresses': 'get_stresses',
+            'Number of atoms': 'get_number_of_atoms',
+            'Initial volume': 'get_initial_volume',
+            'Final volume': 'get_final_volume'
         }
         
     def get_name(self):
@@ -278,14 +281,40 @@ class DFTParser(object):
         raise NotImplementedError
 
     def get_stresses(self):
-       '''Get the stress tensor
+        '''Get the stress tensor
 
-       Returns: Property where stresses is a 2d matrix'''
+        Returns: Property where stresses is a 2d matrix'''
 
-       raise NotImplementedError
+        raise NotImplementedError
 
     def get_total_force(self):
-       return None
+        return None
 
     def get_total_magnetization(self):
-       return None
+        return None
+
+    def get_number_of_atoms(self):
+        """Get the number of atoms in the calculated structure.
+
+        Returns: Property, where number of atoms is a scalar.
+        """
+        strc = self.get_output_structure()
+        if not strc:
+            return None
+        return Property(scalars=[Scalar(value=len(strc))], units="/unit cell")
+
+    def get_initial_volume(self):
+        """Get the volume of the initial input structure.
+
+        Returns: Property, where volume is a scalar.
+        """
+        raise NotImplementedError
+
+    def get_final_volume(self):
+        """Get the volume of the calculated structure at the end of the
+        calculation. If the calculation did not involve structural relaxation,
+        the final volume is identical to the initial volume.
+
+        Returns: Property, where volume is a scalar.
+        """
+        raise NotImplementedError

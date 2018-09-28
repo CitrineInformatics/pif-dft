@@ -15,6 +15,7 @@ class PwscfParser(DFTParser):
     def __init__(self, files):
         super(PwscfParser, self).__init__(files)
         self.settings = {}
+        self.all_parsed_data = {}
         parser = PwscfStdOutputParser()
 
         # Look for appropriate files
@@ -41,6 +42,11 @@ class PwscfParser(DFTParser):
         with open(self.outputf, "r") as f:
             for line in parser.parse(f.readlines()):
                 self.settings.update(line)
+                for k, v in line.items():
+                    if k in self.all_parsed_data:
+                        self.all_parsed_data[k].append(v)
+                    else:
+                        self.all_parsed_data[k] = [v]
 
     def get_result_functions(self):
         base_results = super(PwscfParser, self).get_result_functions()
@@ -388,6 +394,40 @@ class PwscfParser(DFTParser):
             else:
                 bandgap = float(top-bot)
                 return Property(scalars=[Scalar(value=round(bandgap,3))], units='eV')
+
+    @staticmethod
+    def _convert_to_cubic_ang(volume, units):
+        """Convert volume to cubic Angstrom units. If units are not recognized,
+        return as is.
+        """
+        # from https://physics.nist.gov/cgi-bin/cuu/Value?bohrrada0
+        bohr_to_ang = 0.52917721067
+        if units in ['(a.u.)^3', 'a.u.^3']:
+            return (volume*bohr_to_ang**3, 'Angstrom^3/cell')
+        else:
+            return (volume, units)
+
+    def get_list_of_volumes_n_units(self):
+        volumes = list(filter(lambda x: 'unit-cell volume' in x, self.all_parsed_data.items()))
+        units = list(filter(lambda x: 'unit-cell volume units' in x, self.all_parsed_data.items()))
+        if not volumes or not units:
+            return []
+        else:
+            return list(zip(volumes[0][1], units[0][1]))
+
+    def get_initial_volume(self):
+        vols_n_units = self.get_list_of_volumes_n_units()
+        if not vols_n_units:
+            return None
+        v, u = self._convert_to_cubic_ang(vols_n_units[0][0], vols_n_units[0][1])
+        return Property(scalars=[Scalar(value=v)], units=u)
+
+    def get_final_volume(self):
+        vols_n_units = self.get_list_of_volumes_n_units()
+        if not vols_n_units:
+            return None
+        v, u = self._convert_to_cubic_ang(vols_n_units[-1][0], vols_n_units[-1][1])
+        return Property(scalars=[Scalar(value=v)], units=u)
 
     def get_one_electron_energy_contribution(self):
         return self._get_key_with_units("one-electron energy contribution")
