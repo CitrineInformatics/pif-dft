@@ -15,7 +15,7 @@ class PwscfParser(DFTParser):
     def __init__(self, files):
         super(PwscfParser, self).__init__(files)
         self.settings = {}
-        self.settings_w_context = {}
+        self.all_parsed_data = {}
         parser = PwscfStdOutputParser()
 
         # Look for appropriate files
@@ -43,10 +43,10 @@ class PwscfParser(DFTParser):
             for line in parser.parse(f.readlines()):
                 self.settings.update(line)
                 for k, v in line.items():
-                    if k in self.settings_w_context:
-                        self.settings_w_context[k].append(v)
+                    if k in self.all_parsed_data:
+                        self.all_parsed_data[k].append(v)
                     else:
-                        self.settings_w_context[k] = [v]
+                        self.all_parsed_data[k] = [v]
 
     def get_result_functions(self):
         base_results = super(PwscfParser, self).get_result_functions()
@@ -408,8 +408,8 @@ class PwscfParser(DFTParser):
             return (volume, units)
 
     def get_list_of_volumes_n_units(self):
-        volumes = list(filter(lambda x: 'unit-cell volume' in x, self.settings_w_context.items()))
-        units = list(filter(lambda x: 'unit-cell volume units' in x, self.settings_w_context.items()))
+        volumes = list(filter(lambda x: 'unit-cell volume' in x, self.all_parsed_data.items()))
+        units = list(filter(lambda x: 'unit-cell volume units' in x, self.all_parsed_data.items()))
         if not volumes or not units:
             return []
         else:
