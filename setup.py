@@ -6,7 +6,7 @@ setup(
     description='Library for parsing Density Functional Theory calculations',
     url='https://github.com/CitrineInformatics/pif-dft',
     install_requires=[
-        'ase',
+        'ase<=3.17.0',
         'pypif>=2.0.1,<3',
         'dftparse>=0.2.1'
     ],
