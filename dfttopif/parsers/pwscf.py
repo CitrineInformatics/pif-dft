@@ -279,10 +279,12 @@ class PwscfParser(DFTParser):
                     if "Begin final coordinates" in line:
                         if 'new unit-cell volume' in next(fp):
                             # unit cell allowed to change
-                            next(fp) # blank line
+                            cellheader = next(fp)
+                            # skip irrelevant lines (density/blank line/etc)
+                            while 'CELL_PARAMETER' not in cellheader:
+                                cellheader = next(fp)
                             # get the final unit cell
                             unit_cell = []
-                            cellheader = next(fp)
                             if 'bohr' in cellheader.lower():
                                 cell_conv_factor = bohr_to_angstrom
                             elif 'angstrom' in cellheader.lower():

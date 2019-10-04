@@ -5,6 +5,7 @@ from pypif.obj.common.value import Value
 import os
 import shutil
 
+
 class TestPWSCFParser(unittest.TestCase):
         
     def get_parser(self,name):
@@ -32,6 +33,8 @@ class TestPWSCFParser(unittest.TestCase):
         fin_volume = parser.get_final_volume()
         self.assertAlmostEqual(fin_volume.scalars[0].value, 16.978781940985)
         self.assertEqual(fin_volume.units, 'Angstrom^3/cell')
+
+        delete_example('Au.nscf')
 
     def test_NaF(self):
         # Parse the results
@@ -158,6 +161,19 @@ class TestPWSCFParser(unittest.TestCase):
 
         # Delete the data
         delete_example('TiO2.vcrelax')
+
+    def test_FeO(self):
+        # Parse the results
+        parser = self.get_parser('FeO.vc-relax')
+
+        strc = parser.get_output_structure()
+        self.assertAlmostEqual(strc.cell[0][0], 1.319092613)
+        self.assertAlmostEqual(strc.cell[2][1], -1.523156949)
+        self.assertEquals(['Fe', 'O'], strc.get_chemical_symbols())
+        self.assertEquals('FeO', parser.get_composition())
+
+        # Delete the data
+        delete_example('FeO.vc-relax')
         
     def test_VS2(self):
         # Parse the results
