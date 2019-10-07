@@ -5,5 +5,5 @@ flask
 flask-cors
 gunicorn
 pypif==2.0.1
-git+git://github.com/CitrineInformatics/dftparse@develop#egg=dftparse
+git+git://github.com/hegdevinayi/dftparse@bugfix/qe-versions#egg=dftparse
 pypif-sdk==2.1.0
