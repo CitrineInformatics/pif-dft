@@ -35,6 +35,12 @@ from dfttopif import directory_to_pif
 data = directory_to_pif('/path/to/calculation/')
 ```
 
+Currently supported DFT codes
+-----------------------------
+
+ - VASP (versions tested: 5.2.11, 5.3.2, 5.3.5)
+ - PWSCF (Quantum Espresso) (versions tested: 4.3.2, 5.0, 5.4.0, 6.0, 6.4.1)
+
 Development
 -----------
 
